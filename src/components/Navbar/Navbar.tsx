@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import ThemeSwitch from "./ThemeSwitch";
+import React, { useState } from "react";
 
 const NAV_LINKS = [
   { name: "Swap", href: "/", active: true },
@@ -9,6 +10,8 @@ const NAV_LINKS = [
 ];
 
 export default function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header className="fixed text-3xl h-25 top-0 left-0 w-full z-50 bg-[#0f1016]">
       <nav className="flex items-center justify-between px-4 md:px-12 h-full">
@@ -46,12 +49,16 @@ export default function Navbar() {
           ))}
         </div>
         {/* Mobile Nav Toggle */}
-        <div className="md:hidden">
-          <details className="dropdown">
-            <summary className="btn btn-ghost btn-circle">
+        <>
+          <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 z-50">
+            <button
+              className="btn btn-circle h-14 w-14 bg-[#232136]"
+              onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
+                className="h-8 w-8"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -63,25 +70,38 @@ export default function Navbar() {
                   d="M4 6h16M4 12h16M4 18h16"
                 />
               </svg>
-            </summary>
-            <ul className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-[#232136] rounded-box w-40">
-              {NAV_LINKS.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className={
-                      link.active
-                        ? "text-[#8866DD] font-bold"
-                        : "text-[#E0E0E0]"
-                    }
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </div>
+            </button>
+          </div>
+          {mobileMenuOpen && (
+            <div
+              className="fixed inset-0 z-50 bg-[#181A25] flex flex-col items-center justify-start pt-24 transition-all duration-300 ease-out animate-navbar-slide"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              <button
+                className="absolute top-5 right-4 btn btn-circle h-14 w-14 bg-[#232136]"
+                onClick={e => { e.stopPropagation(); setMobileMenuOpen(false); }}
+                aria-label="Close menu"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <ul className="flex flex-col gap-8 w-full items-center mt-8" onClick={e => e.stopPropagation()}>
+                {NAV_LINKS.map((link) => (
+                  <li key={link.name} className="w-full text-center">
+                    <Link
+                      href={link.href}
+                      className={`block text-2xl font-bold py-4 w-full ${link.active ? "text-[#8866DD]" : "text-[#E0E0E0]"}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </>
         {/* Right Side Controls */}
         <div className="flex items-center gap-3">
           {/* Theme Switch */}
