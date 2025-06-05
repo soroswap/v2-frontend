@@ -130,7 +130,7 @@ export default function Navbar() {
                   );
                 })}
               </ul>
-              <ConnectWallet />
+              <ConnectWallet className="mt-10 w-[90%] flex justify-center" />
             </div>
           )}
         </>
