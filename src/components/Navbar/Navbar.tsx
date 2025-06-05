@@ -3,15 +3,17 @@ import Link from "next/link";
 import ThemeSwitch from "./ThemeSwitch";
 import React, { useState } from "react";
 import ConnectWallet from "../Buttons/ConnectWallet";
+import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { name: "Swap", href: "/", active: true },
+  { name: "Swap", href: "/" },
   { name: "Pools", href: "/pools" },
-  { name: "Info", href: "https://dune.com/paltalabs/soroswap" },
+  { name: "Info", href: "https://dune.com/paltalabs/soroswap", external: true },
 ];
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <header className="fixed text-3xl h-25 top-0 left-0 w-full z-50 bg-[#0f1016]">
@@ -31,23 +33,28 @@ export default function Navbar() {
         </div>
         {/* Nav Links */}
         <div className="hidden md:flex items-center bg-[#181A25] rounded-full px-2 py-1 gap-2 ml-8">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className={`px-6 py-2 rounded-full font-semibold text-[20px] transition-colors duration-200 ${
-                link.active
-                  ? "bg-[#8866DD] text-white shadow"
-                  : "text-[#E0E0E0] hover:bg-[#28243a]"
-              }`}
-              style={{
-                color: link.active ? "#fff" : "#E0E0E0",
-                background: link.active ? "#8866DD" : "transparent",
-              }}
-            >
-              {link.name}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive = !link.external && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
+            return (
+              <Link
+                key={link.name}
+                href={link.href}
+                className={`px-6 py-2 rounded-full font-semibold text-[20px] transition-colors duration-200 ${
+                  isActive
+                    ? "bg-[#8866DD] text-white shadow"
+                    : "text-[#E0E0E0] hover:bg-[#28243a]"
+                }`}
+                style={{
+                  color: isActive ? "#fff" : "#E0E0E0",
+                  background: isActive ? "#8866DD" : "transparent",
+                }}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
+              >
+                {link.name}
+              </Link>
+            );
+          })}
         </div>
         {/* Mobile Nav Toggle */}
         <>
@@ -106,17 +113,22 @@ export default function Navbar() {
                 onClick={(e) => e.stopPropagation()}
               >
                 <ThemeSwitch className="absolute top-5 right-22" />
-                {NAV_LINKS.map((link) => (
-                  <li key={link.name} className={`w-full ${link.active ? "bg-[#8866DD]" : "bg-[#0f1016]"} text-center`}>
-                    <Link
-                      href={link.href}
-                      className={`block text-2xl font-bold py-4 w-full text-[#E0E0E0]`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
+                {NAV_LINKS.map((link) => {
+                  const isActive = !link.external && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
+                  return (
+                    <li key={link.name} className={`w-full ${isActive ? "bg-[#8866DD]" : "bg-[#0f1016]"} text-center`}>
+                      <Link
+                        href={link.href}
+                        className={`block text-2xl font-bold py-4 w-full text-[#E0E0E0]`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        target={link.external ? "_blank" : undefined}
+                        rel={link.external ? "noopener noreferrer" : undefined}
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  );
+                })}
               </ul>
               <ConnectWallet />
             </div>
