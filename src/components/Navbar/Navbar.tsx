@@ -2,6 +2,7 @@
 import Link from "next/link";
 import ThemeSwitch from "./ThemeSwitch";
 import React, { useState } from "react";
+import ConnectWallet from "../Buttons/ConnectWallet";
 
 const NAV_LINKS = [
   { name: "Swap", href: "/", active: true },
@@ -74,24 +75,44 @@ export default function Navbar() {
           </div>
           {mobileMenuOpen && (
             <div
-              className="fixed inset-0 z-50 bg-[#181A25] flex flex-col items-center justify-start pt-24 transition-all duration-300 ease-out animate-navbar-slide"
+              className="fixed inset-0 z-50 bg-[#0f1016] flex flex-col items-center justify-start pt-24 transition-all duration-300 ease-out animate-navbar-slide"
               onClick={() => setMobileMenuOpen(false)}
             >
+              <ThemeSwitch className="absolute top-5 right-22" />
               <button
                 className="absolute top-5 right-4 btn btn-circle h-14 w-14 bg-[#232136]"
-                onClick={e => { e.stopPropagation(); setMobileMenuOpen(false); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMobileMenuOpen(false);
+                }}
                 aria-label="Close menu"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
-              <ul className="flex flex-col gap-8 w-full items-center mt-8" onClick={e => e.stopPropagation()}>
+              <ul
+                className="flex flex-col gap-8 w-full items-center mt-8"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {NAV_LINKS.map((link) => (
                   <li key={link.name} className="w-full text-center">
                     <Link
                       href={link.href}
-                      className={`block text-2xl font-bold py-4 w-full ${link.active ? "text-[#8866DD]" : "text-[#E0E0E0]"}`}
+                      className={`block text-2xl font-bold py-4 w-full ${
+                        link.active ? "text-[#8866DD]" : "text-[#E0E0E0]"
+                      }`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {link.name}
@@ -99,17 +120,16 @@ export default function Navbar() {
                   </li>
                 ))}
               </ul>
+              <ConnectWallet />
             </div>
           )}
         </>
         {/* Right Side Controls */}
         <div className="flex items-center gap-3">
           {/* Theme Switch */}
-          <ThemeSwitch />
-          {/* Connect Wallet Button (DaisyUI custom) */}
-          <button className="hidden md:block btn h-14 bg-[#8866DD] rounded-[16px] text-[20px] p-[16px] font-bold">
-            Connect Wallet
-          </button>
+          <ThemeSwitch className="hidden md:block" />
+          {/* Connect Wallet Button */}
+          <ConnectWallet className="hidden md:block"/>
         </div>
       </nav>
     </header>

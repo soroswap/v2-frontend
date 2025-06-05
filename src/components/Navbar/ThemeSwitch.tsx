@@ -1,6 +1,13 @@
-export default function ThemeSwitch() {
+import React from "react";
+
+interface ThemeSwitchProps {
+  className?: string;
+}
+
+const ThemeSwitch: React.FC<ThemeSwitchProps> = ({ className }) => {
+  
   return (
-    <div className="hidden md:block bg-[#232136] rounded-full p-2 items-center justify-center">
+    <div className={`bg-[#232136] rounded-full p-2 items-center justify-center ${className}`}>
       <label className="swap swap-rotate">
         {/* this hidden checkbox controls the state */}
         <input type="checkbox" />
@@ -25,4 +32,6 @@ export default function ThemeSwitch() {
       </label>
     </div>
   );
-}
+};
+
+export default ThemeSwitch;
