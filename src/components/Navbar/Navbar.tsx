@@ -78,7 +78,6 @@ export default function Navbar() {
               className="fixed inset-0 z-50 bg-[#0f1016] flex flex-col items-center justify-start pt-24 transition-all duration-300 ease-out animate-navbar-slide"
               onClick={() => setMobileMenuOpen(false)}
             >
-              <ThemeSwitch className="absolute top-5 right-22" />
               <button
                 className="absolute top-5 right-4 btn btn-circle h-14 w-14 bg-[#232136]"
                 onClick={(e) => {
@@ -106,13 +105,12 @@ export default function Navbar() {
                 className="flex flex-col gap-8 w-full items-center mt-8"
                 onClick={(e) => e.stopPropagation()}
               >
+                <ThemeSwitch className="absolute top-5 right-22" />
                 {NAV_LINKS.map((link) => (
-                  <li key={link.name} className="w-full text-center">
+                  <li key={link.name} className={`w-full ${link.active ? "bg-[#8866DD]" : "bg-[#0f1016]"} text-center`}>
                     <Link
                       href={link.href}
-                      className={`block text-2xl font-bold py-4 w-full ${
-                        link.active ? "text-[#8866DD]" : "text-[#E0E0E0]"
-                      }`}
+                      className={`block text-2xl font-bold py-4 w-full text-[#E0E0E0]`}
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {link.name}
