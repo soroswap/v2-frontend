@@ -33,3 +33,10 @@ body {
 .animate-navbar-slide {
   animation: navbar-slide 0.3s cubic-bezier(0.4,0,0.2,1);
 }
+
+.bg-svg {
+  background-image: url('/bg.svg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}

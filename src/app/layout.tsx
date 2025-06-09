@@ -32,7 +32,9 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-inter), var(--font-darker-grotesque), sans-serif" }}
       >
         <Navbar />
-        {children}
+        <div className="min-h-screen bg-svg">
+          {children}
+        </div>
       </body>
     </html>
   );
