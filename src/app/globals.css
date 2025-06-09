@@ -40,3 +40,13 @@ body {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+/* Hide number input spinners for all browsers */
+.hide-number-spin::-webkit-outer-spin-button,
+.hide-number-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.hide-number-spin {
+  -moz-appearance: textfield;
+}
