@@ -16,7 +16,7 @@ const darkerGrotesque = Darker_Grotesque({
 });
 
 export const metadata: Metadata = {
-  title: "Soroswap Finance",
+  title: "Soroswap",
   description: "Soroswap Finance is a decentralized exchange on the Stellar blockchain.",
 };
 
