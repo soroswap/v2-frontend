@@ -3,10 +3,10 @@ import Image from "next/image";
 export default function Home() {
   return (
     <main className="flex items-center justify-center min-h-screen">
-      <div className="rounded-2xl border border-[#8866DD] bg-[#181A25] shadow-xl p-6 w-[370px] relative">
+      <div className="rounded-2xl border border-[#8866DD] bg-[#181A25] shadow-xl p-8 w-[480px] relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <span className="text-white text-xl font-semibold">Swap</span>
+          <span className="text-white text-2xl">Swap</span>
           <button className="p-2 rounded-full hover:bg-[#8866DD]/20 transition">
             <Image src="/settingsIcon.a4bdfa44.svg" alt="Settings" width={24} height={24} />
           </button>
