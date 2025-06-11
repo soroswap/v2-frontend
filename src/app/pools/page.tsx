@@ -75,7 +75,7 @@ export default function PoolsPage() {
   }, [pools]);
 
   return (
-    <main className="pt-28 flex items-center justify-center min-h-screen p-2">
+    <main className="pt-28 md:pt-0 flex items-center justify-center min-h-screen p-2">
       <div className="rounded-2xl border border-[#8866DD] bg-[#181A25] shadow-xl p-4 sm:p-8 w-full max-w-3xl relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
