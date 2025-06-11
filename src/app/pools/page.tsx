@@ -75,28 +75,38 @@ export default function PoolsPage() {
   }, [pools]);
 
   return (
-    <main className="flex items-center justify-center min-h-screen p-2">
+    <main className="pt-28 flex items-center justify-center min-h-screen p-2">
       <div className="rounded-2xl border border-[#8866DD] bg-[#181A25] shadow-xl p-4 sm:p-8 w-full max-w-3xl relative">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <span className="text-white text-xl sm:text-2xl">Pools</span>
+
+          {/* “Add Liquidity” CTA – collapses to short label on very small screens */}
+          <Link
+            href="/add-liquidity"
+            className="inline-flex items-center gap-2 bg-[#8866DD]/20 hover:bg-[#8866DD]/30 text-[#8866DD] font-medium px-3 py-1.5 rounded-full text-sm"
+          >
+            <span className="text-lg leading-none">＋</span>
+            <span className="hidden xs:inline">Add&nbsp;Liquidity</span>
+            <span className="xs:hidden">Add</span>
+          </Link>
         </div>
 
         {/* Top‑level metrics */}
         <div className="grid sm:grid-cols-3 gap-4 mb-8">
           <div className="bg-[#10121A] rounded-2xl p-4 border border-[#23243a]">
             <span className="text-[#A0A3C4] text-sm">Total TVL</span>
-            <div className="text-white text-2xl font-bold">6.2M</div>
+            <div className="text-white text-xl sm:text-2xl font-bold">6.2M</div>
           </div>
           <div className="bg-[#10121A] rounded-2xl p-4 border border-[#23243a]">
             <span className="text-[#A0A3C4] text-sm">Active Pools</span>
-            <div className="text-white text-2xl font-bold">
+            <div className="text-white text-xl sm:text-2xl font-bold">
               {pools.filter((p) => p.status === "Active").length}
             </div>
           </div>
           <div className="bg-[#10121A] rounded-2xl p-4 border border-[#23243a]">
             <span className="text-[#A0A3C4] text-sm">Avg. APR (active)</span>
-            <div className="text-white text-2xl font-bold">{avgApr}</div>
+            <div className="text-white text-xl sm:text-2xl font-bold">{avgApr}</div>
           </div>
         </div>
 
@@ -105,7 +115,7 @@ export default function PoolsPage() {
           {pools.map((pool, index) => (
             <div
               key={pool.id}
-              className="bg-[#10121A]/70 hover:bg-[#10121A] transition rounded-2xl p-4 border border-[#23243a] flex items-center justify-between"
+              className="bg-[#10121A]/70 hover:bg-[#10121A] transition rounded-2xl sm:p-4 p-3 border border-[#23243a] flex items-center justify-between"
             >
               {/* Pair section */}
               <div className="flex items-center gap-5">
@@ -131,20 +141,22 @@ export default function PoolsPage() {
               </div>
 
               {/* Stats & actions */}
-              <div className="flex gap-6 items-center">
+              <div className="flex flex-col sm:flex-row sm:gap-6 gap-3 items-start sm:items-center text-sm">
                 {index === 0 && (
-                  <div className="text-right">
-                    <span className="text-[#A0A3C4] text-xs">POSITION</span>
-                    <div className="text-white font-medium">10,000 XLM/USDC</div>
+                  <div className="text-left sm:text-right">
+                    <span className="text-[#A0A3C4] text-xs">YOUR POSITION</span>
+                    <div className="text-white font-medium break-all">
+                      10,000&nbsp;XLM/USDC
+                    </div>
                   </div>
                 )}
                 <div className="text-right">
                   <span className="text-[#A0A3C4] text-xs">TVL</span>
-                  <div className="text-white font-medium">{pool.tvl}</div>
+                  <div className="text-white font-medium text-base sm:text-lg">{pool.tvl}</div>
                 </div>
                 <div className="text-right">
                   <span className="text-[#A0A3C4] text-xs">APR</span>
-                  <div className="text-white font-medium">{pool.apr}</div>
+                  <div className="text-white font-medium text-base sm:text-lg">{pool.apr}</div>
                 </div>
               </div>
             </div>
