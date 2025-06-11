@@ -16,8 +16,13 @@ export default function Home() {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <span className="text-white text-xl sm:text-2xl">Swap</span>
-          <button className="p-2 rounded-full hover:bg-[#8866DD]/20 transition">
-            <Image src="/settingsIcon.a4bdfa44.svg" alt="Settings" width={24} height={24} />
+          <button className="p-1 rounded-full hover:bg-[#8866DD]/20 transition">
+            <Image
+              src="/settingsIcon.a4bdfa44.svg"
+              alt="Settings"
+              width={38}
+              height={38}
+            />
           </button>
         </div>
         {/* Sell panel */}
@@ -25,62 +30,121 @@ export default function Home() {
           <div className="bg-[#10121A] rounded-2xl p-5 mb-3 border border-[#23243a]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[#A0A3C4] text-base font-medium">Sell</span>
-              <button className="flex items-center gap-2 bg-[#23243a] border border-[#35374a] rounded-full px-2 py-1 font-bold text-white text-xs sm:text-sm focus:outline-none min-w-[90px]">
-                <img src="https://assets.coingecko.com/coins/images/100/standard/Stellar_symbol_black_RGB.png" alt="XLM logo" width={20} height={20} className="rounded-full w-[20px] h-[20px]" />
+              {/* Here a 25%, 50%, 75%, MAX */}
+            </div>
+            <div className="flex items-end justify-between max-h-[43.5px]">
+              <input
+                className="bg-transparent text-white text-3xl sm:text-4xl font-bold outline-none w-full p-0 m-0 leading-none hide-number-spin"
+                type="number"
+                value={sellAmount}
+                onChange={(e) => setSellAmount(Number(e.target.value))}
+                placeholder="0"
+                style={{ minWidth: 0 }}
+              />
+              <button className="h-[43.5px] flex items-center gap-2 bg-[#23243a] border border-[#35374a] rounded-full py-1.5 px-1.5 font-bold text-white text-xs sm:text-sm focus:outline-none whitespace-nowrap min-w-fit">
+                <img
+                  src="https://ipfs.io/ipfs/QmXEkrYLhmVJCGJ9AhxQypF3eS4aUUQX3PTef31gmEfyJo/"
+                  alt="XLM logo"
+                  width={29.5}
+                  height={29.5}
+                  className="rounded-full bg-white"
+                />
                 <span className="font-bold text-white text-sm">XLM</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="ml-1">
-                  <polyline points="6 9 12 15 18 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <polyline
+                    points="6 9 12 15 18 9"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             </div>
             <div className="flex items-end justify-between">
-              <div className="flex flex-col flex-1">
-                <input
-                  className="bg-transparent text-white text-3xl sm:text-4xl font-bold outline-none w-full p-0 m-0 leading-none hide-number-spin"
-                  type="number"
-                  value={sellAmount}
-                  onChange={e => setSellAmount(Number(e.target.value))}
-                  placeholder="0"
-                  style={{ minWidth: 0 }}
-                />
-                <span className="text-[#A0A3C4] text-base sm:text-lg mt-1">{sellUsd}</span>
-              </div>
+              <span className="text-[#A0A3C4] text-base sm:text-lg mt-1">
+                {sellUsd}
+              </span>
             </div>
           </div>
           {/* Down arrow, absolutely positioned */}
           <div className="absolute left-1/2 -translate-x-1/2 -bottom-6 z-20">
             <div className="bg-[#CFFFD9] rounded-full p-2 flex items-center justify-center border-4 border-[#181A25]">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#232136" className="h-6 w-6">
-                <line x1="12" y1="5" x2="12" y2="19" strokeWidth="2" strokeLinecap="round" />
-                <polyline points="19 12 12 19 5 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="#232136"
+                className="h-6 w-6"
+              >
+                <line
+                  x1="12"
+                  y1="5"
+                  x2="12"
+                  y2="19"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+                <polyline
+                  points="19 12 12 19 5 12"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </div>
           </div>
         </div>
         {/* Buy panel */}
-        <div className="mt-8">
-          <div className="bg-[#10121A] rounded-2xl p-5 border border-[#23243a]">
+        <div className="mt-[-5px]">
+          <div className="bg-transparent rounded-2xl p-5 border border-[#cfffd966]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[#A0A3C4] text-base font-medium">Buy</span>
-              <button className="flex items-center gap-2 bg-[#8866DD] border border-[#8866DD] rounded-full px-2 py-1 font-bold text-white text-xs sm:text-sm focus:outline-none min-w-[110px]">
-                <span className="font-bold text-white text-sm">Select token</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="ml-1">
-                  <polyline points="6 9 12 15 18 9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Here a 25%, 50%, 75%, MAX */}
+            </div>
+            <div className="flex items-end justify-between max-h-[43.5px]">
+              <input
+                className="bg-transparent text-white text-3xl sm:text-4xl font-bold outline-none w-full p-0 m-0 leading-none hide-number-spin"
+                type="number"
+                value={buyAmount}
+                onChange={(e) => setBuyAmount(Number(e.target.value))}
+                placeholder="0"
+                style={{ minWidth: 0 }}
+              />
+              <button className="h-[43.5px] flex items-center gap-2 bg-[#23243a] border border-[#35374a] rounded-full py-1.5 px-4 font-bold text-white text-xs sm:text-sm focus:outline-none whitespace-nowrap">
+                <span className="font-bold text-white text-sm">
+                  Select token
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="ml-1"
+                >
+                  <polyline
+                    points="6 9 12 15 18 9"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </button>
             </div>
             <div className="flex items-end justify-between">
-              <div className="flex flex-col flex-1">
-                <input
-                  className="bg-transparent text-white text-3xl sm:text-4xl font-bold outline-none w-full p-0 m-0 leading-none hide-number-spin"
-                  type="number"
-                  value={buyAmount}
-                  onChange={e => setBuyAmount(Number(e.target.value))}
-                  placeholder="0"
-                  style={{ minWidth: 0 }}
-                />
-                <span className="text-[#A0A3C4] text-base sm:text-lg mt-1">{buyUsd}</span>
-              </div>
+              <span className="text-[#A0A3C4] text-base sm:text-lg mt-1">
+                {buyUsd}
+              </span>
             </div>
           </div>
         </div>
