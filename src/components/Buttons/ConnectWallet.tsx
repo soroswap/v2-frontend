@@ -25,6 +25,7 @@ const ConnectWallet: React.FC<ConnectWalletProps> = ({ className }) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
         // Do something else
+        console.log("🚀 | onWalletSelected: | address:", address)
         // TODO: Add the address to the state
       },
     });
