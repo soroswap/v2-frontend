@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 const NAV_LINKS = [
   { name: "Swap", href: "/" },
   { name: "Pools", href: "/pools" },
+  { name: "Earn", href: "/earn" },
   { name: "Info", href: "https://dune.com/paltalabs/soroswap", external: true },
 ];
 
