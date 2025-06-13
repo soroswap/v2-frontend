@@ -9,7 +9,7 @@ export const RotateArrowButton = ({
 }: RotateArrowButtonProps) => {
   return (
     <button
-      className={`group absolute -bottom-6 left-1/2 z-20 -translate-x-1/2 ${className}`}
+      className={`group absolute -bottom-6 left-1/2 z-20 -translate-x-1/2 ${className} cursor-pointer`}
       {...props}
     >
       <div className="flex items-center justify-center rounded-full border-4 border-[#181A25] bg-[#CFFFD9] p-2 transition-all duration-300 group-hover:bg-[#CFFFD9]/80">
