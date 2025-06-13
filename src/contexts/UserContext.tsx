@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface UserContextProps {
   address: string | null;
@@ -19,20 +13,9 @@ interface UserProviderProps {
 
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [address, setAddress] = useState<string | null>(null);
-  const [userContextData, setUserContextData] = useState<UserContextProps>({
-    address,
-    setAddress,
-  });
-
-  useEffect(() => {
-    setUserContextData({
-      address,
-      setAddress,
-    });
-  }, [address]);
 
   return (
-    <UserContext.Provider value={userContextData}>
+    <UserContext.Provider value={{ setAddress, address }}>
       {children}
     </UserContext.Provider>
   );

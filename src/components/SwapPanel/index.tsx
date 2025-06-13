@@ -1,4 +1,7 @@
-import TokenSelector, { Token } from "@/components/TokenSelector";
+"use client";
+
+import TokenSelector from "@/components/TokenSelector";
+import { TokenList } from "@/components/TokenSelector/types/token";
 
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
@@ -11,13 +14,15 @@ export default function SwapPanel({
   token,
   usdValue,
   variant = "default",
+  onSelectToken,
 }: {
   label: string;
   amount: number;
   setAmount: (v: number) => void;
-  token?: Token;
+  token?: TokenList | null;
   usdValue: string;
   variant?: "default" | "outline";
+  onSelectToken?: (token: TokenList | null) => void;
 }) {
   const baseClasses = "rounded-2xl p-5 border";
   const styles =
@@ -44,7 +49,11 @@ export default function SwapPanel({
           style={{ minWidth: 0 }}
         />
 
-        <TokenSelector token={token} placeholder="Select token" />
+        <TokenSelector
+          token={token}
+          placeholder="Select token"
+          onSelect={onSelectToken}
+        />
       </div>
 
       {/* USD helper */}

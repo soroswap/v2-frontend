@@ -1,68 +1,50 @@
+"use client";
+
+import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
-export type Token = {
-  symbol: string;
-  logo: string;
-};
+import { useTokensList } from "@/hooks/useTokensList";
+import { TokenList } from "@/components/TokenSelector/types/token";
 
 export default function TokenSelector({
   token,
   placeholder,
   onSelect,
 }: {
-  token?: Token;
+  token?: TokenList | null;
   placeholder?: string;
-  onSelect?: (t: Token) => void;
+  onSelect?: (token: TokenList | null) => void;
 }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
-  // Mock token list – replace with real list later
-  const TOKENS: Token[] = [
-    {
-      symbol: "XLM",
-      logo:
-        "https://ipfs.io/ipfs/QmXEkrYLhmVJCGJ9AhxQypF3eS4aUUQX3PTef31gmEfyJo/",
-    },
-    {
-      symbol: "USDC",
-      logo:
-        "https://assets.coingecko.com/coins/images/6319/thumb/USD_Coin_icon.png",
-    },
-    {
-      symbol: "USDT",
-      logo:
-        "https://assets.coingecko.com/coins/images/325/thumb/Tether.png",
-    },
-    {
-      symbol: "WBTC",
-      logo:
-        "https://assets.coingecko.com/coins/images/1/thumb/bitcoin.png",
-    },
-    {
-      symbol: "ETH",
-      logo:
-        "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png",
-    },
-  ];
+  const { tokensList } = useTokensList();
+
+  const handleSelectToken = (token: TokenList | null) => {
+    onSelect?.(token);
+    setIsOpen(false);
+  };
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={`h-[43.5px] flex items-center gap-2 bg-[#23243a] border border-[#35374a] rounded-full py-1.5 px-1.5 font-bold text-white text-xs sm:text-sm focus:outline-none whitespace-nowrap min-w-fit ${token ? "sm:px-1.5" : "sm:px-4"}`}
+        className={cn(
+          "flex h-[43.5px] min-w-fit items-center gap-2 rounded-full border border-[#35374a] bg-[#23243a] px-1.5 py-1.5 text-xs font-bold whitespace-nowrap text-white hover:bg-[#23243a]/80 focus:outline-none sm:text-sm",
+          token ? "sm:px-1.5" : "sm:px-4",
+        )}
       >
         {token ? (
           <>
             <img
-              src={token.logo}
-              alt={`${token.symbol} logo`}
+              src={token.icon}
+              alt={`${token.name} logo`}
               width={29.5}
               height={29.5}
               className="rounded-full bg-white"
             />
-            <span className="font-bold text-white text-sm">{token.symbol}</span>
+            <span className="text-sm font-bold text-white">{token.name}</span>
           </>
         ) : (
-          <span className="font-bold text-white text-sm">
+          <span className="text-sm font-bold text-white">
             {placeholder ?? "Select token"}
           </span>
         )}
@@ -92,38 +74,35 @@ export default function TokenSelector({
             onClick={() => setIsOpen(false)}
           />
           {/* Sheet */}
-          <div className="relative z-50 w-full max-w-xs sm:max-w-sm max-h-[70vh] bg-[#181A25] border border-[#35374a] rounded-2xl p-4 flex flex-col">
+          <div className="relative z-50 flex max-h-[70vh] w-full max-w-xs flex-col rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
             {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-white font-medium text-lg">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="text-lg font-medium text-white">
                 Select a token
               </span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white/70 hover:text-white text-2xl leading-none"
+                className="text-2xl leading-none text-white/70 hover:text-white"
               >
                 ×
               </button>
             </div>
-            {/* Token list */}
-            <div className="overflow-y-auto overscroll-contain space-y-2 pr-1">
-              {TOKENS.map((t) => (
+
+            <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
+              {tokensList.map((token: TokenList) => (
                 <button
-                  key={t.symbol}
-                  onClick={() => {
-                    onSelect?.(t);
-                    setIsOpen(false);
-                  }}
-                  className="w-full px-3 py-2 rounded-lg flex items-center gap-3 hover:bg-[#23243a] transition"
+                  key={token.contract}
+                  onClick={() => handleSelectToken(token)}
+                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
                 >
                   <img
-                    src={t.logo}
-                    alt={t.symbol}
+                    src={token.icon}
+                    alt={token.name}
                     width={28}
                     height={28}
                     className="rounded-full bg-white"
                   />
-                  <span className="text-white font-medium">{t.symbol}</span>
+                  <span className="font-medium text-white">{token.name}</span>
                 </button>
               ))}
             </div>

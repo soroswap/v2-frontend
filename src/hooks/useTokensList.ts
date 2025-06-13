@@ -25,6 +25,8 @@ export const useTokensList = () => {
     refreshInterval: 300000,
     errorRetryCount: 3,
     shouldRetryOnError: true,
+    suspense: false,
+    fallbackData: [],
   });
 
   return {
