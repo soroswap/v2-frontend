@@ -57,7 +57,10 @@ export default function SwapPage() {
             />
           </div>
         </div>
-        <ConnectWallet className="w-full flex justify-center mt-8" />
+        <ConnectWallet
+          className="w-full flex justify-center mt-8"
+          label="Select a token"
+        />
       </div>
     </main>
   );

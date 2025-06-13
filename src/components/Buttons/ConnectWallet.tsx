@@ -1,4 +1,5 @@
 "use client";
+
 import React from "react";
 import {
   StellarWalletsKit,
@@ -7,6 +8,8 @@ import {
   XBULL_ID,
   ISupportedWallet,
 } from "@creit.tech/stellar-wallets-kit";
+import { useUserContext } from "@/contexts/UserContext";
+import { formatUserAddress } from "@/utils/formatUserAddress";
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
   network: WalletNetwork.TESTNET,
@@ -16,27 +19,33 @@ const kit: StellarWalletsKit = new StellarWalletsKit({
 
 interface ConnectWalletProps {
   className?: string;
+  label?: string;
 }
 
-const ConnectWallet: React.FC<ConnectWalletProps> = ({ className }) => {
+const ConnectWallet = ({ className, label }: ConnectWalletProps) => {
+  const { address: userAddress, setAddress } = useUserContext();
+
   const handleConnectWallet = async () => {
+    if (userAddress) {
+      kit.disconnect();
+      setAddress(null);
+      return;
+    }
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
-        // Do something else
-        console.log("🚀 | onWalletSelected: | address:", address)
-        // TODO: Add the address to the state
+        setAddress(address);
       },
     });
   };
 
   return (
     <button
-      className={`btn h-14 bg-[#8866DD] rounded-[16px] text-[20px] p-[16px] font-bold ${className}`}
+      className={`btn h-14 bg-[#8866DD] rounded-2xl text-[20px] p-4 font-bold ${className}`}
       onClick={handleConnectWallet}
     >
-      Connect Wallet
+      {userAddress ? label || formatUserAddress(userAddress) : "Connect Wallet"}
     </button>
   );
 };

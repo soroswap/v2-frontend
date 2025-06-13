@@ -1,7 +1,9 @@
+import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
-import "./globals.css";
 import Navbar from "@/components/Navbar/Navbar";
+import { UserProvider } from "@/contexts/UserContext";
+import "./globals.css";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -17,23 +19,29 @@ const darkerGrotesque = Darker_Grotesque({
 
 export const metadata: Metadata = {
   title: "Soroswap",
-  description: "Soroswap Finance is a decentralized exchange on the Stellar blockchain.",
+  description:
+    "Soroswap Finance is a decentralized exchange on the Stellar blockchain.",
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: ReactNode;
 }>) {
   return (
     <html lang="en">
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} font-sans antialiased`}
-        style={{ fontFamily: "var(--font-inter), var(--font-darker-grotesque), sans-serif" }}
+        style={{
+          fontFamily:
+            "var(--font-inter), var(--font-darker-grotesque), sans-serif",
+        }}
       >
-        <Navbar />
         <div className="min-h-screen bg-svg">
-          {children}
+          <UserProvider>
+            <Navbar />
+            {children}
+          </UserProvider>
         </div>
       </body>
     </html>

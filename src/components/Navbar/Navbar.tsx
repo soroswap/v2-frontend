@@ -35,7 +35,11 @@ export default function Navbar() {
         {/* Nav Links */}
         <div className="hidden md:flex items-center bg-[#181A25] rounded-full px-2 py-1 gap-2 ml-8">
           {NAV_LINKS.map((link) => {
-            const isActive = !link.external && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
+            const isActive =
+              !link.external &&
+              (link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href));
             return (
               <Link
                 key={link.name}
@@ -115,9 +119,18 @@ export default function Navbar() {
               >
                 <ThemeSwitch className="absolute top-5 right-22" />
                 {NAV_LINKS.map((link) => {
-                  const isActive = !link.external && (link.href === "/" ? pathname === "/" : pathname.startsWith(link.href));
+                  const isActive =
+                    !link.external &&
+                    (link.href === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(link.href));
                   return (
-                    <li key={link.name} className={`w-full ${isActive ? "bg-[#8866DD]" : "bg-[#0f1016]"} text-center`}>
+                    <li
+                      key={link.name}
+                      className={`w-full ${
+                        isActive ? "bg-[#8866DD]" : "bg-[#0f1016]"
+                      } text-center`}
+                    >
                       <Link
                         href={link.href}
                         className={`block text-2xl font-bold py-4 w-full text-[#E0E0E0]`}
@@ -140,7 +153,7 @@ export default function Navbar() {
           {/* Theme Switch */}
           <ThemeSwitch className="hidden md:block" />
           {/* Connect Wallet Button */}
-          <ConnectWallet className="hidden md:block"/>
+          <ConnectWallet className="hidden md:block" />
         </div>
       </nav>
     </header>
