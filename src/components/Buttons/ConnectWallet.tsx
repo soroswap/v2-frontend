@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils/cn";
 import React, { useState } from "react";
 import {
   StellarWalletsKit,
-  WalletNetwork,
   allowAllModules,
   XBULL_ID,
   ISupportedWallet,
@@ -12,9 +11,10 @@ import {
 import { useUserContext } from "@/contexts/UserContext";
 import { formatUserAddress } from "@/lib/utils/formatUserAddress";
 import { TheButton } from "@/components/Buttons/TheButton";
+import { STELLAR } from "@/lib/environmentVars";
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
-  network: WalletNetwork.TESTNET,
+  network: STELLAR.WALLET_NETWORK,
   selectedWalletId: XBULL_ID,
   modules: allowAllModules(),
 });

@@ -21,8 +21,8 @@ export const useTokensList = () => {
   const { data, error, isLoading } = useSWR("token-list", fetchTokenList, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 60000,
-    refreshInterval: 300000,
+    dedupingInterval: 43200000, // 12 hours
+    refreshInterval: 86400000, // 24 hours
     errorRetryCount: 3,
     shouldRetryOnError: true,
     suspense: false,
