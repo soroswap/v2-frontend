@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { cn } from "@/lib/utils/cn";
@@ -32,6 +33,43 @@ export default function SwapPage() {
     setIsTokenSwitched(!isTokenSwitched);
     setSellToken(buyToken);
     setBuyToken(sellToken);
+  };
+
+  const mockSwap = {
+    assetIn: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA",
+    assetOut: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
+    amount: "100000000000",
+    tradeType: "EXACT_IN",
+    protocols: ["soroswap"],
+    parts: 10,
+    slippageTolerance: "50",
+    maxHops: 1,
+    assetList: ["soroswap"],
+  };
+
+  const handleSwap = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log("swap");
+
+    try {
+      // Use the Next.js API route which runs on the server side
+      const response = await fetch("/api/swap?network=mainnet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(mockSwap),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Swap response:", result);
+    } catch (error) {
+      console.error("Swap failed:", error);
+    }
   };
 
   return (
@@ -90,6 +128,7 @@ export default function SwapPage() {
                 className={cn(
                   "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
                 )}
+                onClick={handleSwap}
               >
                 {!buyToken || !sellToken ? "Select a token" : "Swap"}
               </TheButton>

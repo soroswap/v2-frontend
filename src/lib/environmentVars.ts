@@ -3,14 +3,13 @@ import { z } from "zod";
 
 /**
  * This file centralizes all environment variables with strict Zod validation.
- * If any required variable is missing or invalid, the application will fail to start.
- * This prevents exposing incorrect APIs or misconfigured endpoints.
+ * Only validates client-side variables (NEXT_PUBLIC_*).
  */
 
 const environmentSchema = z.object({
-  NEXT_PUBLIC_ENV: z.enum(["production", "testnet"], {
+  NEXT_PUBLIC_ENV: z.enum(["mainnet", "testnet"], {
     errorMap: () => ({
-      message: 'NEXT_PUBLIC_ENV must be either "production" or "testnet"',
+      message: 'NEXT_PUBLIC_ENV must be either "mainnet" or "testnet"',
     }),
   }),
 });
@@ -23,7 +22,7 @@ if (!parseResult.success) {
   console.error("❌ Environment variables validation failed:");
   console.error(parseResult.error.flatten().fieldErrors);
   console.error("\n📋 Required environment variables:");
-  console.error("- NEXT_PUBLIC_ENV: 'production' or 'testnet'");
+  console.error("- NEXT_PUBLIC_ENV: 'mainnet' or 'testnet'");
 
   throw new Error(
     "❌ Application cannot start with invalid environment configuration",
@@ -34,7 +33,7 @@ const validatedEnv = parseResult.data;
 
 // Environment flags derived from validated env
 const isDev = validatedEnv.NEXT_PUBLIC_ENV === "testnet";
-const isProduction = validatedEnv.NEXT_PUBLIC_ENV === "production";
+const isProduction = validatedEnv.NEXT_PUBLIC_ENV === "mainnet";
 
 export const envVars = {
   isDev,
@@ -43,9 +42,15 @@ export const envVars = {
 
   STELLAR: {
     WALLET_NETWORK:
-      process.env.NEXT_PUBLIC_STELLAR_WALLET_NETWORK === "testnet"
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? WalletNetwork.TESTNET
         : WalletNetwork.PUBLIC,
+  },
+
+  SERVER: {
+    SOROSWAP_API_URL: process.env.SOROSWAP_API_URL,
+    SOROSWAP_API_EMAIL: process.env.SOROSWAP_API_EMAIL,
+    SOROSWAP_API_PASSWORD: process.env.SOROSWAP_API_PASSWORD,
   },
 };
 
@@ -53,4 +58,5 @@ export const {
   isDev: isTestnetEnv,
   isProduction: isProductionEnv,
   STELLAR,
+  SERVER,
 } = envVars;
