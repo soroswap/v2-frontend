@@ -39,6 +39,7 @@ export const envVars = {
   isDev,
   isProduction,
   isTestnet: isDev,
+  network: validatedEnv.NEXT_PUBLIC_ENV,
 
   STELLAR: {
     WALLET_NETWORK:
@@ -59,4 +60,5 @@ export const {
   isProduction: isProductionEnv,
   STELLAR,
   SERVER,
+  network,
 } = envVars;
