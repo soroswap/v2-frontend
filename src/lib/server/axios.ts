@@ -1,6 +1,8 @@
+"use server";
+
 import axios from "axios";
 
-// Create axios instance with default config
+/*This is the axios instance for the server side. It is used to make requests to the server.*/
 export const api = axios.create({
   baseURL: process.env.SOROSWAP_API_URL,
   timeout: 10000, // 10 seconds

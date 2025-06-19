@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
@@ -22,6 +23,27 @@ export default function SwapPage() {
 
   const sellUsd = "$2.58M"; // TODO: need refator that and send the request to gett the current Value, for now I will keep loading.
   const buyUsd = "$0";
+
+  const getPrice = async (contractAddress: string): Promise<number> => {
+    const response = await fetch(`/api/price`, {
+      method: "GET",
+      headers: {
+        asset: contractAddress,
+      },
+    });
+    const data = await response.json();
+    return data.data.price;
+  };
+
+  useEffect(() => {
+    const fetchPrice = async () => {
+      if (sellToken) {
+        const price = await getPrice(sellToken.contract);
+        console.log("price", price);
+      }
+    };
+    fetchPrice();
+  }, [sellToken]);
 
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sellToken) {
@@ -52,8 +74,7 @@ export default function SwapPage() {
     console.log("swap");
 
     try {
-      // Use the Next.js API route which runs on the server side
-      const response = await fetch("/api/swap?network=mainnet", {
+      const response = await fetch("/api/swap", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

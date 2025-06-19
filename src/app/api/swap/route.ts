@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { api } from "@/lib/axios";
+import { api, ALLOWED_ORIGINS } from "@/lib/server";
+import { network } from "@/lib/environmentVars";
+import { Address } from "cluster";
 
-// Test GET method to verify the route is working
+/*This is the GET method for the swap API. It is used to verify the route is working.*/
 export async function GET() {
   return NextResponse.json({
     message: "Swap API is working",
@@ -10,17 +12,84 @@ export async function GET() {
   });
 }
 
+/* TODO: Check the use of this old Interfaces */
+
+// export interface TokenType {
+//   code: string;
+//   issuer?: string;
+//   contract: string;
+//   name?: string;
+//   org?: string;
+//   domain?: string;
+//   icon?: string;
+//   decimals?: number;
+// }
+
+// export type CurrencyAmount = {
+//   currency: TokenType;
+//   value: string;
+// };
+
+// export enum TradeType {
+//   EXACT_INPUT = "EXACT_IN",
+//   EXACT_OUTPUT = "EXACT_OUT",
+// }
+
+// export interface DexDistribution {
+//   protocol_id: string;
+//   path: string[];
+//   parts: number;
+//   is_exact_in: boolean;
+//   poolHashes: string[] | undefined;
+// }
+
+// export enum PlatformType {
+//   AGGREGATOR = "Soroswap Aggregator",
+//   ROUTER = "Soroswap AMM",
+//   STELLAR_CLASSIC = "SDEX",
+// }
+
+// export type InterfaceTrade = {
+//   inputAmount: CurrencyAmount | undefined;
+//   outputAmount: CurrencyAmount | undefined;
+//   tradeType: TradeType | undefined;
+//   path: string[] | undefined;
+//   distribution?: DexDistribution[] | undefined;
+//   priceImpact?: {
+//     numerator: number;
+//     denominator: number;
+//   };
+//   [x: string]: any;
+//   platform?: PlatformType;
+// };
+
+interface SwapResponse {
+  assetIn: string | Address;
+  assetOut: string | Address;
+  priceImpact: {
+    numerator: string;
+    denominator: string;
+  };
+  trade: {
+    amountIn: string;
+    amountOutMin: string;
+    distribution: {
+      protocol_id: string;
+      path: string[];
+      parts: number;
+      is_exact_in: boolean;
+    }[];
+    expectedAmountOut: string;
+  };
+  tradeType: string;
+}
+
+/*This is the POST method for the swap API. It is used to swap tokens.*/
 export async function POST(request: NextRequest) {
-  // CORS handling
-  const allowedOrigin = [
-    ".soroswap.finance",
-    "http://localhost:3000",
-    "paltalabs.vercel.app",
-  ];
   const origin =
     request.headers.get("origin") || request.headers.get("referer") || "";
 
-  if (!allowedOrigin.some((allowed) => origin.includes(allowed))) {
+  if (!ALLOWED_ORIGINS.some((allowed) => origin.includes(allowed))) {
     return NextResponse.json(
       {
         code: "SWAP_ERROR_CORS",
@@ -29,10 +98,6 @@ export async function POST(request: NextRequest) {
       { status: 403 },
     );
   }
-
-  // Get network from search params
-  const { searchParams } = new URL(request.url);
-  const network = searchParams.get("network");
 
   if (!network) {
     return NextResponse.json(
@@ -45,17 +110,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Get request body
     const body = await request.json();
 
-    console.log(`[SWAP] Processing request for network: ${network}`);
-
-    const swapResponse = await api.post(
-      `/router/swap/split?network=${network.toLowerCase()}`,
+    const swapResponse = await api.post<SwapResponse>(
+      `/router/swap/split?network=${network}`,
       body,
     );
-
-    console.log(`[SWAP] Request completed successfully`);
 
     return NextResponse.json({
       code: "SWAP_SUCCESS",
