@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { cn } from "@/lib/utils/cn";
@@ -15,7 +16,6 @@ export default function TokenSelector({
   onSelect?: (token: TokenList | null) => void;
 }) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-
   const { tokensList } = useTokensList();
 
   const handleSelectToken = (token: TokenList | null) => {
@@ -41,7 +41,7 @@ export default function TokenSelector({
               height={29.5}
               className="rounded-full bg-white"
             />
-            <span className="text-sm font-bold text-white">{token.name}</span>
+            <span className="text-sm font-bold text-white">{token.code}</span>
           </>
         ) : (
           <span className="text-sm font-bold text-white">
@@ -74,7 +74,7 @@ export default function TokenSelector({
             onClick={() => setIsOpen(false)}
           />
           {/* Sheet */}
-          <div className="relative z-50 flex max-h-[70vh] w-full max-w-xs flex-col rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
+          <div className="relative z-50 flex max-h-[70vh] w-full max-w-sm flex-col rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
             {/* Header */}
             <div className="mb-4 flex items-center justify-between">
               <span className="text-lg font-medium text-white">
@@ -102,7 +102,7 @@ export default function TokenSelector({
                     height={28}
                     className="rounded-full bg-white"
                   />
-                  <span className="font-medium text-white">{token.name}</span>
+                  <span className="font-medium text-white">{token.code}</span>
                 </button>
               ))}
             </div>
