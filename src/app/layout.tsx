@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
-import Navbar from "@/components/Navbar/Navbar";
+import { Navbar } from "@/components/Navbar";
 import { UserProvider } from "@/contexts/UserContext";
 import "./globals.css";
 
@@ -37,7 +37,7 @@ export default function RootLayout({
             "var(--font-inter), var(--font-darker-grotesque), sans-serif",
         }}
       >
-        <div className="min-h-screen bg-svg">
+        <div className="bg-svg min-h-screen">
           <UserProvider>
             <Navbar />
             {children}

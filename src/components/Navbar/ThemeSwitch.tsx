@@ -1,13 +1,17 @@
-import React from "react";
+import { cn } from "@/lib/utils/cn";
 
 interface ThemeSwitchProps {
   className?: string;
 }
 
-const ThemeSwitch: React.FC<ThemeSwitchProps> = ({ className }) => {
-  
+export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
   return (
-    <div className={`bg-[#232136] rounded-full p-2 items-center justify-center ${className}`}>
+    <div
+      className={cn(
+        "items-center justify-center rounded-full bg-[#232136] p-2",
+        className,
+      )}
+    >
       <label className="swap swap-rotate">
         {/* this hidden checkbox controls the state */}
         <input type="checkbox" />
@@ -33,5 +37,3 @@ const ThemeSwitch: React.FC<ThemeSwitchProps> = ({ className }) => {
     </div>
   );
 };
-
-export default ThemeSwitch;

@@ -1,17 +1,17 @@
 "use client";
 
-import { cn } from "@/lib/utils/cn";
-import React, { useState } from "react";
+import { useState } from "react";
+import { TheButton } from "@/components/Buttons";
 import {
   StellarWalletsKit,
   allowAllModules,
   XBULL_ID,
   ISupportedWallet,
 } from "@creit.tech/stellar-wallets-kit";
-import { useUserContext } from "@/contexts/UserContext";
-import { formatUserAddress } from "@/lib/utils/formatUserAddress";
-import { TheButton } from "@/components/Buttons/TheButton";
 import { STELLAR } from "@/lib/environmentVars";
+import { cn } from "@/lib/utils/cn";
+import { formatUserAddress } from "@/lib/utils/formatUserAddress";
+import { useUserContext } from "@/contexts/UserContext";
 
 const kit: StellarWalletsKit = new StellarWalletsKit({
   network: STELLAR.WALLET_NETWORK,
@@ -23,7 +23,7 @@ interface ConnectWalletProps {
   className?: string;
 }
 
-const ConnectWallet = ({ className }: ConnectWalletProps) => {
+export const ConnectWallet = ({ className }: ConnectWalletProps) => {
   const { address: userAddress, setAddress } = useUserContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
@@ -76,5 +76,3 @@ const ConnectWallet = ({ className }: ConnectWalletProps) => {
     </div>
   );
 };
-
-export default ConnectWallet;

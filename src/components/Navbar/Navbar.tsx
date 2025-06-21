@@ -1,8 +1,10 @@
 "use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import ThemeSwitch from "./ThemeSwitch";
-import React, { useState } from "react";
-import ConnectWallet from "../Buttons/ConnectWallet";
+import { useState } from "react";
+import { ThemeSwitch } from "@/components/Navbar/ThemeSwitch";
+import { ConnectWallet } from "@/components/Buttons";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
@@ -12,28 +14,28 @@ const NAV_LINKS = [
   { name: "Info", href: "https://dune.com/paltalabs/soroswap", external: true },
 ];
 
-export default function Navbar() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+export const Navbar = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const pathname = usePathname();
 
   return (
-    <header className="fixed text-3xl h-25 top-0 left-0 w-full z-50 bg-[#0f1016]">
-      <nav className="flex items-center justify-between px-4 md:px-12 h-full">
+    <header className="fixed top-0 left-0 z-50 h-25 w-full bg-[#0f1016] text-3xl">
+      <nav className="flex h-full items-center justify-between px-4 md:px-12">
         {/* Logo */}
-        <div className="flex items-center gap-3 min-w-[88px] min-h-[30px] max-w-[162px] max-h-[56px]">
+        <div className="flex max-h-[56px] min-h-[30px] max-w-[162px] min-w-[88px] items-center gap-3">
           <Link href="/">
-            <img
+            <Image
               src="/SoroswapPurpleWhite.svg"
               alt="Soroswap"
               width={162}
               height={56}
-              className="object-contain h-[40px] w-auto"
+              className="h-[40px] w-auto object-contain"
               style={{ minWidth: 88, minHeight: 30 }}
             />
           </Link>
         </div>
         {/* Nav Links */}
-        <div className="hidden md:flex items-center bg-[#181A25] rounded-full px-2 py-1 gap-2 ml-8">
+        <div className="ml-8 hidden items-center gap-2 rounded-full bg-[#181A25] px-2 py-1 md:flex">
           {NAV_LINKS.map((link) => {
             const isActive =
               !link.external &&
@@ -44,7 +46,7 @@ export default function Navbar() {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`px-6 py-2 rounded-full font-semibold text-[20px] transition-colors duration-200 ${
+                className={`rounded-full px-6 py-2 text-[20px] font-semibold transition-colors duration-200 ${
                   isActive
                     ? "bg-[#8866DD] text-white shadow"
                     : "text-[#E0E0E0] hover:bg-[#28243a]"
@@ -63,10 +65,10 @@ export default function Navbar() {
         </div>
         {/* Mobile Nav Toggle */}
         <>
-          <div className="md:hidden absolute right-4 top-1/2 -translate-y-1/2 z-50">
+          <div className="absolute top-1/2 right-4 z-50 -translate-y-1/2 md:hidden">
             <button
               className="btn btn-circle h-14 w-14 bg-[#232136]"
-              onClick={() => setMobileMenuOpen(true)}
+              onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
               <svg
@@ -85,16 +87,16 @@ export default function Navbar() {
               </svg>
             </button>
           </div>
-          {mobileMenuOpen && (
+          {isMobileMenuOpen && (
             <div
-              className="fixed inset-0 z-50 bg-[#0f1016] flex flex-col items-center justify-start pt-24 transition-all duration-300 ease-out animate-navbar-slide"
-              onClick={() => setMobileMenuOpen(false)}
+              className="animate-navbar-slide fixed inset-0 z-50 flex flex-col items-center justify-start bg-[#0f1016] pt-24 transition-all duration-300 ease-out"
+              onClick={() => setIsMobileMenuOpen(false)}
             >
               <button
-                className="absolute top-5 right-4 btn btn-circle h-14 w-14 bg-[#232136]"
+                className="btn btn-circle absolute top-5 right-4 h-14 w-14 bg-[#232136]"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setMobileMenuOpen(false);
+                  setIsMobileMenuOpen(false);
                 }}
                 aria-label="Close menu"
               >
@@ -114,7 +116,7 @@ export default function Navbar() {
                 </svg>
               </button>
               <ul
-                className="flex flex-col gap-8 w-full items-center mt-8"
+                className="mt-8 flex w-full flex-col items-center gap-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 <ThemeSwitch className="absolute top-5 right-22" />
@@ -133,8 +135,8 @@ export default function Navbar() {
                     >
                       <Link
                         href={link.href}
-                        className={`block text-2xl font-bold py-4 w-full text-[#E0E0E0]`}
-                        onClick={() => setMobileMenuOpen(false)}
+                        className={`block w-full py-4 text-2xl font-bold text-[#E0E0E0]`}
+                        onClick={() => setIsMobileMenuOpen(false)}
                         target={link.external ? "_blank" : undefined}
                         rel={link.external ? "noopener noreferrer" : undefined}
                       >
@@ -144,7 +146,7 @@ export default function Navbar() {
                   );
                 })}
               </ul>
-              <ConnectWallet className="mt-10 w-[90%] flex justify-center" />
+              <ConnectWallet className="mt-10 flex w-[90%] justify-center" />
             </div>
           )}
         </>
@@ -158,4 +160,4 @@ export default function Navbar() {
       </nav>
     </header>
   );
-}
+};
