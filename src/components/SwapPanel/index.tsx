@@ -1,5 +1,6 @@
 "use client";
 
+import { Swap } from "@/app/page";
 import TokenSelector from "@/components/TokenSelector";
 import { TokenList } from "@/components/TokenSelector/types/token";
 
@@ -7,7 +8,7 @@ import { TokenList } from "@/components/TokenSelector/types/token";
 /*                                Components                                  */
 /* -------------------------------------------------------------------------- */
 /** Generic panel used for both “Sell” & “Buy” */
-export default function SwapPanel({
+export const SwapPanel = ({
   label,
   amount,
   setAmount,
@@ -15,6 +16,9 @@ export default function SwapPanel({
   usdValue,
   variant = "default",
   onSelectToken,
+  swap,
+  onSelectSwap,
+  isLoading,
 }: {
   label: string;
   amount: number;
@@ -23,7 +27,11 @@ export default function SwapPanel({
   usdValue: string;
   variant?: "default" | "outline";
   onSelectToken?: (token: TokenList | null) => void;
-}) {
+  swap: Swap | null;
+  onSelectSwap: (swap: Swap | null) => void;
+  isLoading: boolean;
+}) => {
+  console.log("swap", { swap, onSelectSwap });
   const baseClasses = "rounded-2xl p-5 border";
   const styles =
     variant === "outline"
@@ -33,15 +41,15 @@ export default function SwapPanel({
   return (
     <div className={`${baseClasses} ${styles}`}>
       {/* Panel header */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-[#A0A3C4] text-base font-medium">{label}</span>
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-base font-medium text-[#A0A3C4]">{label}</span>
         {/* 25% / 50% / MAX controls could live here later */}
       </div>
 
       {/* Amount + token */}
-      <div className="flex items-end justify-between max-h-[43.5px]">
+      <div className="flex max-h-[43.5px] items-end justify-between">
         <input
-          className="bg-transparent text-white text-3xl sm:text-4xl font-bold outline-none w-full p-0 m-0 leading-none hide-number-spin"
+          className="hide-number-spin m-0 w-full bg-transparent p-0 text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
           type="number"
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
@@ -58,10 +66,14 @@ export default function SwapPanel({
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
-        <span className="text-[#A0A3C4] text-base sm:text-lg mt-1">
-          {usdValue}
+        <span className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
+          {isLoading ? (
+            <div className="skeleton h-5 w-20 bg-[#23243a]" />
+          ) : (
+            `$${usdValue}`
+          )}
         </span>
       </div>
     </div>
   );
-}
+};

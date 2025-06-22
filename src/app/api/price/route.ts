@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       code: "PRICE_SUCCESS",
-      data: priceResponse.data,
+      data: priceResponse.data[0],
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);

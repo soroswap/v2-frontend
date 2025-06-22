@@ -1,92 +1,143 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
-import { useState, useEffect } from "react";
-import ConnectWallet from "@/components/Buttons/ConnectWallet";
-import SwapPanel from "@/components/SwapPanel";
+import { useState, useEffect, useCallback } from "react";
+import { ConnectWallet } from "@/components/Buttons";
+import { SwapPanel } from "@/components/SwapPanel";
 import { RotateArrowButton } from "@/components/Buttons/RotateArrowButton";
 import { useTokensList } from "@/hooks/useTokensList";
+import { useTokenPrice } from "@/hooks/useTokenPrice";
 import { TokenList } from "@/components/TokenSelector/types/token";
 import { useUserContext } from "@/contexts/UserContext";
 import { TheButton } from "@/components/Buttons/TheButton";
+import { SwapRouteSplitRequest } from "@/components/swap/types/swapSplit";
+
+export interface Swap {
+  amount: number | null;
+  usdValue: number | null;
+  token: TokenList | null;
+}
 
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
   const { tokensList, isLoading } = useTokensList();
-  const [sellAmount, setSellAmount] = useState(1000);
-  const [buyAmount, setBuyAmount] = useState(0);
-  const [sellToken, setSellToken] = useState<TokenList | null>(null);
-  const [buyToken, setBuyToken] = useState<TokenList | null>(null);
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
+  const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
 
-  const sellUsd = "$2.58M"; // TODO: need refator that and send the request to gett the current Value, for now I will keep loading.
-  const buyUsd = "$0";
+  const [sell, setSell] = useState<Swap>({
+    amount: 1000,
+    token: null,
+    usdValue: null,
+  });
 
-  const getPrice = async (contractAddress: string): Promise<number> => {
-    const response = await fetch(`/api/price`, {
-      method: "GET",
-      headers: {
-        asset: contractAddress,
-      },
-    });
-    const data = await response.json();
-    return data.data.price;
-  };
+  const [buy, setBuy] = useState<Swap>({
+    amount: 0,
+    token: null,
+    usdValue: null,
+  });
 
-  useEffect(() => {
-    const fetchPrice = async () => {
-      if (sellToken) {
-        const price = await getPrice(sellToken.contract);
-        console.log("price", price);
-      }
-    };
-    fetchPrice();
-  }, [sellToken]);
+  const { price: sellPrice, isLoading: isSellPriceLoading } = useTokenPrice(
+    sell.token?.contract || null,
+  );
+  const { price: buyPrice, isLoading: isBuyPriceLoading } = useTokenPrice(
+    buy.token?.contract || null,
+  );
 
   useEffect(() => {
-    if (!isLoading && tokensList.length > 0 && !sellToken) {
-      setSellToken(tokensList[0]);
+    if (sellPrice !== null && sellPrice !== sell.usdValue) {
+      setSell((sell) => ({
+        ...sell,
+        usdValue: sellPrice,
+      }));
     }
-  }, [isLoading]);
+  }, [sellPrice]);
 
-  const handleSwitchToken = () => {
+  useEffect(() => {
+    if (buyPrice !== null && buyPrice !== buy.usdValue) {
+      setBuy((buy) => ({
+        ...buy,
+        usdValue: buyPrice,
+      }));
+    }
+  }, [buyPrice]);
+
+  useEffect(() => {
+    if (!isLoading && tokensList.length > 0 && !sell.token) {
+      setSell((prev) => ({
+        ...prev,
+        token: tokensList[0],
+      }));
+    }
+  }, [isLoading, tokensList]);
+
+  const handleSwitchToken = useCallback(() => {
     setIsTokenSwitched(!isTokenSwitched);
-    setSellToken(buyToken);
-    setBuyToken(sellToken);
-  };
 
-  const mockSwap = {
-    assetIn: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA",
-    assetOut: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
-    amount: "100000000000",
-    tradeType: "EXACT_IN",
-    protocols: ["soroswap"],
-    parts: 10,
-    slippageTolerance: "50",
-    maxHops: 1,
-    assetList: ["soroswap"],
-  };
+    const sellCopy = { ...sell };
+    const buyCopy = { ...buy };
+
+    setSell({
+      amount: buyCopy.amount,
+      token: buyCopy.token,
+      usdValue: buyCopy.usdValue,
+    });
+
+    setBuy({
+      amount: sellCopy.amount,
+      token: sellCopy.token,
+      usdValue: sellCopy.usdValue,
+    });
+
+    if (buyCopy.token && sellCopy.token) {
+      setSwap({
+        assetIn: buyCopy.token.contract,
+        assetOut: sellCopy.token.contract,
+        amount: (buyCopy.amount || 0).toString(),
+        tradeType: "EXACT_IN",
+        protocols: ["soroswap"],
+        parts: 10,
+        slippageTolerance: "50",
+      });
+    }
+  }, [sell, buy, isTokenSwitched]);
+
+  const handleSelectSellToken = useCallback((token: TokenList | null) => {
+    if (token) {
+      setSell((prev) => ({
+        ...prev,
+        token,
+      }));
+    }
+  }, []);
+
+  const handleSelectBuyToken = useCallback((token: TokenList | null) => {
+    if (token) {
+      setBuy((prev) => ({
+        ...prev,
+        token,
+      }));
+    }
+  }, []);
 
   const handleSwap = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    console.log("swap");
 
     try {
-      const response = await fetch("/api/swap", {
+      const swapResponse = await fetch("/api/swap", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(mockSwap),
+        body: JSON.stringify(swap),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!swapResponse.ok) {
+        throw new Error(`HTTP error! status: ${swapResponse.status}`);
       }
 
-      const result = await response.json();
+      const result = await swapResponse.json();
       console.log("Swap response:", result);
     } catch (error) {
       console.error("Swap failed:", error);
@@ -95,13 +146,13 @@ export default function SwapPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-2">
-      <div className="relative w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+      <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-xl text-white sm:text-2xl">Swap</span>
-          <button className="rounded-full p-1 transition hover:bg-[#8866DD]/20">
-            <img
-              src="/settingsIcon.a4bdfa44.svg"
+          <p className="text-xl text-white sm:text-2xl">Swap</p>
+          <button className="cursor-pointer rounded-full p-1 transition hover:bg-[#8866DD]/20">
+            <Image
+              src="/settingsIcon.svg"
               alt="Settings"
               width={38}
               height={38}
@@ -112,12 +163,17 @@ export default function SwapPage() {
           <div className="relative z-10">
             <SwapPanel
               label="Sell"
-              amount={sellAmount}
-              setAmount={setSellAmount}
-              token={sellToken}
-              usdValue={sellUsd}
+              swap={sell}
+              onSelectSwap={(swap) =>
+                setSell(swap || { amount: null, token: null, usdValue: null })
+              }
+              amount={sell.amount || 0}
+              setAmount={(amount) => setSell((prev) => ({ ...prev, amount }))}
+              token={sell.token}
+              usdValue={sell.usdValue?.toString() || "0"}
               variant="default"
-              onSelectToken={setSellToken}
+              onSelectToken={handleSelectSellToken}
+              isLoading={isSellPriceLoading}
             />
 
             <RotateArrowButton
@@ -132,12 +188,17 @@ export default function SwapPage() {
           <div>
             <SwapPanel
               label="Buy"
-              amount={buyAmount}
-              setAmount={setBuyAmount}
-              token={buyToken}
-              usdValue={buyUsd}
+              swap={buy}
+              onSelectSwap={(swap) =>
+                setBuy(swap || { amount: null, token: null, usdValue: null })
+              }
+              amount={buy.amount || 0}
+              setAmount={(amount) => setBuy((prev) => ({ ...prev, amount }))}
+              token={buy.token}
+              usdValue={buy.usdValue?.toString() || "0"}
               variant="outline"
-              onSelectToken={setBuyToken}
+              onSelectToken={handleSelectBuyToken}
+              isLoading={isBuyPriceLoading}
             />
           </div>
           <div className="flex flex-col">
@@ -145,13 +206,13 @@ export default function SwapPage() {
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
               <TheButton
-                disabled={!buyToken || !sellToken}
+                disabled={!buy.token || !sell.token}
                 className={cn(
                   "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
                 )}
                 onClick={handleSwap}
               >
-                {!buyToken || !sellToken ? "Select a token" : "Swap"}
+                {!buy.token || !sell.token ? "Select a token" : "Swap"}
               </TheButton>
             )}
           </div>

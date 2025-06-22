@@ -63,7 +63,7 @@ export async function GET() {
 //   platform?: PlatformType;
 // };
 
-interface SwapResponse {
+export interface SwapResponse {
   assetIn: string | Address;
   assetOut: string | Address;
   priceImpact: {
@@ -108,7 +108,15 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
+  //TODO :
 
+  // 1. SWAP SPLIT  with return get
+  // 2. Get return of swap-split and send to BUILD XDR endpoint
+  // 3. SignTransaction stellar-wallet-kit
+  // 4. SendTransaction endpoint
+
+  // Build cliking swap
+  // XDR going to request when confirm wallet sendTranscation - assignXDR
   try {
     const body = await request.json();
 
