@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils/cn";
 import { ButtonHTMLAttributes } from "react";
+import { ArrowDown } from "lucide-react";
 
 export const RotateArrowButton = ({
   className,
@@ -14,30 +15,7 @@ export const RotateArrowButton = ({
       {...props}
     >
       <div className="flex items-center justify-center rounded-full border-4 border-[#181A25] bg-[#CFFFD9] p-2 transition-all duration-300 group-hover:bg-[#CFFFD9]/80">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="#232136"
-          className="h-6 w-6"
-        >
-          <line
-            x1="12"
-            y1="5"
-            x2="12"
-            y2="19"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <polyline
-            points="19 12 12 19 5 12"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ArrowDown className="size-6 text-[#232136]" />
       </div>
     </button>
   );

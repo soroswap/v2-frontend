@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
 import { useTokensList } from "@/hooks/useTokensList";
 import { TokenList } from "@/components/TokenSelector/types/token";
+import { ChevronDown } from "lucide-react";
 
 export default function TokenSelector({
   token,
@@ -28,7 +29,7 @@ export default function TokenSelector({
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "flex h-[43.5px] min-w-fit items-center gap-2 rounded-full border border-[#35374a] bg-[#23243a] px-1.5 py-1.5 text-xs font-bold whitespace-nowrap text-white hover:bg-[#23243a]/80 focus:outline-none sm:text-sm",
+          "flex h-[43.5px] min-w-fit cursor-pointer items-center gap-2 rounded-full border border-[#35374a] bg-[#23243a] px-1.5 py-1.5 text-xs font-bold whitespace-nowrap text-white hover:bg-[#23243a]/80 focus:outline-none sm:text-sm",
           token ? "sm:px-1.5" : "sm:px-4",
         )}
       >
@@ -48,23 +49,7 @@ export default function TokenSelector({
             {placeholder ?? "Select token"}
           </span>
         )}
-        {/* down‑chevron */}
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          className="ml-1"
-        >
-          <polyline
-            points="6 9 12 15 18 9"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ChevronDown className="size-4" />
       </button>
       {isOpen && (
         <div className="fixed inset-0 z-40 flex items-center justify-center">
@@ -82,7 +67,7 @@ export default function TokenSelector({
               </span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-2xl leading-none text-white/70 hover:text-white"
+                className="cursor-pointer text-2xl leading-none text-white/70 hover:text-white"
               >
                 ×
               </button>
@@ -93,7 +78,7 @@ export default function TokenSelector({
                 <button
                   key={token.contract}
                   onClick={() => handleSelectToken(token)}
-                  className="flex w-full items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
+                  className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
                 >
                   <img
                     src={token.icon}
