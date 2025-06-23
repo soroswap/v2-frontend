@@ -71,17 +71,17 @@ export interface SwapResponse {
     denominator: string;
   };
   trade: {
-    amountIn: string;
-    amountOutMin: string;
+    amountInMax: string;
+    amountOut: string;
     distribution: {
       protocol_id: string;
       path: string[];
       parts: number;
       is_exact_in: boolean;
     }[];
-    expectedAmountOut: string;
+    expectedAmountIn: string;
   };
-  tradeType: string;
+  tradeType: "EXACT_IN" | "EXACT_OUT";
 }
 
 /*This is the POST method for the swap API. It is used to swap tokens.*/

@@ -5,17 +5,17 @@ import { TheButton } from "@/components/Buttons";
 import {
   StellarWalletsKit,
   allowAllModules,
-  XBULL_ID,
   ISupportedWallet,
+  ALBEDO_ID,
 } from "@creit.tech/stellar-wallets-kit";
 import { STELLAR } from "@/lib/environmentVars";
 import { cn } from "@/lib/utils/cn";
 import { formatUserAddress } from "@/lib/utils/formatUserAddress";
 import { useUserContext } from "@/contexts/UserContext";
 
-const kit: StellarWalletsKit = new StellarWalletsKit({
+export const kit: StellarWalletsKit = new StellarWalletsKit({
   network: STELLAR.WALLET_NETWORK,
-  selectedWalletId: XBULL_ID,
+  selectedWalletId: ALBEDO_ID,
   modules: allowAllModules(),
 });
 

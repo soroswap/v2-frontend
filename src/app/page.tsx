@@ -4,7 +4,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 import { useState, useEffect, useCallback } from "react";
-import { ConnectWallet } from "@/components/Buttons";
+import { ConnectWallet, kit } from "@/components/Buttons";
 import { SwapPanel } from "@/components/SwapPanel";
 import { RotateArrowButton } from "@/components/Buttons/RotateArrowButton";
 import { useTokensList } from "@/hooks/useTokensList";
@@ -13,6 +13,7 @@ import { TokenList } from "@/components/TokenSelector/types/token";
 import { useUserContext } from "@/contexts/UserContext";
 import { TheButton } from "@/components/Buttons/TheButton";
 import { SwapRouteSplitRequest } from "@/components/swap/types/swapSplit";
+import { STELLAR } from "@/lib/environmentVars";
 
 export interface Swap {
   amount: number | null;
@@ -44,6 +45,15 @@ export default function SwapPage() {
   const { price: buyPrice, isLoading: isBuyPriceLoading } = useTokenPrice(
     buy.token?.contract || null,
   );
+
+  // enum SwapStep {
+  //   STEP_1 = "SWAP_SPLIT",
+  //   STEP_2 = "BUILD_XDR",
+  //   STEP_3 = "SIGN_TRANSACTION",
+  //   STEP_4 = "SEND_TRANSACTION",
+  // }
+
+  // const [swapStep, setSwapStep] = useState<SwapStep>(SwapStep.STEP_1);
 
   useEffect(() => {
     if (sellPrice !== null && sellPrice !== sell.usdValue) {
@@ -123,7 +133,6 @@ export default function SwapPage() {
 
   const handleSwap = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
     try {
       const swapResponse = await fetch("/api/swap", {
         method: "POST",
@@ -137,8 +146,52 @@ export default function SwapPage() {
         throw new Error(`HTTP error! status: ${swapResponse.status}`);
       }
 
-      const result = await swapResponse.json();
-      console.log("Swap response:", result);
+      const swapResult = await swapResponse.json();
+      console.log("Swap response:", swapResult);
+
+      const buildXdrResponse = await fetch("/api/swap/buildXdr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
+          to: "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
+          tradeData: swapResult.data,
+        }),
+      });
+      console.log("buildXdrResponse", buildXdrResponse);
+
+      if (!buildXdrResponse.ok) {
+        throw new Error(`HTTP error! status: ${buildXdrResponse.status}`);
+      }
+
+      const buildXdrResult = await buildXdrResponse.json();
+      console.log("Build XDR response:", buildXdrResult);
+
+      const { signedTxXdr } = await kit.signTransaction(`${buildXdrResult}`, {
+        address: userAddress || "",
+        networkPassphrase: STELLAR.WALLET_NETWORK,
+      });
+
+      console.log("signedTxXdr", signedTxXdr);
+
+      const sendTransactionResponse = await fetch("/api/swap/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ xdr: signedTxXdr }),
+      });
+
+      if (!sendTransactionResponse.ok) {
+        throw new Error(
+          `HTTP error! status: ${sendTransactionResponse.status}`,
+        );
+      }
+
+      const sendTransactionResult = await sendTransactionResponse.json();
+      console.log("Send transaction response:", sendTransactionResult);
     } catch (error) {
       console.error("Swap failed:", error);
     }
