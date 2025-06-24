@@ -3,6 +3,7 @@
 import { Swap } from "@/app/page";
 import TokenSelector from "@/components/TokenSelector";
 import { TokenList } from "@/components/TokenSelector/types/token";
+import { cn } from "@/lib/utils/cn";
 
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
@@ -32,14 +33,15 @@ export const SwapPanel = ({
   isLoading: boolean;
 }) => {
   console.log("swap", { swap, onSelectSwap });
-  const baseClasses = "rounded-2xl p-5 border";
-  const styles =
-    variant === "outline"
-      ? "bg-transparent border-[#cfffd966]"
-      : "bg-[#10121A] border-[#23243a]";
-
   return (
-    <div className={`${baseClasses} ${styles}`}>
+    <div
+      className={cn(
+        "rounded-2xl border p-5",
+        variant === "outline"
+          ? "border-[#cfffd966] bg-transparent"
+          : "border-[#23243a] bg-[#10121A]",
+      )}
+    >
       {/* Panel header */}
       <div className="mb-2 flex items-center justify-between">
         <span className="text-base font-medium text-[#A0A3C4]">{label}</span>
