@@ -4,15 +4,17 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 import { useState, useEffect, useCallback } from "react";
-import { ConnectWallet, kit } from "@/components/shared/components/buttons";
-import { SwapPanel } from "@/components/SwapPanel";
-import { RotateArrowButton } from "@/components/shared/components/buttons/RotateArrowButton";
+import {
+  TheButton,
+  RotateArrowButton,
+  ConnectWallet,
+  kit,
+} from "@/components/shared/components/buttons";
+import { SwapPanel } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useTokenPrice } from "@/hooks/useTokenPrice";
-import { TokenType } from "@/components/shared/types/token";
 import { useUserContext } from "@/contexts";
-import { TheButton } from "@/components/shared/components/buttons/TheButton";
-import { SwapRouteSplitRequest } from "@/components/swap/types/swapSplit";
+import { SwapRouteSplitRequest, TokenType } from "@/components/shared/types";
 import { STELLAR } from "@/lib/environmentVars";
 
 export interface Swap {
