@@ -1,14 +1,23 @@
 import useSWR from "swr";
 import { TokenList } from "@/components/TokenSelector/types/token";
-import { TOKEN_LIST_URL } from "@/lib/constants/tokenList";
+import { TOKEN_LIST_URL, xlmTokenList } from "@/lib/constants/tokenList";
+import { network } from "@/lib/environmentVars";
 
 const fetchTokenList = async () => {
   try {
+    const xlmToken = xlmTokenList.find(
+      (set) => set.network === network,
+    )?.assets;
+
     const response = await fetch(TOKEN_LIST_URL);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
+    if (xlmToken) {
+      data.assets.unshift(xlmToken[0]);
+    }
+    console.log("xlmToken", xlmToken);
     const tokensList: TokenList[] = data.assets;
     return tokensList;
   } catch (error) {
