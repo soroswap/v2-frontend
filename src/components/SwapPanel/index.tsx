@@ -1,6 +1,6 @@
 "use client";
 
-import TokenSelector from "@/components/TokenSelector";
+import { TokenSelector } from "@/components/TokenSelector";
 import { TokenList } from "@/components/TokenSelector/types/token";
 import { cn } from "@/lib/utils/cn";
 

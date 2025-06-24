@@ -7,7 +7,7 @@ import { useTokensList } from "@/hooks/useTokensList";
 import { TokenList } from "@/components/TokenSelector/types/token";
 import { ChevronDown } from "lucide-react";
 
-export default function TokenSelector({
+export const TokenSelector = ({
   token,
   placeholder,
   onSelect,
@@ -15,7 +15,7 @@ export default function TokenSelector({
   token?: TokenList | null;
   placeholder?: string;
   onSelect?: (token: TokenList | null) => void;
-}) {
+}) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { tokensList } = useTokensList();
 
@@ -96,4 +96,4 @@ export default function TokenSelector({
       )}
     </>
   );
-}
+};
