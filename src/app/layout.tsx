@@ -32,10 +32,6 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} font-sans antialiased`}
-        style={{
-          fontFamily:
-            "var(--font-inter), var(--font-darker-grotesque), sans-serif",
-        }}
       >
         <div className="bg-svg min-h-screen">
           <UserProvider>
