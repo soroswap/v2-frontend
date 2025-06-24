@@ -17,7 +17,6 @@ const fetchTokenList = async () => {
     if (xlmToken) {
       data.assets.unshift(xlmToken[0]);
     }
-    console.log("xlmToken", xlmToken);
     const tokensList: TokenType[] = data.assets;
     return tokensList;
   } catch (error) {
