@@ -1,7 +1,7 @@
 "use client";
 
 import { TokenSelector } from "@/components/TokenSelector";
-import { TokenList } from "@/components/TokenSelector/types/token";
+import { TokenType } from "@/components/shared/types/token";
 import { cn } from "@/lib/utils/cn";
 
 /* -------------------------------------------------------------------------- */
@@ -21,10 +21,10 @@ export const SwapPanel = ({
   label: string;
   amount: number;
   setAmount: (v: number) => void;
-  token?: TokenList | null;
+  token?: TokenType | null;
   usdValue: string;
   variant?: "default" | "outline";
-  onSelectToken?: (token: TokenList | null) => void;
+  onSelectToken?: (token: TokenType | null) => void;
   isLoading: boolean;
 }) => {
   return (

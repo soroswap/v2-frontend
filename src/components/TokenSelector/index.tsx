@@ -4,7 +4,7 @@
 import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
 import { useTokensList } from "@/hooks/useTokensList";
-import { TokenList } from "@/components/TokenSelector/types/token";
+import { TokenType } from "@/components/shared/types/token";
 import { ChevronDown } from "lucide-react";
 
 export const TokenSelector = ({
@@ -12,14 +12,14 @@ export const TokenSelector = ({
   placeholder,
   onSelect,
 }: {
-  token?: TokenList | null;
+  token?: TokenType | null;
   placeholder?: string;
-  onSelect?: (token: TokenList | null) => void;
+  onSelect?: (token: TokenType | null) => void;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { tokensList } = useTokensList();
 
-  const handleSelectToken = (token: TokenList | null) => {
+  const handleSelectToken = (token: TokenType | null) => {
     onSelect?.(token);
     setIsOpen(false);
   };
@@ -74,7 +74,7 @@ export const TokenSelector = ({
             </div>
 
             <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
-              {tokensList.map((token: TokenList) => (
+              {tokensList.map((token: TokenType) => (
                 <button
                   key={token.contract}
                   onClick={() => handleSelectToken(token)}

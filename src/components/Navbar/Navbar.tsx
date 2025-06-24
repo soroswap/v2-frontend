@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { ThemeSwitch } from "@/components/Navbar/ThemeSwitch";
-import { ConnectWallet } from "@/components/Buttons";
+import { ThemeSwitch } from "@/components/navbar/ThemeSwitch";
+import { ConnectWallet } from "@/components/shared/components/buttons";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 

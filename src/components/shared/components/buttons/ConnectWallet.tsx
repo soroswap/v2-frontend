@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TheButton } from "@/components/Buttons";
+import { TheButton } from "@/components/shared/components/buttons";
 import {
   StellarWalletsKit,
   allowAllModules,
@@ -11,7 +11,7 @@ import {
 import { STELLAR } from "@/lib/environmentVars";
 import { cn } from "@/lib/utils/cn";
 import { formatUserAddress } from "@/lib/utils/formatUserAddress";
-import { useUserContext } from "@/contexts/UserContext";
+import { useUserContext } from "@/contexts";
 
 export const kit: StellarWalletsKit = new StellarWalletsKit({
   network: STELLAR.WALLET_NETWORK,

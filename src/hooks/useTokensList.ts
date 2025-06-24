@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { TokenList } from "@/components/TokenSelector/types/token";
+import { TokenType } from "@/components/shared/types/token";
 import { TOKEN_LIST_URL, xlmTokenList } from "@/lib/constants/tokenList";
 import { network } from "@/lib/environmentVars";
 
@@ -18,7 +18,7 @@ const fetchTokenList = async () => {
       data.assets.unshift(xlmToken[0]);
     }
     console.log("xlmToken", xlmToken);
-    const tokensList: TokenList[] = data.assets;
+    const tokensList: TokenType[] = data.assets;
     return tokensList;
   } catch (error) {
     console.error("Error fetching token list:", error);

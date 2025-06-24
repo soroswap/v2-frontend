@@ -4,21 +4,21 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
 import { useState, useEffect, useCallback } from "react";
-import { ConnectWallet, kit } from "@/components/Buttons";
+import { ConnectWallet, kit } from "@/components/shared/components/buttons";
 import { SwapPanel } from "@/components/SwapPanel";
-import { RotateArrowButton } from "@/components/Buttons/RotateArrowButton";
+import { RotateArrowButton } from "@/components/shared/components/buttons/RotateArrowButton";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useTokenPrice } from "@/hooks/useTokenPrice";
-import { TokenList } from "@/components/TokenSelector/types/token";
-import { useUserContext } from "@/contexts/UserContext";
-import { TheButton } from "@/components/Buttons/TheButton";
+import { TokenType } from "@/components/shared/types/token";
+import { useUserContext } from "@/contexts";
+import { TheButton } from "@/components/shared/components/buttons/TheButton";
 import { SwapRouteSplitRequest } from "@/components/swap/types/swapSplit";
 import { STELLAR } from "@/lib/environmentVars";
 
 export interface Swap {
   amount: number | null;
   usdValue: number | null;
-  token: TokenList | null;
+  token: TokenType | null;
 }
 
 export default function SwapPage() {
@@ -28,7 +28,7 @@ export default function SwapPage() {
   const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
 
   const [sell, setSell] = useState<Swap>({
-    amount: 1000,
+    amount: 0,
     token: null,
     usdValue: null,
   });
@@ -45,15 +45,6 @@ export default function SwapPage() {
   const { price: buyPrice, isLoading: isBuyPriceLoading } = useTokenPrice(
     buy.token?.contract || null,
   );
-
-  // enum SwapStep {
-  //   STEP_1 = "SWAP_SPLIT",
-  //   STEP_2 = "BUILD_XDR",
-  //   STEP_3 = "SIGN_TRANSACTION",
-  //   STEP_4 = "SEND_TRANSACTION",
-  // }
-
-  // const [swapStep, setSwapStep] = useState<SwapStep>(SwapStep.STEP_1);
 
   useEffect(() => {
     if (sellPrice !== null && sellPrice !== sell.usdValue) {
@@ -113,7 +104,7 @@ export default function SwapPage() {
     }
   }, [sell, buy, isTokenSwitched]);
 
-  const handleSelectSellToken = useCallback((token: TokenList | null) => {
+  const handleSelectSellToken = useCallback((token: TokenType | null) => {
     if (token) {
       setSell((prev) => ({
         ...prev,
@@ -122,7 +113,7 @@ export default function SwapPage() {
     }
   }, []);
 
-  const handleSelectBuyToken = useCallback((token: TokenList | null) => {
+  const handleSelectBuyToken = useCallback((token: TokenType | null) => {
     if (token) {
       setBuy((prev) => ({
         ...prev,
