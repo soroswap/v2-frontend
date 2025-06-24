@@ -216,10 +216,6 @@ export default function SwapPage() {
           <div className="relative z-10">
             <SwapPanel
               label="Sell"
-              swap={sell}
-              onSelectSwap={(swap) =>
-                setSell(swap || { amount: null, token: null, usdValue: null })
-              }
               amount={sell.amount || 0}
               setAmount={(amount) => setSell((prev) => ({ ...prev, amount }))}
               token={sell.token}
@@ -241,10 +237,6 @@ export default function SwapPage() {
           <div>
             <SwapPanel
               label="Buy"
-              swap={buy}
-              onSelectSwap={(swap) =>
-                setBuy(swap || { amount: null, token: null, usdValue: null })
-              }
               amount={buy.amount || 0}
               setAmount={(amount) => setBuy((prev) => ({ ...prev, amount }))}
               token={buy.token}

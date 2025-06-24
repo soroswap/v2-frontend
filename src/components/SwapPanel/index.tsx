@@ -1,6 +1,5 @@
 "use client";
 
-import { Swap } from "@/app/page";
 import TokenSelector from "@/components/TokenSelector";
 import { TokenList } from "@/components/TokenSelector/types/token";
 import { cn } from "@/lib/utils/cn";
@@ -17,8 +16,6 @@ export const SwapPanel = ({
   usdValue,
   variant = "default",
   onSelectToken,
-  swap,
-  onSelectSwap,
   isLoading,
 }: {
   label: string;
@@ -28,11 +25,8 @@ export const SwapPanel = ({
   usdValue: string;
   variant?: "default" | "outline";
   onSelectToken?: (token: TokenList | null) => void;
-  swap: Swap | null;
-  onSelectSwap: (swap: Swap | null) => void;
   isLoading: boolean;
 }) => {
-  console.log("swap", { swap, onSelectSwap });
   return (
     <div
       className={cn(
