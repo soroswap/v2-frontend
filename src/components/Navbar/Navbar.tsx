@@ -7,6 +7,7 @@ import { ThemeSwitch } from "@/components/navbar";
 import { ConnectWallet } from "@/components/shared/components/buttons";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 const NAV_LINKS = [
   { name: "Swap", href: "/" },
@@ -30,8 +31,7 @@ export const Navbar = () => {
               alt="Soroswap"
               width={162}
               height={56}
-              className="h-[40px] w-auto object-contain"
-              style={{ minWidth: 88, minHeight: 30 }}
+              className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain"
             />
           </Link>
         </div>
@@ -47,15 +47,12 @@ export const Navbar = () => {
               <Link
                 key={link.name}
                 href={link.href}
-                className={`rounded-full px-6 py-2 text-[20px] font-semibold transition-colors duration-200 ${
+                className={cn(
+                  "rounded-full px-6 py-2 text-[20px] font-semibold transition-colors duration-200",
                   isActive
                     ? "bg-[#8866DD] text-white shadow"
-                    : "text-[#E0E0E0] hover:bg-[#28243a]"
-                }`}
-                style={{
-                  color: isActive ? "#fff" : "#E0E0E0",
-                  background: isActive ? "#8866DD" : "transparent",
-                }}
+                    : "bg-transparent text-[#E0E0E0] hover:bg-[#28243a]",
+                )}
                 target={link.external ? "_blank" : undefined}
                 rel={link.external ? "noopener noreferrer" : undefined}
               >
@@ -68,7 +65,7 @@ export const Navbar = () => {
         <>
           <div className="absolute top-1/2 right-4 z-50 -translate-y-1/2 md:hidden">
             <button
-              className="btn btn-circle h-14 w-14 bg-[#232136]"
+              className="btn btn-circle size-14 bg-[#232136]"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
@@ -81,7 +78,7 @@ export const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <button
-                className="btn btn-circle absolute top-5 right-4 h-14 w-14 bg-[#232136]"
+                className="btn btn-circle absolute top-5 right-4 size-14 bg-[#232136]"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsMobileMenuOpen(false);
@@ -104,13 +101,14 @@ export const Navbar = () => {
                   return (
                     <li
                       key={link.name}
-                      className={`w-full ${
-                        isActive ? "bg-[#8866DD]" : "bg-[#0f1016]"
-                      } text-center`}
+                      className={cn(
+                        "w-full text-center",
+                        isActive ? "bg-[#8866DD]" : "bg-[#0f1016]",
+                      )}
                     >
                       <Link
                         href={link.href}
-                        className={`block w-full py-4 text-2xl font-bold text-[#E0E0E0]`}
+                        className="block w-full py-4 text-2xl font-bold text-[#E0E0E0]"
                         onClick={() => setIsMobileMenuOpen(false)}
                         target={link.external ? "_blank" : undefined}
                         rel={link.external ? "noopener noreferrer" : undefined}

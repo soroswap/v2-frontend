@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils/cn";
 import { useState } from "react";
 import { useTokensList } from "@/hooks/useTokensList";
 import { TokenType } from "@/components/shared/types/token";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, XIcon } from "lucide-react";
 
 export const TokenSelector = ({
   token,
@@ -67,9 +67,9 @@ export const TokenSelector = ({
               </span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="cursor-pointer text-2xl leading-none text-white/70 hover:text-white"
+                className="cursor-pointer rounded-full p-2 leading-none text-white/70 hover:bg-[#23243a]/80 hover:text-white"
               >
-                ×
+                <XIcon className="size-4" />
               </button>
             </div>
 
