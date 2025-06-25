@@ -11,9 +11,13 @@ import {
 } from "@/components/shared/components/buttons";
 import { SwapPanel } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
-import { useTokenPrice } from "@/hooks/useTokenPrice";
 import { useUserContext } from "@/contexts";
-import { QuoteRequest, TokenType } from "@/components/shared/types";
+import {
+  QuoteRequest,
+  SupportedProtocols,
+  TokenType,
+  TradeType,
+} from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { SwapModal } from "@/components/swap/SwapModal";
 import { parseUnits } from "@/lib/utils/parseUnits";
@@ -33,8 +37,7 @@ export default function SwapPage() {
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
 
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
-  console.log("quote", quote);
-  console.log("isQuoteLoading", isQuoteLoading);
+
   const {
     executeSwap,
     currentStep,
@@ -68,13 +71,6 @@ export default function SwapPage() {
     token: null,
   });
 
-  const { price: sellPrice, isLoading: isSellPriceLoading } = useTokenPrice(
-    sell.token?.contract || null,
-  );
-  const { price: buyPrice, isLoading: isBuyPriceLoading } = useTokenPrice(
-    buy.token?.contract || null,
-  );
-
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
       setSell((prev) => ({
@@ -83,6 +79,50 @@ export default function SwapPage() {
       }));
     }
   }, [isLoading, tokensList]);
+
+  useEffect(() => {
+    if (quote && quote.tradeType === TradeType.EXACT_IN) {
+      setSell((prev) => ({
+        ...prev,
+        amount: Number(quote.trade.amountIn),
+      }));
+    }
+    if (quote && quote.tradeType === TradeType.EXACT_OUT) {
+      setBuy((prev) => ({
+        ...prev,
+        amount: Number(quote.trade.amountOut),
+      }));
+    }
+  }, [quote]);
+
+  useEffect(() => {
+    if (buy.token && sell.token && activeField === "sell") {
+      setQuoteRequest({
+        assetIn: sell.token.contract,
+        assetOut: buy.token.contract,
+        amount: parseUnits({ value: sell.amount.toString() }).toString(),
+        tradeType: TradeType.EXACT_IN,
+        protocols: [SupportedProtocols.SOROSWAP],
+        parts: 10,
+        slippageTolerance: "100",
+        assetList: ["soroswap"],
+        maxHops: 2,
+      });
+    }
+    if (buy.token && sell.token && activeField === "buy") {
+      setQuoteRequest({
+        assetIn: buy.token.contract,
+        assetOut: sell.token.contract,
+        amount: parseUnits({ value: buy.amount.toString() }).toString(),
+        tradeType: TradeType.EXACT_OUT,
+        protocols: [SupportedProtocols.SOROSWAP],
+        parts: 10,
+        slippageTolerance: "100",
+        assetList: ["soroswap"],
+        maxHops: 2,
+      });
+    }
+  }, [buy, sell]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
@@ -95,65 +135,8 @@ export default function SwapPage() {
     }
   };
 
-  useEffect(() => {
-    // Only execute if we have valid prices and tokens
-    if (!sellPrice || !buyPrice || !sell.token || !buy.token) return;
-
-    if (activeField === "sell" && sell.amount >= 0) {
-      // Update sell USD value
-      const newSellUsdValue = sellPrice * sell.amount;
-
-      // Calculate new buy amount based on sell
-      const newBuyAmount = (sellPrice * sell.amount) / buyPrice;
-      const newBuyUsdValue = buyPrice * newBuyAmount;
-
-      setSell((prev) => ({ ...prev, usdValue: newSellUsdValue }));
-      setBuy((prev) => ({
-        ...prev,
-        amount: newBuyAmount,
-        usdValue: newBuyUsdValue,
-      }));
-    } else if (activeField === "buy" && buy.amount >= 0) {
-      // Update buy USD value
-      const newBuyUsdValue = buyPrice * buy.amount;
-
-      // Calculate new sell amount based on buy
-      const newSellAmount = newBuyUsdValue / sellPrice;
-      const newSellUsdValue = sellPrice * newSellAmount;
-
-      setBuy((prev) => ({ ...prev, usdValue: newBuyUsdValue }));
-      setSell((prev) => ({
-        ...prev,
-        amount: newSellAmount,
-        usdValue: newSellUsdValue,
-      }));
-    }
-
-    // If no field is active, only update USD values
-    else if (!activeField) {
-      if (sell.amount >= 0) {
-        const newSellUsdValue = sellPrice * sell.amount;
-        setSell((prev) => ({ ...prev, usdValue: newSellUsdValue }));
-      }
-
-      if (buy.amount >= 0) {
-        const newBuyUsdValue = buyPrice * buy.amount;
-        setBuy((prev) => ({ ...prev, usdValue: newBuyUsdValue }));
-      }
-    }
-  }, [
-    sell.amount,
-    buy.amount,
-    sellPrice,
-    buyPrice,
-    activeField,
-    sell.token,
-    buy.token,
-  ]);
-
   const handleSwitchToken = useCallback(() => {
     setIsTokenSwitched(!isTokenSwitched);
-    setActiveField(null);
 
     const sellCopy = { ...sell };
     const buyCopy = { ...buy };
@@ -167,20 +150,6 @@ export default function SwapPage() {
       amount: sellCopy.amount,
       token: sellCopy.token,
     });
-
-    if (buyCopy.token && sellCopy.token) {
-      setQuoteRequest({
-        assetIn: buyCopy.token.contract,
-        assetOut: sellCopy.token.contract,
-        amount: parseUnits({ value: buyCopy.amount.toString() }).toString(),
-        tradeType: "EXACT_IN",
-        protocols: ["soroswap"],
-        parts: 10,
-        slippageTolerance: "100",
-        assetList: ["soroswap"],
-        maxHops: 2,
-      });
-    }
   }, [sell, buy, isTokenSwitched]);
 
   const handleSellAmountChange = useCallback(async (amount: number) => {
@@ -188,20 +157,20 @@ export default function SwapPage() {
     setSell((prev) => ({ ...prev, amount }));
     if (!buy.token || !sell.token) return;
 
-    const quoteRequest: QuoteRequest = {
-      assetIn: buy.token.contract,
-      assetOut: sell.token.contract,
-      amount: parseUnits({ value: amount.toString() }).toString(),
-      tradeType: "EXACT_IN",
-      protocols: ["soroswap"],
-      parts: 10,
-      slippageTolerance: "100",
-      assetList: ["soroswap"],
-      maxHops: 2,
-      from: userAddress ?? "",
-      to: userAddress ?? "",
-    };
-    console.log("quoteRequest", quoteRequest);
+    // const quoteRequest: QuoteRequest = {
+    //   assetIn: buy.token.contract,
+    //   assetOut: sell.token.contract,
+    //   amount: parseUnits({ value: amount.toString() }).toString(),
+    //   tradeType: TradeType.EXACT_IN,
+    //   protocols: [SupportedProtocols.SOROSWAP],
+    //   parts: 10,
+    //   slippageTolerance: "100",
+    //   assetList: ["soroswap"],
+    //   maxHops: 2,
+    //   from: userAddress ?? "",
+    //   to: userAddress ?? "",
+    // };
+    // console.log("quoteRequest", quoteRequest);
 
     setTimeout(() => {
       setActiveField(null);
@@ -275,7 +244,7 @@ export default function SwapPage() {
               token={sell.token}
               variant="default"
               onSelectToken={handleSelectSellToken}
-              isLoading={isSellPriceLoading}
+              isLoading={isQuoteLoading}
             />
 
             <RotateArrowButton
@@ -295,7 +264,7 @@ export default function SwapPage() {
               token={buy.token}
               variant="outline"
               onSelectToken={handleSelectBuyToken}
-              isLoading={isBuyPriceLoading}
+              isLoading={isQuoteLoading}
             />
           </div>
           <div className="flex flex-col">
