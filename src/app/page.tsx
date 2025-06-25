@@ -3,19 +3,20 @@
 
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, MouseEvent } from "react";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
-  kit,
 } from "@/components/shared/components/buttons";
 import { SwapPanel } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useTokenPrice } from "@/hooks/useTokenPrice";
 import { useUserContext } from "@/contexts";
 import { SwapRouteSplitRequest, TokenType } from "@/components/shared/types";
-import { STELLAR } from "@/lib/environmentVars";
+import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
+import { SwapModal } from "@/components/swap/SwapModal";
+import { parseUnits } from "@/lib/utils/parseUnits";
 
 export interface Swap {
   amount: number;
@@ -29,6 +30,30 @@ export default function SwapPage() {
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
   const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
+
+  const {
+    executeSwap,
+    currentStep,
+    isLoading: isSwapLoading,
+    reset: resetSwap,
+  } = useSwap({
+    onSuccess: (result: SwapResult) => {
+      console.log("Swap completed successfully:", result);
+      setIsSwapModalOpen(false);
+      resetSwap();
+    },
+    onError: (error: SwapError) => {
+      console.error("Swap failed:", error);
+      // Keep modal open to show error state
+    },
+    onStepChange: (step: SwapStep) => {
+      console.log("Swap step changed:", step);
+      if (step === SwapStep.WAITING_SIGNATURE) {
+        setIsSwapModalOpen(true);
+      }
+    },
+  });
 
   const [sell, setSell] = useState<Swap>({
     amount: 0,
@@ -48,6 +73,21 @@ export default function SwapPage() {
   const { price: buyPrice, isLoading: isBuyPriceLoading } = useTokenPrice(
     buy.token?.contract || null,
   );
+
+  const getSwapButtonText = (step: SwapStep): string => {
+    switch (step) {
+      case SwapStep.FETCHING_ROUTE:
+        return "Finding best route...";
+      case SwapStep.BUILDING_XDR:
+        return "Preparing transaction...";
+      case SwapStep.WAITING_SIGNATURE:
+        return "Waiting for signature...";
+      case SwapStep.SENDING_TRANSACTION:
+        return "Sending transaction...";
+      default:
+        return "Processing...";
+    }
+  };
 
   useEffect(() => {
     // Only execute if we have valid prices and tokens
@@ -137,11 +177,13 @@ export default function SwapPage() {
       setSwap({
         assetIn: buyCopy.token.contract,
         assetOut: sellCopy.token.contract,
-        amount: (buyCopy.amount || 0).toString(),
+        amount: parseUnits({ value: buyCopy.amount.toString() }).toString(),
         tradeType: "EXACT_IN",
         protocols: ["soroswap"],
         parts: 10,
-        slippageTolerance: "50",
+        slippageTolerance: "100",
+        assetList: ["soroswap"],
+        maxHops: 2,
       });
     }
   }, [sell, buy, isTokenSwitched]);
@@ -182,69 +224,19 @@ export default function SwapPage() {
     }, 100);
   }, []);
 
-  const handleSwap = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+
+    if (!swap || !userAddress) {
+      console.error("Missing swap data or user address");
+      return;
+    }
+
     try {
-      const swapResponse = await fetch("/api/swap", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(swap),
-      });
-
-      if (!swapResponse.ok) {
-        throw new Error(`HTTP error! status: ${swapResponse.status}`);
-      }
-
-      const swapResult = await swapResponse.json();
-      console.log("Swap response:", swapResult);
-
-      const buildXdrResponse = await fetch("/api/swap/buildXdr", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
-          to: "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
-          tradeData: swapResult.data,
-        }),
-      });
-      console.log("buildXdrResponse", buildXdrResponse);
-
-      if (!buildXdrResponse.ok) {
-        throw new Error(`HTTP error! status: ${buildXdrResponse.status}`);
-      }
-
-      const buildXdrResult = await buildXdrResponse.json();
-      console.log("Build XDR response:", buildXdrResult);
-
-      const { signedTxXdr } = await kit.signTransaction(`${buildXdrResult}`, {
-        address: userAddress || "",
-        networkPassphrase: STELLAR.WALLET_NETWORK,
-      });
-
-      console.log("signedTxXdr", signedTxXdr);
-
-      const sendTransactionResponse = await fetch("/api/swap/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ xdr: signedTxXdr }),
-      });
-
-      if (!sendTransactionResponse.ok) {
-        throw new Error(
-          `HTTP error! status: ${sendTransactionResponse.status}`,
-        );
-      }
-
-      const sendTransactionResult = await sendTransactionResponse.json();
-      console.log("Send transaction response:", sendTransactionResult);
+      console.log("Executing swap", swap);
+      await executeSwap(swap, userAddress);
     } catch (error) {
-      console.error("Swap failed:", error);
+      console.error("Swap execution failed:", error);
     }
   };
 
@@ -308,11 +300,24 @@ export default function SwapPage() {
                 )}
                 onClick={handleSwap}
               >
-                {!buy.token || !sell.token ? "Select a token" : "Swap"}
+                {!buy.token || !sell.token
+                  ? "Select a token"
+                  : isSwapLoading
+                    ? getSwapButtonText(currentStep)
+                    : "Swap"}
               </TheButton>
             )}
           </div>
         </div>
+        {isSwapModalOpen && (
+          <SwapModal
+            currentStep={currentStep}
+            onClose={() => {
+              setIsSwapModalOpen(false);
+              resetSwap();
+            }}
+          />
+        )}
       </div>
     </main>
   );
