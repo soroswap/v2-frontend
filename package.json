@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.7.5",
+    "@stellar/stellar-sdk": "^13.3.0",
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.522.0",

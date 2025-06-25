@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { api, ALLOWED_ORIGINS } from "@/lib/server";
 import { network } from "@/lib/environmentVars";
-import { Address } from "cluster";
+import { SwapResponse } from "@/components/shared/types";
 
 /*This is the GET method for the swap API. It is used to verify the route is working.*/
 export async function GET() {
@@ -62,27 +62,6 @@ export async function GET() {
 //   [x: string]: any;
 //   platform?: PlatformType;
 // };
-
-export interface SwapResponse {
-  assetIn: string | Address;
-  assetOut: string | Address;
-  priceImpact: {
-    numerator: string;
-    denominator: string;
-  };
-  trade: {
-    amountInMax: string;
-    amountOut: string;
-    distribution: {
-      protocol_id: string;
-      path: string[];
-      parts: number;
-      is_exact_in: boolean;
-    }[];
-    expectedAmountIn: string;
-  };
-  tradeType: "EXACT_IN" | "EXACT_OUT";
-}
 
 /*This is the POST method for the swap API. It is used to swap tokens.*/
 export async function POST(request: NextRequest) {

@@ -1,4 +1,4 @@
-import { WalletNetwork } from "@creit.tech/stellar-wallets-kit";
+import { Networks } from "@stellar/stellar-sdk";
 import { z } from "zod";
 
 /**
@@ -44,8 +44,8 @@ export const envVars = {
   STELLAR: {
     WALLET_NETWORK:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
-        ? WalletNetwork.TESTNET
-        : WalletNetwork.PUBLIC,
+        ? Networks.TESTNET
+        : Networks.PUBLIC,
   },
 
   SERVER: {

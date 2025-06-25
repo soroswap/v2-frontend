@@ -2,22 +2,11 @@
 
 import { useState } from "react";
 import { TheButton } from "@/components/shared/components/buttons";
-import {
-  StellarWalletsKit,
-  allowAllModules,
-  ISupportedWallet,
-  ALBEDO_ID,
-} from "@creit.tech/stellar-wallets-kit";
-import { STELLAR } from "@/lib/environmentVars";
+import { ISupportedWallet } from "@creit.tech/stellar-wallets-kit";
 import { cn } from "@/lib/utils/cn";
 import { formatUserAddress } from "@/lib/utils/formatUserAddress";
 import { useUserContext } from "@/contexts";
-
-export const kit: StellarWalletsKit = new StellarWalletsKit({
-  network: STELLAR.WALLET_NETWORK,
-  selectedWalletId: ALBEDO_ID,
-  modules: allowAllModules(),
-});
+import { kit } from "@/lib/server/wallet";
 
 interface ConnectWalletProps {
   className?: string;

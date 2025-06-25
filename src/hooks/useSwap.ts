@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from "react";
 import { STELLAR } from "@/lib/environmentVars";
-import { kit } from "@/components/shared/components/buttons";
+import { kit } from "@/lib/server/wallet";
 import { SwapRouteSplitRequest } from "@/components/shared/types/swap";
 
 export enum SwapStep {
@@ -69,42 +69,6 @@ export function useSwap(options?: UseSwapOptions) {
 
       if (!response.ok) {
         throw new Error(`Failed to fetch swap route: ${response.status}`);
-      }
-
-      return await response.json();
-    },
-    [],
-  );
-
-  interface TradeData {
-    amountIn: string;
-    amountOutMin: string;
-    distribution: {
-      is_exact_in: boolean;
-      parts: number;
-      path: string[];
-      protocol_id: string;
-    }[];
-    expectedAmountOut: string;
-    tradeType: "EXACT_IN" | "EXACT_OUT";
-  }
-
-  const buildTransaction = useCallback(
-    async (userAddress: string, tradeData: TradeData) => {
-      const response = await fetch("/api/swap/buildXdr", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: userAddress,
-          to: userAddress,
-          tradeData,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to build transaction: ${response.status}`);
       }
 
       return await response.json();
@@ -193,7 +157,6 @@ export function useSwap(options?: UseSwapOptions) {
       updateStep,
       handleError,
       fetchSwapRoute,
-      buildTransaction,
       signTransaction,
       sendTransaction,
       options,
