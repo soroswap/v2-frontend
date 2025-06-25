@@ -18,7 +18,7 @@ import { SwapRouteSplitRequest, TokenType } from "@/components/shared/types";
 import { STELLAR } from "@/lib/environmentVars";
 
 export interface Swap {
-  amount: number | null;
+  amount: number;
   usdValue: number | null;
   token: TokenType | null;
 }
@@ -48,23 +48,26 @@ export default function SwapPage() {
     buy.token?.contract || null,
   );
 
-  useEffect(() => {
-    if (sellPrice !== null && sellPrice !== sell.usdValue) {
-      setSell((sell) => ({
-        ...sell,
-        usdValue: sellPrice,
-      }));
-    }
-  }, [sellPrice]);
+  console.log("sellPrice", sellPrice);
+  console.log("buyPrice", buyPrice);
 
   useEffect(() => {
-    if (buyPrice !== null && buyPrice !== buy.usdValue) {
-      setBuy((buy) => ({
-        ...buy,
-        usdValue: buyPrice,
+    if (sellPrice !== null) {
+      setSell((sell) => ({
+        ...sell,
+        usdValue: sellPrice * sell.amount,
       }));
     }
-  }, [buyPrice]);
+  }, [sellPrice, sell.amount]);
+
+  useEffect(() => {
+    if (buyPrice !== null) {
+      setBuy((buy) => ({
+        ...buy,
+        usdValue: buyPrice * buy.amount,
+      }));
+    }
+  }, [buyPrice, buy.amount]);
 
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {

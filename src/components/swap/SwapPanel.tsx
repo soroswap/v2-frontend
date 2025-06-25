@@ -45,12 +45,12 @@ export const SwapPanel = ({
       {/* Amount + token */}
       <div className="flex max-h-[43.5px] items-end justify-between">
         <input
-          className="hide-number-spin m-0 w-full bg-transparent p-0 text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
+          className="hide-number-spin w-full bg-transparent text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
           type="number"
           value={amount}
           onChange={(e) => setAmount(Number(e.target.value))}
           placeholder="0"
-          style={{ minWidth: 0 }}
+          min="0"
         />
 
         <TokenSelector

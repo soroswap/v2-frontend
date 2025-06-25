@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import useSWR from "swr";
+import { formatUnits } from "@/lib/utils/parseUnits";
 
 interface PriceData {
   price: number;
@@ -25,7 +26,10 @@ const fetcher = async (
   }
 
   const result: PriceResponse = await response.json();
-  return result.data.price;
+
+  const priceParsed = Number(formatUnits({ value: result.data.price }));
+
+  return priceParsed;
 };
 
 export function useTokenPrice(contractAddress: string | null) {
