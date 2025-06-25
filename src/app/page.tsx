@@ -51,7 +51,7 @@ export default function SwapPage() {
     },
     onStepChange: (step: SwapStep) => {
       console.log("Swap step changed:", step);
-      if (step === SwapStep.FETCHING_ROUTE) {
+      if (step === SwapStep.FETCHING_QUOTE) {
         setIsFetchingRoute(true);
       }
       if (step === SwapStep.BUILDING_XDR) {
@@ -84,7 +84,7 @@ export default function SwapPage() {
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
-      case SwapStep.FETCHING_ROUTE:
+      case SwapStep.FETCHING_QUOTE:
         return "Finding best route...";
       case SwapStep.BUILDING_XDR:
         return "Preparing transaction...";
