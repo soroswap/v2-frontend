@@ -2,12 +2,9 @@
 import { useState, useCallback } from "react";
 import { STELLAR } from "@/lib/environmentVars";
 import { kit } from "@/lib/server/wallet";
-import { SwapRouteSplitRequest } from "@/components/shared/types/swap";
 
 export enum SwapStep {
   IDLE = "IDLE",
-  FETCHING_QUOTE = "FETCHING_QUOTE",
-  BUILDING_XDR = "BUILDING_XDR",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
   SUCCESS = "SUCCESS",
@@ -55,24 +52,6 @@ export function useSwap(options?: UseSwapOptions) {
     [options, updateStep],
   );
 
-  const fetchQuote = useCallback(async (swapRequest: SwapRouteSplitRequest) => {
-    const response = await fetch("/api/quote", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(swapRequest),
-    });
-
-    console.log("response fetch-quote", response);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch swap route: ${response.status}`);
-    }
-
-    return await response.json();
-  }, []);
-
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
       const { signedTxXdr } = await kit.signTransaction(xdr, {
@@ -102,33 +81,16 @@ export function useSwap(options?: UseSwapOptions) {
   }, []);
 
   const executeSwap = useCallback(
-    async (
-      swapRequest: SwapRouteSplitRequest,
-      userAddress: string,
-    ): Promise<SwapResult> => {
+    async (xdr: string, userAddress: string): Promise<SwapResult> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Step 1: Fetch swap route
-        updateStep(SwapStep.FETCHING_QUOTE);
-        const swapResult = await fetchQuote(swapRequest);
-
-        // // Step 2: Build transaction XDR
-        // updateStep(SwapStep.BUILDING_XDR);
-        // const buildXdrResult = await buildTransaction(
-        //   userAddress,
-        //   swapResult.data,
-        // );
-
-        // Step 3: Sign transaction
+        // Step 1: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(
-          swapResult.data.xdr,
-          userAddress,
-        );
+        const signedXdr = await signTransaction(xdr, userAddress);
 
-        // Step 4: Send transaction
+        // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);
         const sendResult = await sendTransaction(signedXdr);
 
@@ -153,7 +115,6 @@ export function useSwap(options?: UseSwapOptions) {
       currentStep,
       updateStep,
       handleError,
-      fetchQuote,
       signTransaction,
       sendTransaction,
       options,

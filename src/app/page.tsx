@@ -13,14 +13,14 @@ import { SwapPanel } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useTokenPrice } from "@/hooks/useTokenPrice";
 import { useUserContext } from "@/contexts";
-import { SwapRouteSplitRequest, TokenType } from "@/components/shared/types";
+import { QuoteRequest, TokenType } from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { SwapModal } from "@/components/swap/SwapModal";
 import { parseUnits } from "@/lib/utils/parseUnits";
+import { useQuote } from "@/hooks/useQuote";
 
 export interface Swap {
   amount: number;
-  usdValue: number | null;
   token: TokenType | null;
 }
 
@@ -28,12 +28,13 @@ export default function SwapPage() {
   const { address: userAddress } = useUserContext();
   const { tokensList, isLoading } = useTokensList();
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
-  const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
+  const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
-  const [isFetchingRoute, setIsFetchingRoute] = useState<boolean>(false);
-  const [isBuildingXdrStep, setIsBuildingXdrStep] = useState<boolean>(false);
 
+  const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
+  console.log("quote", quote);
+  console.log("isQuoteLoading", isQuoteLoading);
   const {
     executeSwap,
     currentStep,
@@ -51,12 +52,6 @@ export default function SwapPage() {
     },
     onStepChange: (step: SwapStep) => {
       console.log("Swap step changed:", step);
-      if (step === SwapStep.FETCHING_QUOTE) {
-        setIsFetchingRoute(true);
-      }
-      if (step === SwapStep.BUILDING_XDR) {
-        setIsBuildingXdrStep(true);
-      }
       if (step === SwapStep.WAITING_SIGNATURE) {
         setIsSwapModalOpen(true);
       }
@@ -66,13 +61,11 @@ export default function SwapPage() {
   const [sell, setSell] = useState<Swap>({
     amount: 0,
     token: null,
-    usdValue: null,
   });
 
   const [buy, setBuy] = useState<Swap>({
     amount: 0,
     token: null,
-    usdValue: null,
   });
 
   const { price: sellPrice, isLoading: isSellPriceLoading } = useTokenPrice(
@@ -82,12 +75,17 @@ export default function SwapPage() {
     buy.token?.contract || null,
   );
 
+  useEffect(() => {
+    if (!isLoading && tokensList.length > 0 && !sell.token) {
+      setSell((prev) => ({
+        ...prev,
+        token: tokensList[0],
+      }));
+    }
+  }, [isLoading, tokensList]);
+
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
-      case SwapStep.FETCHING_QUOTE:
-        return "Finding best route...";
-      case SwapStep.BUILDING_XDR:
-        return "Preparing transaction...";
       case SwapStep.WAITING_SIGNATURE:
         return "Waiting for signature...";
       case SwapStep.SENDING_TRANSACTION:
@@ -153,15 +151,6 @@ export default function SwapPage() {
     buy.token,
   ]);
 
-  useEffect(() => {
-    if (!isLoading && tokensList.length > 0 && !sell.token) {
-      setSell((prev) => ({
-        ...prev,
-        token: tokensList[0],
-      }));
-    }
-  }, [isLoading, tokensList]);
-
   const handleSwitchToken = useCallback(() => {
     setIsTokenSwitched(!isTokenSwitched);
     setActiveField(null);
@@ -172,17 +161,15 @@ export default function SwapPage() {
     setSell({
       amount: buyCopy.amount,
       token: buyCopy.token,
-      usdValue: buyCopy.usdValue,
     });
 
     setBuy({
       amount: sellCopy.amount,
       token: sellCopy.token,
-      usdValue: sellCopy.usdValue,
     });
 
-    if (buyCopy.token && sellCopy.token && isFetchingRoute) {
-      setSwap({
+    if (buyCopy.token && sellCopy.token) {
+      setQuoteRequest({
         assetIn: buyCopy.token.contract,
         assetOut: sellCopy.token.contract,
         amount: parseUnits({ value: buyCopy.amount.toString() }).toString(),
@@ -196,29 +183,12 @@ export default function SwapPage() {
     }
   }, [sell, buy, isTokenSwitched]);
 
-  const handleSelectSellToken = useCallback((token: TokenType | null) => {
-    if (token) {
-      setSell((prev) => ({
-        ...prev,
-        token,
-      }));
-    }
-  }, []);
-
-  const handleSelectBuyToken = useCallback((token: TokenType | null) => {
-    if (token) {
-      setBuy((prev) => ({
-        ...prev,
-        token,
-      }));
-    }
-  }, []);
-
   const handleSellAmountChange = useCallback(async (amount: number) => {
     setActiveField("sell");
     setSell((prev) => ({ ...prev, amount }));
     if (!buy.token || !sell.token) return;
-    const preparedSwap: SwapRouteSplitRequest = {
+
+    const quoteRequest: QuoteRequest = {
       assetIn: buy.token.contract,
       assetOut: sell.token.contract,
       amount: parseUnits({ value: amount.toString() }).toString(),
@@ -231,8 +201,7 @@ export default function SwapPage() {
       from: userAddress ?? "",
       to: userAddress ?? "",
     };
-
-    await executeSwap(preparedSwap, userAddress ?? "");
+    console.log("quoteRequest", quoteRequest);
 
     setTimeout(() => {
       setActiveField(null);
@@ -251,18 +220,36 @@ export default function SwapPage() {
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (!swap || !userAddress) {
+    if (!quoteRequest || !userAddress) {
       console.error("Missing swap data or user address");
       return;
     }
 
     try {
-      console.log("Executing swap", swap);
-      await executeSwap(swap, userAddress);
+      console.log("Executing quote", quoteRequest);
+      await executeSwap(quote?.xdr ?? "", userAddress);
     } catch (error) {
       console.error("Swap execution failed:", error);
     }
   };
+
+  const handleSelectSellToken = useCallback((token: TokenType | null) => {
+    if (token) {
+      setSell((prev) => ({
+        ...prev,
+        token,
+      }));
+    }
+  }, []);
+
+  const handleSelectBuyToken = useCallback((token: TokenType | null) => {
+    if (token) {
+      setBuy((prev) => ({
+        ...prev,
+        token,
+      }));
+    }
+  }, []);
 
   return (
     <main className="flex min-h-screen items-center justify-center p-2">
@@ -286,7 +273,6 @@ export default function SwapPage() {
               amount={sell.amount || 0}
               setAmount={handleSellAmountChange}
               token={sell.token}
-              usdValue={sell.usdValue?.toString() || "0"}
               variant="default"
               onSelectToken={handleSelectSellToken}
               isLoading={isSellPriceLoading}
@@ -307,7 +293,6 @@ export default function SwapPage() {
               amount={buy.amount || 0}
               setAmount={handleBuyAmountChange}
               token={buy.token}
-              usdValue={buy.usdValue?.toString() || "0"}
               variant="outline"
               onSelectToken={handleSelectBuyToken}
               isLoading={isBuyPriceLoading}
@@ -318,7 +303,7 @@ export default function SwapPage() {
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
               <TheButton
-                disabled={!buy.token || !sell.token || !isBuildingXdrStep}
+                disabled={!buy.token || !sell.token}
                 className={cn(
                   "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
                 )}
