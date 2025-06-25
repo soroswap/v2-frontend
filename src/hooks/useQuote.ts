@@ -34,7 +34,8 @@ export function useQuote(quoteRequest: QuoteRequest | null) {
   );
 
   return {
-    quote: data || null,
+    quote: data?.data || null,
+    quoteError: data?.code || null,
     isLoading,
     isError: error,
     mutate,

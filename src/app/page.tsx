@@ -20,7 +20,7 @@ import {
 } from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { SwapModal } from "@/components/swap/SwapModal";
-import { parseUnits } from "@/lib/utils/parseUnits";
+import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
 
 export interface Swap {
@@ -37,7 +37,6 @@ export default function SwapPage() {
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
 
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
-
   const {
     executeSwap,
     currentStep,
@@ -82,15 +81,22 @@ export default function SwapPage() {
 
   useEffect(() => {
     if (quote && quote.tradeType === TradeType.EXACT_IN) {
-      setSell((prev) => ({
-        ...prev,
-        amount: Number(quote.trade.amountIn),
-      }));
-    }
-    if (quote && quote.tradeType === TradeType.EXACT_OUT) {
       setBuy((prev) => ({
         ...prev,
-        amount: Number(quote.trade.amountOut),
+        amount: Number(
+          formatUnits({
+            value: quote.trade.expectedAmountOut?.toString() ?? "0",
+          }).toString(),
+        ),
+      }));
+    } else if (quote && quote.tradeType === TradeType.EXACT_OUT) {
+      setSell((prev) => ({
+        ...prev,
+        amount: Number(
+          formatUnits({
+            value: quote.trade.expectedAmountIn?.toString() ?? "0",
+          }),
+        ),
       }));
     }
   }, [quote]);
@@ -152,39 +158,30 @@ export default function SwapPage() {
     });
   }, [sell, buy, isTokenSwitched]);
 
-  const handleSellAmountChange = useCallback(async (amount: number) => {
-    setActiveField("sell");
-    setSell((prev) => ({ ...prev, amount }));
-    if (!buy.token || !sell.token) return;
+  const handleSellAmountChange = useCallback(
+    async (amount: number) => {
+      setActiveField("sell");
+      setSell((prev) => ({ ...prev, amount }));
+      if (!buy.token || !sell.token) return;
 
-    // const quoteRequest: QuoteRequest = {
-    //   assetIn: buy.token.contract,
-    //   assetOut: sell.token.contract,
-    //   amount: parseUnits({ value: amount.toString() }).toString(),
-    //   tradeType: TradeType.EXACT_IN,
-    //   protocols: [SupportedProtocols.SOROSWAP],
-    //   parts: 10,
-    //   slippageTolerance: "100",
-    //   assetList: ["soroswap"],
-    //   maxHops: 2,
-    //   from: userAddress ?? "",
-    //   to: userAddress ?? "",
-    // };
-    // console.log("quoteRequest", quoteRequest);
+      setTimeout(() => {
+        setActiveField(null);
+      }, 100);
+    },
+    [sell.amount],
+  );
 
-    setTimeout(() => {
-      setActiveField(null);
-    }, 100);
-  }, []);
+  const handleBuyAmountChange = useCallback(
+    (amount: number) => {
+      setActiveField("buy");
+      setBuy((prev) => ({ ...prev, amount }));
 
-  const handleBuyAmountChange = useCallback((amount: number) => {
-    setActiveField("buy");
-    setBuy((prev) => ({ ...prev, amount }));
-
-    setTimeout(() => {
-      setActiveField(null);
-    }, 100);
-  }, []);
+      setTimeout(() => {
+        setActiveField(null);
+      }, 100);
+    },
+    [buy.amount],
+  );
 
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();

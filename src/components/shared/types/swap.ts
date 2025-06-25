@@ -12,7 +12,10 @@ export type QuoteRequest = {
   to?: string; // If user is connected send this [ Connected Wallet ]
 };
 
-export type QuoteResponse = BuildSplitTradeReturn | BuildTradeReturn;
+export interface QuoteResponse {
+  code: string;
+  data: BuildSplitTradeReturn | BuildTradeReturn;
+}
 
 export type BuildTradeReturn =
   | ExactInBuildTradeReturn
