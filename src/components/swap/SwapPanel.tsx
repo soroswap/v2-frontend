@@ -51,6 +51,7 @@ export const SwapPanel = ({
           onChange={(e) => setAmount(Number(e.target.value))}
           placeholder="0"
           min="0"
+          disabled={isLoading || !token}
         />
 
         <TokenSelector
@@ -63,10 +64,10 @@ export const SwapPanel = ({
       {/* USD helper */}
       <div className="flex items-end justify-between">
         <span className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
-          {isLoading ? (
+          {isLoading || usdValue === null ? (
             <div className="skeleton h-5 w-20 bg-[#23243a]" />
           ) : (
-            `$${usdValue}`
+            `$${Number(usdValue).toFixed(2)}`
           )}
         </span>
       </div>

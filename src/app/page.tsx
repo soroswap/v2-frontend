@@ -28,6 +28,7 @@ export default function SwapPage() {
   const { tokensList, isLoading } = useTokensList();
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
   const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
+  const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
 
   const [sell, setSell] = useState<Swap>({
     amount: 0,
@@ -48,40 +49,61 @@ export default function SwapPage() {
     buy.token?.contract || null,
   );
 
-  console.log("sellPrice", sellPrice);
-  console.log("buyPrice", buyPrice);
-
   useEffect(() => {
-    if (sellPrice !== null) {
-      setSell((sell) => ({
-        ...sell,
-        usdValue: sellPrice * sell.amount,
+    // Only execute if we have valid prices and tokens
+    if (!sellPrice || !buyPrice || !sell.token || !buy.token) return;
+
+    if (activeField === "sell" && sell.amount >= 0) {
+      // Update sell USD value
+      const newSellUsdValue = sellPrice * sell.amount;
+
+      // Calculate new buy amount based on sell
+      const newBuyAmount = (sellPrice * sell.amount) / buyPrice;
+      const newBuyUsdValue = buyPrice * newBuyAmount;
+
+      setSell((prev) => ({ ...prev, usdValue: newSellUsdValue }));
+      setBuy((prev) => ({
+        ...prev,
+        amount: newBuyAmount,
+        usdValue: newBuyUsdValue,
+      }));
+    } else if (activeField === "buy" && buy.amount >= 0) {
+      // Update buy USD value
+      const newBuyUsdValue = buyPrice * buy.amount;
+
+      // Calculate new sell amount based on buy
+      const newSellAmount = newBuyUsdValue / sellPrice;
+      const newSellUsdValue = sellPrice * newSellAmount;
+
+      setBuy((prev) => ({ ...prev, usdValue: newBuyUsdValue }));
+      setSell((prev) => ({
+        ...prev,
+        amount: newSellAmount,
+        usdValue: newSellUsdValue,
       }));
     }
 
-    if (buyPrice !== null && sellPrice !== null) {
-      setBuy((buy) => ({
-        ...buy,
-        amount: (sellPrice * sell.amount) / buyPrice,
-      }));
-    }
-  }, [sellPrice, sell.amount, buyPrice]);
+    // If no field is active, only update USD values
+    else if (!activeField) {
+      if (sell.amount >= 0) {
+        const newSellUsdValue = sellPrice * sell.amount;
+        setSell((prev) => ({ ...prev, usdValue: newSellUsdValue }));
+      }
 
-  useEffect(() => {
-    if (buyPrice !== null) {
-      setBuy((buy) => ({
-        ...buy,
-        usdValue: buyPrice * buy.amount,
-      }));
+      if (buy.amount >= 0) {
+        const newBuyUsdValue = buyPrice * buy.amount;
+        setBuy((prev) => ({ ...prev, usdValue: newBuyUsdValue }));
+      }
     }
-
-    // if (sellPrice !== null && buyPrice !== null) {
-    //   setSell((sell) => ({
-    //     ...sell,
-    //     amount: (buyPrice * buy.amount) / sellPrice,
-    //   }));
-    // }
-  }, [buyPrice, buy.amount, sellPrice]);
+  }, [
+    sell.amount,
+    buy.amount,
+    sellPrice,
+    buyPrice,
+    activeField,
+    sell.token,
+    buy.token,
+  ]);
 
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
@@ -94,6 +116,7 @@ export default function SwapPage() {
 
   const handleSwitchToken = useCallback(() => {
     setIsTokenSwitched(!isTokenSwitched);
+    setActiveField(null);
 
     const sellCopy = { ...sell };
     const buyCopy = { ...buy };
@@ -139,6 +162,24 @@ export default function SwapPage() {
         token,
       }));
     }
+  }, []);
+
+  const handleSellAmountChange = useCallback((amount: number) => {
+    setActiveField("sell");
+    setSell((prev) => ({ ...prev, amount }));
+
+    setTimeout(() => {
+      setActiveField(null);
+    }, 100);
+  }, []);
+
+  const handleBuyAmountChange = useCallback((amount: number) => {
+    setActiveField("buy");
+    setBuy((prev) => ({ ...prev, amount }));
+
+    setTimeout(() => {
+      setActiveField(null);
+    }, 100);
   }, []);
 
   const handleSwap = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -227,7 +268,7 @@ export default function SwapPage() {
             <SwapPanel
               label="Sell"
               amount={sell.amount || 0}
-              setAmount={(amount) => setSell((prev) => ({ ...prev, amount }))}
+              setAmount={handleSellAmountChange}
               token={sell.token}
               usdValue={sell.usdValue?.toString() || "0"}
               variant="default"
@@ -248,7 +289,7 @@ export default function SwapPage() {
             <SwapPanel
               label="Buy"
               amount={buy.amount || 0}
-              setAmount={(amount) => setBuy((prev) => ({ ...prev, amount }))}
+              setAmount={handleBuyAmountChange}
               token={buy.token}
               usdValue={buy.usdValue?.toString() || "0"}
               variant="outline"
