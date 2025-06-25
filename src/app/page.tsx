@@ -58,7 +58,14 @@ export default function SwapPage() {
         usdValue: sellPrice * sell.amount,
       }));
     }
-  }, [sellPrice, sell.amount]);
+
+    if (buyPrice !== null && sellPrice !== null) {
+      setBuy((buy) => ({
+        ...buy,
+        amount: (sellPrice * sell.amount) / buyPrice,
+      }));
+    }
+  }, [sellPrice, sell.amount, buyPrice]);
 
   useEffect(() => {
     if (buyPrice !== null) {
@@ -67,7 +74,14 @@ export default function SwapPage() {
         usdValue: buyPrice * buy.amount,
       }));
     }
-  }, [buyPrice, buy.amount]);
+
+    // if (sellPrice !== null && buyPrice !== null) {
+    //   setSell((sell) => ({
+    //     ...sell,
+    //     amount: (buyPrice * buy.amount) / sellPrice,
+    //   }));
+    // }
+  }, [buyPrice, buy.amount, sellPrice]);
 
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
