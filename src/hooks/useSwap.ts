@@ -65,6 +65,8 @@ export function useSwap(options?: UseSwapOptions) {
         body: JSON.stringify(swapRequest),
       });
 
+      console.log("response-fetchSwapRoute", response);
+
       if (!response.ok) {
         throw new Error(`Failed to fetch swap route: ${response.status}`);
       }
@@ -151,17 +153,17 @@ export function useSwap(options?: UseSwapOptions) {
         updateStep(SwapStep.FETCHING_ROUTE);
         const swapResult = await fetchSwapRoute(swapRequest);
 
-        // Step 2: Build transaction XDR
-        updateStep(SwapStep.BUILDING_XDR);
-        const buildXdrResult = await buildTransaction(
-          userAddress,
-          swapResult.data,
-        );
+        // // Step 2: Build transaction XDR
+        // updateStep(SwapStep.BUILDING_XDR);
+        // const buildXdrResult = await buildTransaction(
+        //   userAddress,
+        //   swapResult.data,
+        // );
 
         // Step 3: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
         const signedXdr = await signTransaction(
-          buildXdrResult.data.xdr,
+          swapResult.data.xdr,
           userAddress,
         );
 

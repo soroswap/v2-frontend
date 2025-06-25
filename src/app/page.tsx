@@ -31,6 +31,8 @@ export default function SwapPage() {
   const [swap, setSwap] = useState<SwapRouteSplitRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
+  const [isFetchingRoute, setIsFetchingRoute] = useState<boolean>(false);
+  const [isBuildingXdrStep, setIsBuildingXdrStep] = useState<boolean>(false);
 
   const {
     executeSwap,
@@ -49,6 +51,12 @@ export default function SwapPage() {
     },
     onStepChange: (step: SwapStep) => {
       console.log("Swap step changed:", step);
+      if (step === SwapStep.FETCHING_ROUTE) {
+        setIsFetchingRoute(true);
+      }
+      if (step === SwapStep.BUILDING_XDR) {
+        setIsBuildingXdrStep(true);
+      }
       if (step === SwapStep.WAITING_SIGNATURE) {
         setIsSwapModalOpen(true);
       }
@@ -173,7 +181,7 @@ export default function SwapPage() {
       usdValue: sellCopy.usdValue,
     });
 
-    if (buyCopy.token && sellCopy.token) {
+    if (buyCopy.token && sellCopy.token && isFetchingRoute) {
       setSwap({
         assetIn: buyCopy.token.contract,
         assetOut: sellCopy.token.contract,
@@ -206,9 +214,25 @@ export default function SwapPage() {
     }
   }, []);
 
-  const handleSellAmountChange = useCallback((amount: number) => {
+  const handleSellAmountChange = useCallback(async (amount: number) => {
     setActiveField("sell");
     setSell((prev) => ({ ...prev, amount }));
+    if (!buy.token || !sell.token) return;
+    const preparedSwap: SwapRouteSplitRequest = {
+      assetIn: buy.token.contract,
+      assetOut: sell.token.contract,
+      amount: parseUnits({ value: amount.toString() }).toString(),
+      tradeType: "EXACT_IN",
+      protocols: ["soroswap"],
+      parts: 10,
+      slippageTolerance: "100",
+      assetList: ["soroswap"],
+      maxHops: 2,
+      from: userAddress ?? "",
+      to: userAddress ?? "",
+    };
+
+    await executeSwap(preparedSwap, userAddress ?? "");
 
     setTimeout(() => {
       setActiveField(null);
@@ -294,7 +318,7 @@ export default function SwapPage() {
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
               <TheButton
-                disabled={!buy.token || !sell.token}
+                disabled={!buy.token || !sell.token || !isBuildingXdrStep}
                 className={cn(
                   "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
                 )}

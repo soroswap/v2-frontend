@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const swapResponse = await api.post<SwapResponse>(
-      `/router/swap/split?network=${network}`,
+      `/quote?network=${network}`,
       body,
     );
 
