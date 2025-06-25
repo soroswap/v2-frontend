@@ -6,7 +6,7 @@ import { SwapRouteSplitRequest } from "@/components/shared/types/swap";
 
 export enum SwapStep {
   IDLE = "IDLE",
-  FETCHING_ROUTE = "FETCHING_ROUTE",
+  FETCHING_QUOTE = "FETCHING_QUOTE",
   BUILDING_XDR = "BUILDING_XDR",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
@@ -55,26 +55,23 @@ export function useSwap(options?: UseSwapOptions) {
     [options, updateStep],
   );
 
-  const fetchSwapRoute = useCallback(
-    async (swapRequest: SwapRouteSplitRequest) => {
-      const response = await fetch("/api/swap", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(swapRequest),
-      });
+  const fetchQuote = useCallback(async (swapRequest: SwapRouteSplitRequest) => {
+    const response = await fetch("/api/quote", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(swapRequest),
+    });
 
-      console.log("response-fetchSwapRoute", response);
+    console.log("response fetch-quote", response);
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch swap route: ${response.status}`);
-      }
+    if (!response.ok) {
+      throw new Error(`Failed to fetch swap route: ${response.status}`);
+    }
 
-      return await response.json();
-    },
-    [],
-  );
+    return await response.json();
+  }, []);
 
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
@@ -114,8 +111,8 @@ export function useSwap(options?: UseSwapOptions) {
         setError(null);
 
         // Step 1: Fetch swap route
-        updateStep(SwapStep.FETCHING_ROUTE);
-        const swapResult = await fetchSwapRoute(swapRequest);
+        updateStep(SwapStep.FETCHING_QUOTE);
+        const swapResult = await fetchQuote(swapRequest);
 
         // // Step 2: Build transaction XDR
         // updateStep(SwapStep.BUILDING_XDR);
@@ -156,7 +153,7 @@ export function useSwap(options?: UseSwapOptions) {
       currentStep,
       updateStep,
       handleError,
-      fetchSwapRoute,
+      fetchQuote,
       signTransaction,
       sendTransaction,
       options,
