@@ -5,7 +5,7 @@ import axios from "axios";
 /*This is the axios instance for the server side. It is used to make requests to the server.*/
 export const api = axios.create({
   baseURL: process.env.SOROSWAP_API_URL,
-  timeout: 10000, // 10 seconds
+  timeout: 30000, // 30 seconds
   headers: {
     "Content-Type": "application/json",
   },
