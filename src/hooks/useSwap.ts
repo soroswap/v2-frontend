@@ -65,7 +65,7 @@ export function useSwap(options?: UseSwapOptions) {
   );
 
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/swap/send", {
+    const response = await fetch("/api/send", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
