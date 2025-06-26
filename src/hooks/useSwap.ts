@@ -59,6 +59,8 @@ export function useSwap(options?: UseSwapOptions) {
         networkPassphrase: STELLAR.WALLET_NETWORK,
       });
 
+      console.log("signedTxXdr = ", signedTxXdr);
+
       return signedTxXdr;
     },
     [],
@@ -72,7 +74,7 @@ export function useSwap(options?: UseSwapOptions) {
       },
       body: JSON.stringify({ xdr: signedXdr }),
     });
-
+    console.log("sendTransaction = ", response);
     if (!response.ok) {
       throw new Error(`Failed to send transaction: ${response.status}`);
     }
