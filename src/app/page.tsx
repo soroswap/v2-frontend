@@ -84,18 +84,22 @@ export default function SwapPage() {
       setBuy((prev) => ({
         ...prev,
         amount: Number(
-          formatUnits({
-            value: quote.trade.expectedAmountOut?.toString() ?? "0",
-          }).toString(),
+          sell.amount > 0
+            ? formatUnits({
+                value: quote.trade.expectedAmountOut?.toString() ?? "0",
+              }).toString()
+            : "0",
         ),
       }));
     } else if (quote && quote.tradeType === TradeType.EXACT_OUT) {
       setSell((prev) => ({
         ...prev,
         amount: Number(
-          formatUnits({
-            value: quote.trade.expectedAmountIn?.toString() ?? "0",
-          }),
+          buy.amount > 0
+            ? formatUnits({
+                value: quote.trade.expectedAmountIn?.toString() ?? "0",
+              }).toString()
+            : "0",
         ),
       }));
     }
