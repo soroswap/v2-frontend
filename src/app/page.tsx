@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
-import { useState, useEffect, useCallback, MouseEvent } from "react";
+import { useState, useEffect, useCallback, MouseEvent, useRef } from "react";
 import {
   TheButton,
   RotateArrowButton,
@@ -35,6 +35,9 @@ export default function SwapPage() {
   const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
+  const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
+
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
   const {
@@ -106,33 +109,66 @@ export default function SwapPage() {
   }, [quote]);
 
   useEffect(() => {
-    if (buy.token && sell.token && activeField === "sell") {
-      setQuoteRequest({
-        assetIn: sell.token.contract,
-        assetOut: buy.token.contract,
-        amount: parseUnits({ value: sell.amount.toString() }).toString(),
-        tradeType: TradeType.EXACT_IN,
-        protocols: [SupportedProtocols.SOROSWAP],
-        parts: 10,
-        slippageTolerance: "100",
-        assetList: ["soroswap"],
-        maxHops: 2,
-      });
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
     }
-    if (buy.token && sell.token && activeField === "buy") {
-      setQuoteRequest({
-        assetIn: buy.token.contract,
-        assetOut: sell.token.contract,
-        amount: parseUnits({ value: buy.amount.toString() }).toString(),
-        tradeType: TradeType.EXACT_OUT,
-        protocols: [SupportedProtocols.SOROSWAP],
-        parts: 10,
-        slippageTolerance: "100",
-        assetList: ["soroswap"],
-        maxHops: 2,
-      });
+
+    if (!buy.token || !sell.token || !activeField) {
+      return;
     }
-  }, [buy, sell]);
+
+    debounceTimeoutRef.current = setTimeout(() => {
+      setIsUserTyping(false);
+
+      if (
+        activeField === "sell" &&
+        sell.amount > 0 &&
+        sell.token &&
+        buy.token
+      ) {
+        setQuoteRequest({
+          assetIn: sell.token.contract,
+          assetOut: buy.token.contract,
+          amount: parseUnits({ value: sell.amount.toString() }).toString(),
+          tradeType: TradeType.EXACT_IN,
+          protocols: [SupportedProtocols.SOROSWAP],
+          parts: 10,
+          slippageTolerance: "100",
+          assetList: ["soroswap"],
+          maxHops: 2,
+          from: userAddress ?? "",
+          to: userAddress ?? "",
+        });
+      } else if (
+        activeField === "buy" &&
+        buy.amount > 0 &&
+        buy.token &&
+        sell.token
+      ) {
+        setQuoteRequest({
+          assetIn: buy.token.contract,
+          assetOut: sell.token.contract,
+          amount: parseUnits({ value: buy.amount.toString() }).toString(),
+          tradeType: TradeType.EXACT_OUT,
+          protocols: [SupportedProtocols.SOROSWAP],
+          parts: 10,
+          slippageTolerance: "100",
+          assetList: ["soroswap"],
+          maxHops: 2,
+          from: userAddress ?? "",
+          to: userAddress ?? "",
+        });
+      }
+
+      setActiveField(null);
+    }, 3000);
+
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, [buy, sell, activeField]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
@@ -162,30 +198,17 @@ export default function SwapPage() {
     });
   }, [sell, buy, isTokenSwitched]);
 
-  const handleSellAmountChange = useCallback(
-    async (amount: number) => {
-      setActiveField("sell");
-      setSell((prev) => ({ ...prev, amount }));
-      if (!buy.token || !sell.token) return;
+  const handleSellAmountChange = useCallback((amount: number) => {
+    setActiveField("sell");
+    setIsUserTyping(true);
+    setSell((prev) => ({ ...prev, amount }));
+  }, []);
 
-      setTimeout(() => {
-        setActiveField(null);
-      }, 100);
-    },
-    [sell.amount],
-  );
-
-  const handleBuyAmountChange = useCallback(
-    (amount: number) => {
-      setActiveField("buy");
-      setBuy((prev) => ({ ...prev, amount }));
-
-      setTimeout(() => {
-        setActiveField(null);
-      }, 100);
-    },
-    [buy.amount],
-  );
+  const handleBuyAmountChange = useCallback((amount: number) => {
+    setActiveField("buy");
+    setIsUserTyping(true);
+    setBuy((prev) => ({ ...prev, amount }));
+  }, []);
 
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -197,6 +220,7 @@ export default function SwapPage() {
 
     try {
       console.log("Executing quote", quoteRequest);
+      console.log("quote = ", quote);
       await executeSwap(quote?.xdr ?? "", userAddress);
     } catch (error) {
       console.error("Swap execution failed:", error);
@@ -268,7 +292,10 @@ export default function SwapPage() {
               isLoading={isQuoteLoading}
             />
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col gap-2">
+            {isUserTyping && (
+              <div className="px-2 text-xs text-gray-400">🔄</div>
+            )}
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
