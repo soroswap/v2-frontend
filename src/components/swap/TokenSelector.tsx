@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { cn } from "@/lib/utils/cn";
@@ -6,6 +5,7 @@ import { useState } from "react";
 import { useTokensList } from "@/hooks/useTokensList";
 import { TokenType } from "@/components/shared/types/token";
 import { ChevronDown, XIcon } from "lucide-react";
+import Image from "next/image";
 
 export const TokenSelector = ({
   token,
@@ -35,8 +35,8 @@ export const TokenSelector = ({
       >
         {token ? (
           <>
-            <img
-              src={token.icon}
+            <Image
+              src={token?.icon ?? ""}
               alt={`${token.name} logo`}
               width={29.5}
               height={29.5}
@@ -80,9 +80,9 @@ export const TokenSelector = ({
                   onClick={() => handleSelectToken(token)}
                   className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
                 >
-                  <img
-                    src={token.icon}
-                    alt={token.name}
+                  <Image
+                    src={token?.icon ?? ""}
+                    alt={token?.name ?? ""}
                     width={28}
                     height={28}
                     className="rounded-full bg-white"
