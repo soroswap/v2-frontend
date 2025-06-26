@@ -11,10 +11,6 @@ interface SwapModalProps {
 export const SwapModal = ({ currentStep, onClose }: SwapModalProps) => {
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {
-      case SwapStep.FETCHING_QUOTE:
-        return "Finding Best Route";
-      case SwapStep.BUILDING_XDR:
-        return "Preparing Transaction";
       case SwapStep.WAITING_SIGNATURE:
         return "Waiting for Signature";
       case SwapStep.SENDING_TRANSACTION:
@@ -30,10 +26,6 @@ export const SwapModal = ({ currentStep, onClose }: SwapModalProps) => {
 
   const getStepDescription = (step: SwapStep): string => {
     switch (step) {
-      case SwapStep.FETCHING_QUOTE:
-        return "Finding the most efficient route for your swap...";
-      case SwapStep.BUILDING_XDR:
-        return "Building the transaction for signing...";
       case SwapStep.WAITING_SIGNATURE:
         return "Please sign the transaction in your wallet...";
       case SwapStep.SENDING_TRANSACTION:

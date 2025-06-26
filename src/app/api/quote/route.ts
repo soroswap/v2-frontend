@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { api, ALLOWED_ORIGINS } from "@/lib/server";
 import { network } from "@/lib/environmentVars";
-import { SwapResponse } from "@/components/shared/types";
+import { QuoteResponse } from "@/components/shared/types/swap";
 
 /*This is the GET method for the quote API. It is used to verify the route is working.*/
 export async function GET() {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const swapResponse = await api.post<SwapResponse>(
+    const swapResponse = await api.post<QuoteResponse>(
       `/quote?network=${network}`,
       body,
     );
