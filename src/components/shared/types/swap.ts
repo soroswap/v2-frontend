@@ -1,9 +1,9 @@
-export type SwapRouteSplitRequest = {
+export type QuoteRequest = {
   assetIn: string;
   assetOut: string;
   amount: string;
-  tradeType: "EXACT_IN" | "EXACT_OUT";
-  protocols: string[];
+  tradeType: TradeType;
+  protocols: SupportedProtocols[];
   parts: number;
   slippageTolerance: string;
   assetList?: string[];
@@ -12,23 +12,92 @@ export type SwapRouteSplitRequest = {
   to?: string; // If user is connected send this [ Connected Wallet ]
 };
 
-export interface SwapResponse {
+export interface QuoteResponse {
+  code: string;
+  data: BuildSplitTradeReturn | BuildTradeReturn;
+}
+
+export type BuildTradeReturn =
+  | ExactInBuildTradeReturn
+  | ExactOutBuildTradeReturn;
+
+export type BuildSplitTradeReturn =
+  | ExactInSplitBuildTradeReturn
+  | ExactOutSplitBuildTradeReturn;
+
+export enum TradeType {
+  EXACT_IN = "EXACT_IN",
+  EXACT_OUT = "EXACT_OUT",
+}
+
+interface CommonBuildTradeReturnFields {
   assetIn: string;
   assetOut: string;
   priceImpact: {
-    numerator: string;
-    denominator: string;
+    numerator: bigint;
+    denominator: bigint;
   };
+  feeBps?: number;
+  feeAmount?: bigint;
+  xdr?: string;
+  from?: string;
+  to?: string;
+  referralId?: string;
+}
+
+interface ExactInBuildTradeReturn extends CommonBuildTradeReturnFields {
+  tradeType: TradeType.EXACT_IN;
   trade: {
-    amountInMax: string;
-    amountOut: string;
-    distribution: {
-      protocol_id: string;
-      path: string[];
-      parts: number;
-      is_exact_in: boolean;
-    }[];
-    expectedAmountIn: string;
+    amountIn: bigint;
+    amountOutMin: bigint;
+    expectedAmountOut?: bigint;
+    path: string[];
+    poolHashes?: string[];
   };
-  tradeType: "EXACT_IN" | "EXACT_OUT";
+}
+
+interface ExactOutBuildTradeReturn extends CommonBuildTradeReturnFields {
+  tradeType: TradeType.EXACT_OUT;
+  trade: {
+    amountOut: bigint;
+    amountInMax: bigint;
+    expectedAmountIn?: bigint;
+    path: string[];
+    poolHashes?: string[];
+  };
+}
+
+export enum SupportedProtocols {
+  SOROSWAP = "soroswap",
+  PHOENIX = "phoenix",
+  AQUA = "aqua",
+  COMET = "comet",
+}
+
+export interface DistributionReturn {
+  protocol_id: SupportedProtocols;
+  path: string[];
+  parts: number;
+  is_exact_in: boolean;
+  poolHashes?: string[];
+}
+
+interface ExactInSplitBuildTradeReturn extends CommonBuildTradeReturnFields {
+  tradeType: TradeType.EXACT_IN;
+  trade: {
+    amountIn: bigint;
+    amountOutMin: bigint;
+    expectedAmountOut?: bigint;
+    distribution: DistributionReturn[];
+  };
+}
+
+interface ExactOutSplitBuildTradeReturn extends CommonBuildTradeReturnFields {
+  tradeType: TradeType.EXACT_OUT;
+  trade: {
+    amountOut: bigint;
+    amountInMax: bigint;
+    expectedAmountIn?: bigint;
+    distribution: DistributionReturn[];
+  };
 }

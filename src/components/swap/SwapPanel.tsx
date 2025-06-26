@@ -3,6 +3,7 @@
 import { TokenSelector } from "@/components/swap/TokenSelector";
 import { TokenType } from "@/components/shared/types/token";
 import { cn } from "@/lib/utils/cn";
+import { useTokenPrice } from "@/hooks/useTokenPrice";
 
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
@@ -13,7 +14,6 @@ export const SwapPanel = ({
   amount,
   setAmount,
   token,
-  usdValue,
   variant = "default",
   onSelectToken,
   isLoading,
@@ -22,11 +22,12 @@ export const SwapPanel = ({
   amount: number;
   setAmount: (v: number) => void;
   token?: TokenType | null;
-  usdValue: string;
   variant?: "default" | "outline";
   onSelectToken?: (token: TokenType | null) => void;
   isLoading: boolean;
 }) => {
+  const { price } = useTokenPrice(token?.contract ?? null);
+
   return (
     <div
       className={cn(
@@ -64,10 +65,10 @@ export const SwapPanel = ({
       {/* USD helper */}
       <div className="flex items-end justify-between">
         <span className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
-          {isLoading || usdValue === null ? (
+          {isLoading || price === null ? (
             <div className="skeleton h-5 w-20 bg-[#23243a]" />
           ) : (
-            `$${Number(usdValue).toFixed(2)}`
+            `$${Number(price * amount).toFixed(2)}`
           )}
         </span>
       </div>
