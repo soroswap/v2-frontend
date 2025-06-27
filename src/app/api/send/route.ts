@@ -55,8 +55,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const sendTransactionResponse = await api.post<SendTransactionResponse>(
-      `/send?network=${network}`,
+      "/send",
       body,
+      {
+        params: { network },
+      },
     );
 
     return NextResponse.json({

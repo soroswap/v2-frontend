@@ -58,9 +58,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const priceResponse = await api.get<PriceResponse[]>(
-      `/price?network=${network}&asset=${asset}&referenceCurrency=USD`,
-    );
+    const priceResponse = await api.get<PriceResponse[]>("/price", {
+      params: {
+        network,
+        asset,
+        referenceCurrency: "USD",
+      },
+    });
 
     return NextResponse.json({
       code: "PRICE_SUCCESS",

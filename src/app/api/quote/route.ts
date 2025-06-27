@@ -40,10 +40,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const quoteRequest = await api.post<QuoteResponse>(
-      `/quote?network=${network}`,
-      body,
-    );
+    const quoteRequest = await api.post<QuoteResponse>("/quote", body, {
+      params: {
+        network,
+      },
+    });
 
     return NextResponse.json({
       code: "QUOTE_SUCCESS",

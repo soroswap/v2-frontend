@@ -35,16 +35,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    console.log("Imhere");
     const body = await request.json();
-    console.log("body", body);
 
-    const buildXdrResponse = await api.post(
-      `quote/build?network=${network}`,
-      body,
-    );
-
-    console.log("buildXdrResponse = ", buildXdrResponse);
+    const buildXdrResponse = await api.post("/quote/build", body, {
+      params: {
+        network,
+      },
+    });
 
     return NextResponse.json({
       code: "BUILD_XDR_SUCCESS",
