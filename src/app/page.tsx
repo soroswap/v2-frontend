@@ -73,6 +73,7 @@ export default function SwapPage() {
     token: null,
   });
 
+  /* Initialize the sell token with the first token in the list */
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
       setSell((prev) => ({
@@ -82,6 +83,7 @@ export default function SwapPage() {
     }
   }, [isLoading, tokensList]);
 
+  /* Update the token amount when the quote is received */
   useEffect(() => {
     if (quote && quote.tradeType === TradeType.EXACT_IN) {
       setBuy((prev) => ({
@@ -113,11 +115,6 @@ export default function SwapPage() {
 
     debounceTimeoutRef.current = setTimeout(() => {
       setIsUserTyping(false);
-
-      // if (!buy.token || !sell.token || !activeField) {
-      //   setActiveField(null);
-      //   return;
-      // }
 
       if (
         activeField === "sell" &&
