@@ -2,10 +2,16 @@ import { cn } from "@/lib/utils/cn";
 import { ButtonHTMLAttributes } from "react";
 import { ArrowDown } from "lucide-react";
 
+interface RotateArrowButtonProps
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
+  isLoading?: boolean;
+}
+
 export const RotateArrowButton = ({
   className,
+  isLoading = false,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement>) => {
+}: RotateArrowButtonProps) => {
   return (
     <button
       className={cn(
@@ -15,7 +21,11 @@ export const RotateArrowButton = ({
       {...props}
     >
       <div className="flex items-center justify-center rounded-full border-4 border-[#181A25] bg-[#CFFFD9] p-2 transition-all duration-300 group-hover:bg-[#CFFFD9]/80">
-        <ArrowDown className="size-6 text-[#232136]" />
+        {isLoading ? (
+          <div className="size-6 animate-spin rounded-full border-2 border-[#232136] border-t-transparent" />
+        ) : (
+          <ArrowDown className="size-6 text-[#232136]" />
+        )}
       </div>
     </button>
   );

@@ -111,12 +111,13 @@ export default function SwapPage() {
       clearTimeout(debounceTimeoutRef.current);
     }
 
-    if (!buy.token || !sell.token || !activeField) {
-      return;
-    }
-
     debounceTimeoutRef.current = setTimeout(() => {
       setIsUserTyping(false);
+
+      // if (!buy.token || !sell.token || !activeField) {
+      //   setActiveField(null);
+      //   return;
+      // }
 
       if (
         activeField === "sell" &&
@@ -139,8 +140,8 @@ export default function SwapPage() {
           slippageTolerance: "100",
           assetList: ["soroswap"],
           maxHops: 2,
-          from: userAddress ?? "",
-          to: userAddress ?? "",
+          // from: userAddress ?? "",
+          // to: userAddress ?? "",
         });
       } else if (
         activeField === "buy" &&
@@ -163,8 +164,8 @@ export default function SwapPage() {
           slippageTolerance: "100",
           assetList: ["soroswap"],
           maxHops: 2,
-          from: userAddress ?? "",
-          to: userAddress ?? "",
+          // from: userAddress ?? "",
+          // to: userAddress ?? "",
         });
       }
 
@@ -287,6 +288,7 @@ export default function SwapPage() {
                   ? "rotate-180 transition-transform duration-300"
                   : "rotate-0 transition-transform duration-300",
               )}
+              isLoading={isUserTyping || isQuoteLoading}
             />
           </div>
           <div>
@@ -301,9 +303,6 @@ export default function SwapPage() {
             />
           </div>
           <div className="flex flex-col gap-2">
-            {isUserTyping && (
-              <div className="px-2 text-xs text-gray-400">🔄</div>
-            )}
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
