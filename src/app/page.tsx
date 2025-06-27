@@ -140,8 +140,6 @@ export default function SwapPage() {
           slippageTolerance: "100",
           assetList: ["soroswap"],
           maxHops: 2,
-          // from: userAddress ?? "",
-          // to: userAddress ?? "",
         });
       } else if (
         activeField === "buy" &&
@@ -164,8 +162,6 @@ export default function SwapPage() {
           slippageTolerance: "100",
           assetList: ["soroswap"],
           maxHops: 2,
-          // from: userAddress ?? "",
-          // to: userAddress ?? "",
         });
       }
 
