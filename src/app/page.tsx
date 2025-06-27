@@ -48,8 +48,8 @@ export default function SwapPage() {
   } = useSwap({
     onSuccess: (result: SwapResult) => {
       console.log("Swap completed successfully:", result);
-      setIsSwapModalOpen(false);
-      resetSwap();
+      setIsSwapModalOpen(true);
+      // resetSwap();
     },
     onError: (error: SwapError) => {
       console.error("Swap failed:", error);
