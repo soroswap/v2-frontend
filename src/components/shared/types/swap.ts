@@ -8,8 +8,6 @@ export type QuoteRequest = {
   slippageTolerance: string;
   assetList?: string[];
   maxHops?: number;
-  from?: string; // If user is connected send this [ Connected Wallet ]
-  to?: string; // If user is connected send this [ Connected Wallet ]
 };
 
 export interface QuoteResponse {
