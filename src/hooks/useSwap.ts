@@ -32,7 +32,7 @@ export interface UseSwapOptions {
 
 export function useSwap(options?: UseSwapOptions) {
   const [currentStep, setCurrentStep] = useState<SwapStep>(SwapStep.IDLE);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<SwapError | null>(null);
 
   const updateStep = useCallback(
@@ -56,7 +56,6 @@ export function useSwap(options?: UseSwapOptions) {
 
   const buildXdr = useCallback(
     async (quote: QuoteResponse["data"], userAddress: string) => {
-      console.log("quote BuildXdr = ", quote);
       const response = await fetch("/api/quote/build", {
         method: "POST",
         headers: {
@@ -93,7 +92,7 @@ export function useSwap(options?: UseSwapOptions) {
       },
       body: JSON.stringify({ xdr: signedXdr }),
     });
-    console.log("sendTransaction = ", response);
+
     if (!response.ok) {
       throw new Error(`Failed to send transaction: ${response.status}`);
     }
