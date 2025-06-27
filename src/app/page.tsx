@@ -230,7 +230,9 @@ export default function SwapPage() {
     try {
       console.log("Executing quote", quoteRequest);
       console.log("quote = ", quote);
-      await executeSwap(quote?.xdr ?? "", userAddress);
+      if (quote) {
+        await executeSwap(quote, userAddress);
+      }
     } catch (error) {
       console.error("Swap execution failed:", error);
     }

@@ -2,9 +2,11 @@
 import { useState, useCallback } from "react";
 import { STELLAR } from "@/lib/environmentVars";
 import { kit } from "@/lib/server/wallet";
+import { QuoteResponse } from "@/components/shared/types";
 
 export enum SwapStep {
   IDLE = "IDLE",
+  BUILDING_XDR = "BUILDING_XDR",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
   SUCCESS = "SUCCESS",
@@ -52,14 +54,31 @@ export function useSwap(options?: UseSwapOptions) {
     [options, updateStep],
   );
 
+  const buildXdr = useCallback(
+    async (quote: QuoteResponse["data"], userAddress: string) => {
+      console.log("quote BuildXdr = ", quote);
+      const response = await fetch("/api/quote/build", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          quote: quote,
+          from: userAddress,
+          to: userAddress,
+        }),
+      });
+      return response.json();
+    },
+    [],
+  );
+
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
       const { signedTxXdr } = await kit.signTransaction(xdr, {
         address: userAddress,
         networkPassphrase: STELLAR.WALLET_NETWORK,
       });
-
-      console.log("signedTxXdr = ", signedTxXdr);
 
       return signedTxXdr;
     },
@@ -83,14 +102,21 @@ export function useSwap(options?: UseSwapOptions) {
   }, []);
 
   const executeSwap = useCallback(
-    async (xdr: string, userAddress: string): Promise<SwapResult> => {
+    async (
+      quote: QuoteResponse["data"],
+      userAddress: string,
+    ): Promise<SwapResult> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Step 1: Sign transaction
+        // Step 1: Build XDR
+        updateStep(SwapStep.BUILDING_XDR);
+        const xdr = await buildXdr(quote, userAddress);
+
+        // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr, userAddress);
+        const signedXdr = await signTransaction(xdr.data.xdr, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);
@@ -117,6 +143,7 @@ export function useSwap(options?: UseSwapOptions) {
       currentStep,
       updateStep,
       handleError,
+      buildXdr,
       signTransaction,
       sendTransaction,
       options,

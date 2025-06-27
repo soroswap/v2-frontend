@@ -3,6 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { api, ALLOWED_ORIGINS } from "@/lib/server";
 import { network } from "@/lib/environmentVars";
 
+// interface StellarTransactionResponse {
+//   status: "SUCCESS" | "FAILED" | "PENDING";
+//   hash: string;
+//   feeCharged: number;
+//   envelopeXdr: string;
+//   resultXdr: string;
+//   resultMetaXdr: string;
+//   returnValue: string;
+//   diagnosticEventsXdr: string[];
+//   txHash: string;
+//   latestLedger: number;
+//   latestLedgerCloseTime: string;
+//   oldestLedger: number;
+//   oldestLedgerCloseTime: string;
+//   ledger: number;
+//   createdAt: string;
+//   applicationOrder: number;
+//   feeBump: boolean;
+// }
+
 interface SendTransactionResponse {
   xdr: string;
 }
