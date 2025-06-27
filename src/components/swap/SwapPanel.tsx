@@ -19,8 +19,8 @@ export const SwapPanel = ({
   isLoading,
 }: {
   label: string;
-  amount: number;
-  setAmount: (v: number) => void;
+  amount: string | undefined;
+  setAmount: (v: string | undefined) => void;
   token?: TokenType | null;
   variant?: "default" | "outline";
   onSelectToken?: (token: TokenType | null) => void;
@@ -47,11 +47,22 @@ export const SwapPanel = ({
       <div className="flex max-h-[43.5px] items-end justify-between">
         <input
           className="hide-number-spin w-full bg-transparent text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(Number(e.target.value))}
+          type="text"
+          value={amount !== undefined ? String(amount) : ""}
+          onChange={(e) => {
+            const value = e.target.value;
+
+            // Allow only numbers and decimal point
+            if (value === "" || /^\d*\.?\d*$/.test(value)) {
+              if (value === "") {
+                setAmount(undefined);
+              } else {
+                // Store as string to preserve typing state (like "0." while typing "0.5")
+                setAmount(value);
+              }
+            }
+          }}
           placeholder="0"
-          min="0"
           disabled={isLoading || !token}
         />
 
@@ -68,7 +79,7 @@ export const SwapPanel = ({
           {isLoading || price === null ? (
             <div className="skeleton h-5 w-20 bg-[#23243a]" />
           ) : (
-            `$${Number(price * amount).toFixed(2)}`
+            `$${Number(price * (Number(amount) || 0)).toFixed(2)}`
           )}
         </span>
       </div>

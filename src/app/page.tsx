@@ -24,7 +24,7 @@ import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
 
 export interface Swap {
-  amount: number;
+  amount: string | undefined;
   token: TokenType | null;
 }
 
@@ -64,12 +64,12 @@ export default function SwapPage() {
   });
 
   const [sell, setSell] = useState<Swap>({
-    amount: 0,
+    amount: undefined,
     token: null,
   });
 
   const [buy, setBuy] = useState<Swap>({
-    amount: 0,
+    amount: undefined,
     token: null,
   });
 
@@ -86,24 +86,22 @@ export default function SwapPage() {
     if (quote && quote.tradeType === TradeType.EXACT_IN) {
       setBuy((prev) => ({
         ...prev,
-        amount: Number(
-          sell.amount > 0
+        amount:
+          sell.amount && Number(sell.amount) > 0
             ? formatUnits({
                 value: quote.trade.expectedAmountOut?.toString() ?? "0",
               }).toString()
             : "0",
-        ),
       }));
     } else if (quote && quote.tradeType === TradeType.EXACT_OUT) {
       setSell((prev) => ({
         ...prev,
-        amount: Number(
-          buy.amount > 0
+        amount:
+          buy.amount && Number(buy.amount) > 0
             ? formatUnits({
                 value: quote.trade.expectedAmountIn?.toString() ?? "0",
               }).toString()
             : "0",
-        ),
       }));
     }
   }, [quote]);
@@ -122,7 +120,8 @@ export default function SwapPage() {
 
       if (
         activeField === "sell" &&
-        sell.amount > 0 &&
+        sell.amount &&
+        Number(sell.amount) > 0 &&
         sell.token &&
         buy.token
       ) {
@@ -145,7 +144,8 @@ export default function SwapPage() {
         });
       } else if (
         activeField === "buy" &&
-        buy.amount > 0 &&
+        buy.amount &&
+        Number(buy.amount) > 0 &&
         buy.token &&
         sell.token
       ) {
@@ -206,13 +206,13 @@ export default function SwapPage() {
     });
   }, [sell, buy, isTokenSwitched]);
 
-  const handleSellAmountChange = useCallback((amount: number) => {
+  const handleSellAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("sell");
     setIsUserTyping(true);
     setSell((prev) => ({ ...prev, amount }));
   }, []);
 
-  const handleBuyAmountChange = useCallback((amount: number) => {
+  const handleBuyAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("buy");
     setIsUserTyping(true);
     setBuy((prev) => ({ ...prev, amount }));
@@ -272,7 +272,7 @@ export default function SwapPage() {
           <div className="relative z-10">
             <SwapPanel
               label="Sell"
-              amount={sell.amount || 0}
+              amount={sell.amount ?? undefined}
               setAmount={handleSellAmountChange}
               token={sell.token}
               variant="default"
@@ -292,7 +292,7 @@ export default function SwapPage() {
           <div>
             <SwapPanel
               label="Buy"
-              amount={buy.amount || 0}
+              amount={buy.amount ?? undefined}
               setAmount={handleBuyAmountChange}
               token={buy.token}
               variant="outline"
