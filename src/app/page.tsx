@@ -215,17 +215,13 @@ export default function SwapPage() {
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
-    if (!quoteRequest || !userAddress) {
-      console.error("Missing swap data or user address");
+    if (!quote || !userAddress) {
+      console.error("Missing quote or user address");
       return;
     }
 
     try {
-      console.log("Executing quote", quoteRequest);
-      console.log("quote = ", quote);
-      if (quote) {
-        await executeSwap(quote, userAddress);
-      }
+      await executeSwap(quote, userAddress);
     } catch (error) {
       console.error("Swap execution failed:", error);
     }
