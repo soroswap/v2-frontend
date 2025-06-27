@@ -204,12 +204,18 @@ export default function SwapPage() {
     setActiveField("sell");
     setIsUserTyping(true);
     setSell((prev) => ({ ...prev, amount }));
+    if (amount === undefined) {
+      setBuy((prev) => ({ ...prev, amount: undefined }));
+    }
   }, []);
 
   const handleBuyAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("buy");
     setIsUserTyping(true);
     setBuy((prev) => ({ ...prev, amount }));
+    if (amount === undefined) {
+      setSell((prev) => ({ ...prev, amount: undefined }));
+    }
   }, []);
 
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
