@@ -1,7 +1,8 @@
 "use client";
 
+import { ReactNode } from "react";
 import { SwapStep } from "@/hooks/useSwap";
-import { CheckIcon, XIcon } from "lucide-react";
+import { CheckIcon, Copy, XIcon } from "lucide-react";
 
 interface SwapModalProps {
   currentStep: SwapStep;
@@ -24,20 +25,59 @@ export const SwapModal = ({ currentStep, onClose }: SwapModalProps) => {
     }
   };
 
-  const getStepDescription = (step: SwapStep): string => {
-    switch (step) {
-      case SwapStep.WAITING_SIGNATURE:
-        return "Please sign the transaction in your wallet...";
-      case SwapStep.SENDING_TRANSACTION:
-        return "Submitting transaction to the network...";
-      case SwapStep.SUCCESS:
-        return "Your swap has been completed successfully!";
-      case SwapStep.ERROR:
-        return "Something went wrong. Please try again.";
-      default:
-        return "Processing your request...";
-    }
+  // TODO: Adjust the modal to pass the generic data and adjust the type of it to be more generic;
+  const getStepDescriptions: Record<
+    Exclude<SwapStep, SwapStep.IDLE>,
+    ReactNode
+  > = {
+    [SwapStep.WAITING_SIGNATURE]: (
+      <div>
+        <p>Please sign the transaction in your wallet...</p>
+      </div>
+    ),
+    [SwapStep.BUILDING_XDR]: (
+      <div>
+        <p>Building transaction...</p>
+      </div>
+    ),
+    [SwapStep.SENDING_TRANSACTION]: (
+      <div>
+        <p>Submitting transaction to the network...</p>
+      </div>
+    ),
+    [SwapStep.SUCCESS]: (
+      <div>
+        <p>Your swap has been completed successfully!</p>
+        <p>View on Stellar.Expert</p>
+        <div className="flex items-center justify-center gap-2">
+          <p>Copy transaction hash</p>
+          <button>
+            <Copy className="size-3" />
+          </button>
+        </div>
+      </div>
+    ),
+    [SwapStep.ERROR]: (
+      <div>
+        <p>Something went wrong. Please try again.</p>
+      </div>
+    ),
   };
+
+  // const getStepDescription = (step: SwapStep): string => {
+  //   switch (step) {
+  //     case SwapStep.WAITING_SIGNATURE:
+  //       return "Please sign the transaction in your wallet...";
+  //     case SwapStep.SENDING_TRANSACTION:
+  //       return "Submitting transaction to the network...";
+  //     case SwapStep.SUCCESS:
+  //       return "Your swap has been completed successfully!";
+  //     case SwapStep.ERROR:
+  //       return "Something went wrong. Please try again.";
+  //     default:
+  //       return "Processing your request...";
+  //   }
+  // };
 
   const isLoading = ![SwapStep.SUCCESS, SwapStep.ERROR].includes(currentStep);
 
@@ -76,7 +116,11 @@ export const SwapModal = ({ currentStep, onClose }: SwapModalProps) => {
 
           {/* Description */}
           <p className="mb-6 text-gray-400">
-            {getStepDescription(currentStep)}
+            {
+              getStepDescriptions[
+                currentStep as Exclude<SwapStep, SwapStep.IDLE>
+              ]
+            }
           </p>
 
           {!isLoading && (
