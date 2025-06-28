@@ -8,7 +8,7 @@ import { useTokenPrice } from "@/hooks/useTokenPrice";
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
 /* -------------------------------------------------------------------------- */
-/** Generic panel used for both “Sell” & “Buy” */
+/** Generic panel used for both "Sell" & "Buy" */
 export const SwapPanel = ({
   label,
   amount,
@@ -76,11 +76,11 @@ export const SwapPanel = ({
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
-        <div className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
+        <div className="mt-1 h-5 min-w-20 text-base text-[#A0A3C4] sm:text-lg">
           {isLoading || price === null ? (
-            <div className="skeleton h-5 w-20 bg-[#23243a]" />
+            <div className="skeleton h-full w-20" />
           ) : (
-            <span className="h-5 w-20">
+            <span className="flex h-full items-center">
               {`$${Number(price * (Number(amount) || 0)).toFixed(2)}`}
             </span>
           )}
