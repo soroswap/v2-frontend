@@ -63,7 +63,8 @@ export const SwapPanel = ({
             }
           }}
           placeholder="0"
-          disabled={isLoading || !token}
+          readOnly={isLoading}
+          disabled={!token}
         />
 
         <TokenSelector
@@ -75,13 +76,15 @@ export const SwapPanel = ({
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
-        <span className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
+        <div className="mt-1 text-base text-[#A0A3C4] sm:text-lg">
           {isLoading || price === null ? (
             <div className="skeleton h-5 w-20 bg-[#23243a]" />
           ) : (
-            `$${Number(price * (Number(amount) || 0)).toFixed(2)}`
+            <span className="h-5 w-20">
+              {`$${Number(price * (Number(amount) || 0)).toFixed(2)}`}
+            </span>
           )}
-        </span>
+        </div>
       </div>
     </div>
   );
