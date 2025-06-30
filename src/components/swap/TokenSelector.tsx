@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils/cn";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTokensList } from "@/hooks/useTokensList";
 import { TokenType } from "@/components/shared/types/token";
 import { ChevronDown, XIcon } from "lucide-react";
@@ -18,11 +18,18 @@ export const TokenSelector = ({
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { tokensList } = useTokensList();
+  const [searchValue, setSearchValue] = useState<string>("");
 
   const handleSelectToken = (token: TokenType | null) => {
     onSelect?.(token);
     setIsOpen(false);
   };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchValue("");
+    }
+  }, [searchValue, isOpen]);
 
   return (
     <>
@@ -59,9 +66,9 @@ export const TokenSelector = ({
             onClick={() => setIsOpen(false)}
           />
           {/* Sheet */}
-          <div className="relative z-50 flex max-h-[70vh] w-full max-w-sm flex-col rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
+          <div className="relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
             {/* Header */}
-            <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center justify-between">
               <span className="text-lg font-medium text-white">
                 Select a token
               </span>
@@ -73,23 +80,38 @@ export const TokenSelector = ({
               </button>
             </div>
 
+            <div className="flex items-center space-y-2">
+              <input
+                type="text"
+                placeholder="Search name"
+                className="w-full rounded-lg border border-[#35374a] bg-[#23243a] px-3 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none"
+                onChange={(e) => {
+                  setSearchValue(e.target.value);
+                }}
+              />
+            </div>
+
             <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
-              {tokensList.map((token: TokenType) => (
-                <button
-                  key={token.contract}
-                  onClick={() => handleSelectToken(token)}
-                  className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
-                >
-                  <Image
-                    src={token?.icon ?? ""}
-                    alt={token?.name ?? ""}
-                    width={28}
-                    height={28}
-                    className="rounded-full bg-white"
-                  />
-                  <span className="font-medium text-white">{token.code}</span>
-                </button>
-              ))}
+              {tokensList
+                .filter((token) =>
+                  token.code.toLowerCase().includes(searchValue.toLowerCase()),
+                )
+                .map((token: TokenType) => (
+                  <button
+                    key={token.contract}
+                    onClick={() => handleSelectToken(token)}
+                    className="flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-[#23243a]"
+                  >
+                    <Image
+                      src={token?.icon ?? ""}
+                      alt={token?.name ?? ""}
+                      width={28}
+                      height={28}
+                      className="rounded-full bg-white"
+                    />
+                    <span className="font-medium text-white">{token.code}</span>
+                  </button>
+                ))}
             </div>
           </div>
         </div>

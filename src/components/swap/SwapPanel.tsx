@@ -3,7 +3,8 @@
 import { TokenSelector } from "@/components/swap/TokenSelector";
 import { TokenType } from "@/components/shared/types/token";
 import { cn } from "@/lib/utils/cn";
-import { useTokenPrice } from "@/hooks/useTokenPrice";
+import { PricePanel } from "@/components/swap/PricePanel";
+import { TokenAmountInput } from "@/components/swap/TokenAmountInput";
 
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
@@ -26,8 +27,6 @@ export const SwapPanel = ({
   onSelectToken?: (token: TokenType | null) => void;
   isLoading: boolean;
 }) => {
-  const { price } = useTokenPrice(token?.contract ?? null);
-
   return (
     <div
       className={cn(
@@ -45,26 +44,11 @@ export const SwapPanel = ({
 
       {/* Amount + token */}
       <div className="flex max-h-[43.5px] items-end justify-between">
-        <input
-          className="hide-number-spin w-full bg-transparent text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
-          type="text"
-          value={amount !== undefined ? String(amount) : ""}
-          onChange={(e) => {
-            const value = e.target.value;
-
-            // Allow only numbers and decimal point
-            if (value === "" || /^\d*\.?\d*$/.test(value)) {
-              if (value === "") {
-                setAmount(undefined);
-              } else {
-                // Store as string to preserve typing state (like "0." while typing "0.5")
-                setAmount(value);
-              }
-            }
-          }}
-          placeholder="0"
-          readOnly={isLoading}
-          disabled={!token}
+        <TokenAmountInput
+          amount={amount}
+          setAmount={setAmount}
+          isLoading={isLoading}
+          token={token}
         />
 
         <TokenSelector
@@ -76,15 +60,7 @@ export const SwapPanel = ({
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
-        <div className="mt-1 h-5 min-w-20 text-base text-[#A0A3C4] sm:text-lg">
-          {isLoading || price === null ? (
-            <div className="skeleton h-full w-20" />
-          ) : (
-            <span className="flex h-full items-center">
-              {`$${Number(price * (Number(amount) || 0)).toFixed(2)}`}
-            </span>
-          )}
-        </div>
+        <PricePanel isLoading={isLoading} token={token} amount={amount} />
       </div>
     </div>
   );

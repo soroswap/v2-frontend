@@ -36,7 +36,6 @@ export default function SwapPage() {
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
-
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
@@ -163,7 +162,7 @@ export default function SwapPage() {
       }
 
       setActiveField(null);
-    }, 3000);
+    }, 500);
 
     return () => {
       if (debounceTimeoutRef.current) {
@@ -171,6 +170,19 @@ export default function SwapPage() {
       }
     };
   }, [buy, sell, activeField]);
+
+  /* Reset the amount of token when the user is still typing the amount of the other token */
+  useEffect(() => {
+    if (activeField === "sell" && buy.amount && Number(buy.amount) > 0) {
+      setBuy((prev) => ({ ...prev, amount: undefined }));
+    } else if (
+      activeField === "buy" &&
+      sell.amount &&
+      Number(sell.amount) > 0
+    ) {
+      setSell((prev) => ({ ...prev, amount: undefined }));
+    }
+  }, [activeField]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
@@ -285,7 +297,7 @@ export default function SwapPage() {
                   ? "rotate-180 transition-transform duration-300"
                   : "rotate-0 transition-transform duration-300",
               )}
-              isLoading={isUserTyping || isQuoteLoading}
+              isLoading={isQuoteLoading}
             />
           </div>
           <div>
