@@ -93,8 +93,14 @@ export const TokenSelector = ({
 
             <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
               {tokensList
-                .filter((token) =>
-                  token.code.toLowerCase().includes(searchValue.toLowerCase()),
+                .filter(
+                  (token) =>
+                    token.code
+                      .toLowerCase()
+                      .includes(searchValue.toLowerCase()) ||
+                    token.contract
+                      .toLowerCase()
+                      .includes(searchValue.toLowerCase()),
                 )
                 .map((token: TokenType) => (
                   <button
