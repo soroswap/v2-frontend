@@ -22,11 +22,37 @@ import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { SwapModal } from "@/components/swap/SwapModal";
 import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
+// import { SwapSettingsModal } from "@/components/swap/SwapSettingsModal";
+// import {  SwapQuoteDetails } from "@/components/swap";
 
 export interface Swap {
   amount: string | undefined;
   token: TokenType | null;
 }
+
+// interface SwapSettings {
+//   slippageMode: "auto" | "custom";
+//   customSlippage: string;
+//   maxHops: number;
+//   protocols: {
+//     sdex: boolean;
+//     soroswap: boolean;
+//     phoenix: boolean;
+//     aqua: boolean;
+//   };
+// }
+
+// const DEFAULT_SWAP_SETTINGS: SwapSettings = {
+//   slippageMode: "auto",
+//   customSlippage: "1",
+//   maxHops: 2,
+//   protocols: {
+//     sdex: true,
+//     soroswap: true,
+//     phoenix: true,
+//     aqua: true,
+//   },
+// };
 
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
@@ -37,7 +63,12 @@ export default function SwapPage() {
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
+  // const [isSettingsModalOpen, setIsSettingsModalOpen] =
+  //   useState<boolean>(false);
+  // const [swapSettings, setSwapSettings] = useState<SwapSettings>(
+  //   DEFAULT_SWAP_SETTINGS,
+  // );
+  console.log("isUserTyping", isUserTyping);
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
   const {
     executeSwap,
@@ -269,7 +300,10 @@ export default function SwapPage() {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xl text-white sm:text-2xl">Swap</p>
-          <button className="cursor-pointer rounded-full p-1 transition hover:bg-[#8866DD]/20">
+          <button
+            // onClick={() => setIsSettingsModalOpen(true)}
+            className="cursor-pointer rounded-full p-1 transition hover:bg-[#8866DD]/20"
+          >
             <Image
               src="/settingsIcon.svg"
               alt="Settings"
@@ -311,6 +345,16 @@ export default function SwapPage() {
               isLoading={isQuoteLoading}
             />
           </div>
+          {/* 
+          {quote && (
+            <SwapQuoteDetails
+              quote={quote}
+              sellToken={sell.token}
+              buyToken={buy.token}
+              className="mt-4"
+            />
+          )} */}
+
           <div className="flex flex-col gap-2">
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
@@ -340,6 +384,14 @@ export default function SwapPage() {
             }}
           />
         )}
+        {/* {isSettingsModalOpen && (
+          <SwapSettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+            settings={swapSettings}
+            onSettingsChange={setSwapSettings}
+          />
+        )} */}
       </div>
     </main>
   );
