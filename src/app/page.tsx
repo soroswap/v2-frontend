@@ -109,10 +109,7 @@ export default function SwapPage() {
   /* Initialize the sell token with the first token in the list */
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
-      setSell((prev) => ({
-        ...prev,
-        token: tokensList[0],
-      }));
+      handleSelectSellToken(tokensList[0]);
     }
   }, [isLoading, tokensList]);
 
