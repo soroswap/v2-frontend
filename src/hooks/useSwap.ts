@@ -19,6 +19,7 @@ export interface SwapError {
   details?: any;
 }
 
+//TODO: Check the response from sendTransaction
 export interface SwapResult {
   txHash?: string;
   success: boolean;
@@ -90,7 +91,7 @@ export function useSwap(options?: UseSwapOptions) {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ xdr: signedXdr }),
+      body: JSON.stringify(signedXdr),
     });
 
     if (!response.ok) {
@@ -115,7 +116,7 @@ export function useSwap(options?: UseSwapOptions) {
 
         // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr.data.xdr, userAddress);
+        const signedXdr = await signTransaction(xdr.data, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);

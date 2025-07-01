@@ -1,4 +1,5 @@
-import { Networks } from "@stellar/stellar-sdk";
+import { WalletNetwork } from "@creit.tech/stellar-wallets-kit/types";
+import { SupportedNetworks } from "@soroswap/sdk";
 import { z } from "zod";
 
 /**
@@ -44,14 +45,17 @@ export const envVars = {
   STELLAR: {
     WALLET_NETWORK:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
-        ? Networks.TESTNET
-        : Networks.PUBLIC,
+        ? WalletNetwork.TESTNET
+        : WalletNetwork.PUBLIC,
   },
 
-  SERVER: {
-    SOROSWAP_API_URL: process.env.SOROSWAP_API_URL,
-    SOROSWAP_API_EMAIL: process.env.SOROSWAP_API_EMAIL,
-    SOROSWAP_API_PASSWORD: process.env.SOROSWAP_API_PASSWORD,
+  SOROSWAP: {
+    EMAIL: process.env.SOROSWAP_EMAIL || "",
+    PASSWORD: process.env.SOROSWAP_PASSWORD || "",
+    NETWORK:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? SupportedNetworks.TESTNET
+        : SupportedNetworks.MAINNET,
   },
 };
 
@@ -59,6 +63,6 @@ export const {
   isDev: isTestnetEnv,
   isProduction: isProductionEnv,
   STELLAR,
-  SERVER,
+  SOROSWAP,
   network,
 } = envVars;

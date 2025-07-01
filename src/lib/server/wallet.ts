@@ -4,12 +4,11 @@ import {
   StellarWalletsKit,
   ALBEDO_ID,
   allowAllModules,
-  WalletNetwork,
 } from "@creit.tech/stellar-wallets-kit";
-import { STELLAR } from "../environmentVars";
+import { STELLAR } from "@/lib/environmentVars";
 
 export const kit: StellarWalletsKit = new StellarWalletsKit({
-  network: STELLAR.WALLET_NETWORK as unknown as WalletNetwork,
+  network: STELLAR.WALLET_NETWORK,
   selectedWalletId: ALBEDO_ID,
   modules: allowAllModules(),
 });

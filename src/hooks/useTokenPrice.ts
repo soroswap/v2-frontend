@@ -1,19 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import useSWR from "swr";
-import { formatUnits } from "@/lib/utils/parseUnits";
-
-interface PriceData {
-  price: number;
-}
+import { PriceData } from "@soroswap/sdk";
 
 interface PriceResponse {
+  code: string;
   data: PriceData;
 }
 
 const fetcher = async (
   url: string,
   contractAddress: string,
-): Promise<number> => {
+): Promise<PriceResponse> => {
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -25,11 +22,13 @@ const fetcher = async (
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const result: PriceResponse = await response.json();
+  const result = await response.json();
+  console.log("result", result);
 
-  const priceParsed = Number(formatUnits({ value: result.data.price }));
-
-  return priceParsed;
+  return {
+    code: result.code,
+    data: result.data,
+  };
 };
 
 export function useTokenPrice(contractAddress: string | null) {
@@ -46,7 +45,7 @@ export function useTokenPrice(contractAddress: string | null) {
   );
 
   return {
-    price: data || null,
+    price: data?.data.price || null,
     isLoading,
     isError: error,
     mutate,

@@ -12,6 +12,8 @@
     "@creit.tech/stellar-wallets-kit": "^1.7.5",
     "@stellar/stellar-sdk": "^13.3.0",
     "axios": "^1.10.0",
+    "class-variance-authority": "^0.7.1",
+    "@soroswap/sdk": "0.1.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.522.0",
     "next": "15.3.3",

@@ -27,7 +27,7 @@ export const PricePanel = ({
             : `$${new Intl.NumberFormat("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              }).format(Number(price * Number(amount || 0)))}`}
+              }).format(Number(price) * Number(amount || 0))}`}
         </span>
       )}
     </div>

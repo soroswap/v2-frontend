@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { QuoteResponse } from "@/components/shared/types";
-import { network } from "@/lib/environmentVars";
-import { ALLOWED_ORIGINS, api } from "@/lib/server";
+import { network, SOROSWAP } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+import { BuildQuoteRequest } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
-
-// export interface BuildXDR {
-//   from: string;
-//   to: string;
-//   quote: QuoteResponse["data"];
-// }
 
 export async function POST(request: NextRequest) {
   const origin =
@@ -35,17 +30,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json();
+    const body: BuildQuoteRequest = await request.json();
 
-    const buildXdrResponse = await api.post("/quote/build", body, {
-      params: {
-        network,
-      },
-    });
+    const buildXdrResponse = await soroswapClient.build(body, SOROSWAP.NETWORK);
 
     return NextResponse.json({
       code: "BUILD_XDR_SUCCESS",
-      data: buildXdrResponse.data,
+      data: buildXdrResponse.xdr,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);
