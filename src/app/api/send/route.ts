@@ -3,6 +3,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
 import { network, SOROSWAP } from "@/lib/environmentVars";
 
+//TODO: Check the response from sendTransaction
+interface SendTransactionResponse {
+  status: string;
+  txHash: string;
+  latestLedger: number;
+  latestLedgerCloseTime: string;
+  oldestLedger: number;
+  oldestLedgerCloseTime: string;
+  ledger: number;
+  createdAt: string;
+  applicationOrder: number;
+  feeBump: boolean;
+  envelopeXdr: any;
+  resultXdr: any;
+  resultMetaXdr: any;
+  returnValue: any;
+  diagnosticEventsXdr: any;
+}
+
 export async function POST(request: NextRequest) {
   const origin =
     request.headers.get("origin") || request.headers.get("referer") || "";
@@ -30,11 +49,8 @@ export async function POST(request: NextRequest) {
   try {
     const xdr: string = await request.json();
 
-    const sendTransactionResponse = await soroswapClient.send(
-      xdr,
-      false,
-      SOROSWAP.NETWORK,
-    );
+    const sendTransactionResponse: SendTransactionResponse =
+      await soroswapClient.send(xdr, false, SOROSWAP.NETWORK);
 
     return NextResponse.json({
       code: "SEND_TRANSACTION_SUCCESS",

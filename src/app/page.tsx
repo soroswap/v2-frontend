@@ -62,6 +62,7 @@ export default function SwapPage() {
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
+  const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // const [isSettingsModalOpen, setIsSettingsModalOpen] =
   //   useState<boolean>(false);
@@ -78,11 +79,13 @@ export default function SwapPage() {
   } = useSwap({
     onSuccess: (result: SwapResult) => {
       console.log("Swap completed successfully:", result);
+      setSwapResult(result);
       setIsSwapModalOpen(true);
       // resetSwap();
     },
     onError: (error: SwapError) => {
       console.error("Swap failed:", error);
+      setSwapResult(null); // Clear result on error
       // Keep modal open to show error state
     },
     onStepChange: (step: SwapStep) => {
@@ -380,8 +383,10 @@ export default function SwapPage() {
             currentStep={currentStep}
             onClose={() => {
               setIsSwapModalOpen(false);
+              setSwapResult(null);
               resetSwap();
             }}
+            transactionHash={swapResult?.txHash}
           />
         )}
         {/* {isSettingsModalOpen && (

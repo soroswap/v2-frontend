@@ -127,7 +127,7 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const result: SwapResult = {
-          txHash: sendResult.hash,
+          txHash: sendResult.data.txHash,
           success: true,
         };
 
