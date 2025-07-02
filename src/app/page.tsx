@@ -19,18 +19,11 @@ import {
 import { SwapPanel, SwapModal, SwapSettingsModal } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useUserContext } from "@/contexts";
-import {
-  QuoteRequest,
-  TokenType,
-  TradeType,
-  SwapSettings,
-} from "@/components/shared/types";
+import { QuoteRequest, TokenType, TradeType } from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
-import { DEFAULT_SWAP_SETTINGS } from "@/lib/constants/swap";
-// import { SwapSettingsModal } from "@/components/swap/SwapSettingsModal";
-// import {  SwapQuoteDetails } from "@/components/swap";
+import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 
 export interface Swap {
   amount: string | undefined;
@@ -77,9 +70,7 @@ export default function SwapPage() {
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [swapSettings, setSwapSettings] = useState<SwapSettings>(
-    DEFAULT_SWAP_SETTINGS,
-  );
+  const { swapSettings } = useSwapSettingsStore();
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
 
@@ -118,8 +109,6 @@ export default function SwapPage() {
       }
     },
   });
-
-  console.log("swapSettings", swapSettings);
 
   function swapReducer(state: SwapState, action: SwapAction): SwapState {
     switch (action.type) {
@@ -248,7 +237,9 @@ export default function SwapPage() {
             tradeType: TradeType.EXACT_IN,
             protocols: swapSettings.protocols,
             parts: 10,
-            slippageTolerance: "100",
+            slippageTolerance: (
+              Number(swapSettings.customSlippage) * 100
+            ).toString(),
             assetList: ["soroswap"],
             maxHops: 2,
           },
@@ -263,7 +254,9 @@ export default function SwapPage() {
             tradeType: TradeType.EXACT_OUT,
             protocols: swapSettings.protocols,
             parts: 10,
-            slippageTolerance: "100",
+            slippageTolerance: (
+              Number(swapSettings.customSlippage) * 100
+            ).toString(),
             assetList: ["soroswap"],
             maxHops: 2,
           },
@@ -276,7 +269,7 @@ export default function SwapPage() {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [buy, sell]);
+  }, [buy, sell, swapSettings]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
@@ -466,8 +459,6 @@ export default function SwapPage() {
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
-            settings={swapSettings}
-            onSettingsChange={setSwapSettings}
           />
         )}
       </div>

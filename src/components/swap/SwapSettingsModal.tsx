@@ -4,28 +4,25 @@ import { useState } from "react";
 import { ChevronDown, Info, ExternalLink, AlertTriangle } from "lucide-react";
 import { Modal } from "@/components/shared/components/Modal";
 import { cn } from "@/lib/utils/cn";
-import { SwapSettings } from "@/components/shared/types";
 import { ToggleButton } from "@/components/shared/components/buttons";
 import { SupportedProtocols } from "@soroswap/sdk";
 import { isDecimalInRange } from "@/lib/utils/validators";
+import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 
 interface SwapSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  settings: SwapSettings;
-  onSettingsChange: (settings: SwapSettings) => void;
 }
 
 export const SwapSettingsModal = ({
   isOpen,
   onClose,
-  settings,
-  onSettingsChange,
 }: SwapSettingsModalProps) => {
   const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
+  const { swapSettings: settings, setSwapSettings } = useSwapSettingsStore();
 
   const handleSlippageModeChange = (mode: "auto" | "custom") => {
-    onSettingsChange({
+    setSwapSettings({
       ...settings,
       slippageMode: mode,
       customSlippage: mode === "auto" ? "1" : settings.customSlippage,
@@ -37,7 +34,7 @@ export const SwapSettingsModal = ({
     const normalized = value.startsWith(".") ? `0${value}` : value;
 
     if (isDecimalInRange(normalized, 0, 100, 2)) {
-      onSettingsChange({
+      setSwapSettings({
         ...settings,
         customSlippage: normalized,
       });
@@ -62,7 +59,7 @@ export const SwapSettingsModal = ({
       ? settings.protocols.filter((p) => p !== protocol)
       : [...settings.protocols, protocol];
 
-    onSettingsChange({
+    setSwapSettings({
       ...settings,
       protocols: updatedProtocols,
     });
