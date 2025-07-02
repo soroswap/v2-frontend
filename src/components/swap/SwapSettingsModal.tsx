@@ -128,19 +128,15 @@ export const SwapSettingsModal = ({
                 className={cn(
                   "w-[70px] rounded-lg border border-transparent bg-[#23243a] p-2 text-center text-sm text-white outline-none",
                   settings.slippageMode === "auto" && "opacity-50",
-                  Number(settings.customSlippage) >= 5 &&
-                    "border-yellow-400 text-yellow-400",
-                  Number(settings.customSlippage) > 20 &&
-                    "border-red-400 text-red-400",
+                  slippageColor,
                 )}
                 placeholder="0"
               />
               <span
                 className={cn(
                   "pointer-events-none absolute inset-y-0 right-2 flex items-center text-sm text-gray-400",
-                  Number(settings.customSlippage) >= 5 && "text-yellow-400",
-                  Number(settings.customSlippage) > 20 && "text-red-400",
                   settings.slippageMode === "auto" && "opacity-50",
+                  slippageColor,
                 )}
               >
                 %
