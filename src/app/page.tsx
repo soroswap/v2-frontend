@@ -3,7 +3,14 @@
 
 import Image from "next/image";
 import { cn } from "@/lib/utils/cn";
-import { useState, useEffect, useCallback, MouseEvent, useRef } from "react";
+import {
+  useState,
+  useReducer,
+  useEffect,
+  useCallback,
+  MouseEvent,
+  useRef,
+} from "react";
 import {
   TheButton,
   RotateArrowButton,
@@ -53,20 +60,73 @@ export interface Swap {
 //   },
 // };
 
+interface SwapState {
+  sell: Swap;
+  buy: Swap;
+}
+
+const initialSwapState: SwapState = {
+  sell: { amount: undefined, token: null },
+  buy: { amount: undefined, token: null },
+};
+
+type SwapAction =
+  | { type: "SET_SELL_AMOUNT"; amount: string | undefined }
+  | { type: "SET_BUY_AMOUNT"; amount: string | undefined }
+  | { type: "SET_SELL_TOKEN"; token: TokenType | null }
+  | { type: "SET_BUY_TOKEN"; token: TokenType | null }
+  | { type: "SWITCH_TOKENS" };
+
+function swapReducer(state: SwapState, action: SwapAction): SwapState {
+  switch (action.type) {
+    case "SET_SELL_AMOUNT":
+      return { ...state, sell: { ...state.sell, amount: action.amount } };
+    case "SET_BUY_AMOUNT":
+      return { ...state, buy: { ...state.buy, amount: action.amount } };
+    case "SET_SELL_TOKEN":
+      return { ...state, sell: { ...state.sell, token: action.token } };
+    case "SET_BUY_TOKEN":
+      return { ...state, buy: { ...state.buy, token: action.token } };
+    case "SWITCH_TOKENS":
+      return { sell: { ...state.buy }, buy: { ...state.sell } };
+    default:
+      return state;
+  }
+}
+
+type QuoteRequestAction = { type: "SET"; payload: QuoteRequest | null };
+
+function quoteRequestReducer(
+  _state: QuoteRequest | null,
+  action: QuoteRequestAction,
+): QuoteRequest | null {
+  switch (action.type) {
+    case "SET":
+      return action.payload;
+    default:
+      return _state;
+  }
+}
+
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
   const { tokensList, isLoading } = useTokensList();
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
-  const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // const [isSettingsModalOpen, setIsSettingsModalOpen] =
-  //   useState<boolean>(false);
-  // const [swapSettings, setSwapSettings] = useState<SwapSettings>(
-  //   DEFAULT_SWAP_SETTINGS,
-  // );
+
+  /* Swap (sell/buy) state handled by reducer */
+  const [swapState, dispatchSwap] = useReducer(swapReducer, initialSwapState);
+  const { sell, buy } = swapState;
+
+  /* Quote request state handled by reducer */
+  const [quoteRequest, dispatchQuoteRequest] = useReducer(
+    quoteRequestReducer,
+    null,
+  );
+
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
   const {
     executeSwap,
@@ -93,16 +153,6 @@ export default function SwapPage() {
     },
   });
 
-  const [sell, setSell] = useState<Swap>({
-    amount: undefined,
-    token: null,
-  });
-
-  const [buy, setBuy] = useState<Swap>({
-    amount: undefined,
-    token: null,
-  });
-
   /* Initialize the sell token with the first token in the list */
   useEffect(() => {
     if (!isLoading && tokensList.length > 0 && !sell.token) {
@@ -113,25 +163,25 @@ export default function SwapPage() {
   /* Update the token amount when the quote is received */
   useEffect(() => {
     if (quote && quote.tradeType === TradeType.EXACT_IN) {
-      setBuy((prev) => ({
-        ...prev,
+      dispatchSwap({
+        type: "SET_BUY_AMOUNT",
         amount:
           sell.amount && Number(sell.amount) > 0
             ? formatUnits({
                 value: quote.trade.expectedAmountOut?.toString() ?? "0",
               }).toString()
             : "0",
-      }));
+      });
     } else if (quote && quote.tradeType === TradeType.EXACT_OUT) {
-      setSell((prev) => ({
-        ...prev,
+      dispatchSwap({
+        type: "SET_SELL_AMOUNT",
         amount:
           buy.amount && Number(buy.amount) > 0
             ? formatUnits({
                 value: quote.trade.expectedAmountIn?.toString() ?? "0",
               }).toString()
             : "0",
-      }));
+      });
     }
   }, [quote]);
 
@@ -148,20 +198,23 @@ export default function SwapPage() {
         sell.token &&
         buy.token
       ) {
-        setQuoteRequest({
-          assetIn: sell.token.contract,
-          assetOut: buy.token.contract,
-          amount: parseUnits({ value: sell.amount.toString() }).toString(),
-          tradeType: TradeType.EXACT_IN,
-          protocols: [
-            SupportedProtocols.AQUA,
-            SupportedProtocols.SOROSWAP,
-            SupportedProtocols.PHOENIX,
-          ],
-          parts: 10,
-          slippageTolerance: "100",
-          assetList: ["soroswap"],
-          maxHops: 2,
+        dispatchQuoteRequest({
+          type: "SET",
+          payload: {
+            assetIn: sell.token.contract,
+            assetOut: buy.token.contract,
+            amount: parseUnits({ value: sell.amount.toString() }).toString(),
+            tradeType: TradeType.EXACT_IN,
+            protocols: [
+              SupportedProtocols.AQUA,
+              SupportedProtocols.SOROSWAP,
+              SupportedProtocols.PHOENIX,
+            ],
+            parts: 10,
+            slippageTolerance: "100",
+            assetList: ["soroswap"],
+            maxHops: 2,
+          },
         });
       } else if (
         activeField === "buy" &&
@@ -170,24 +223,33 @@ export default function SwapPage() {
         buy.token &&
         sell.token
       ) {
-        setQuoteRequest({
-          assetIn: buy.token.contract,
-          assetOut: sell.token.contract,
-          amount: parseUnits({ value: buy.amount.toString() }).toString(),
-          tradeType: TradeType.EXACT_OUT,
-          protocols: [
-            SupportedProtocols.AQUA,
-            SupportedProtocols.SOROSWAP,
-            SupportedProtocols.PHOENIX,
-          ],
-          parts: 10,
-          slippageTolerance: "100",
-          assetList: ["soroswap"],
-          maxHops: 2,
+        dispatchQuoteRequest({
+          type: "SET",
+          payload: {
+            assetIn: buy.token.contract,
+            assetOut: sell.token.contract,
+            amount: parseUnits({ value: buy.amount.toString() }).toString(),
+            tradeType: TradeType.EXACT_OUT,
+            protocols: [
+              SupportedProtocols.AQUA,
+              SupportedProtocols.SOROSWAP,
+              SupportedProtocols.PHOENIX,
+            ],
+            parts: 10,
+            slippageTolerance: "100",
+            assetList: ["soroswap"],
+            maxHops: 2,
+          },
         });
       }
 
-      setActiveField(null);
+      // Reset the activeField only after a quote was requested
+      if (
+        (activeField === "sell" && sell.token && buy.token) ||
+        (activeField === "buy" && sell.token && buy.token)
+      ) {
+        setActiveField(null);
+      }
     }, 500);
 
     return () => {
@@ -200,13 +262,13 @@ export default function SwapPage() {
   /* Reset the amount of token when the user is still typing the amount of the other token */
   useEffect(() => {
     if (activeField === "sell" && buy.amount && Number(buy.amount) > 0) {
-      setBuy((prev) => ({ ...prev, amount: undefined }));
+      dispatchSwap({ type: "SET_BUY_AMOUNT", amount: undefined });
     } else if (
       activeField === "buy" &&
       sell.amount &&
       Number(sell.amount) > 0
     ) {
-      setSell((prev) => ({ ...prev, amount: undefined }));
+      dispatchSwap({ type: "SET_SELL_AMOUNT", amount: undefined });
     }
   }, [activeField]);
 
@@ -222,35 +284,23 @@ export default function SwapPage() {
   };
 
   const handleSwitchToken = useCallback(() => {
-    setIsTokenSwitched(!isTokenSwitched);
-
-    const sellCopy = { ...sell };
-    const buyCopy = { ...buy };
-
-    setSell({
-      amount: buyCopy.amount,
-      token: buyCopy.token,
-    });
-
-    setBuy({
-      amount: sellCopy.amount,
-      token: sellCopy.token,
-    });
-  }, [sell, buy, isTokenSwitched]);
+    setIsTokenSwitched((prev) => !prev);
+    dispatchSwap({ type: "SWITCH_TOKENS" });
+  }, [dispatchSwap]);
 
   const handleSellAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("sell");
-    setSell((prev) => ({ ...prev, amount }));
+    dispatchSwap({ type: "SET_SELL_AMOUNT", amount });
     if (amount === undefined) {
-      setBuy((prev) => ({ ...prev, amount: undefined }));
+      dispatchSwap({ type: "SET_BUY_AMOUNT", amount: undefined });
     }
   }, []);
 
   const handleBuyAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("buy");
-    setBuy((prev) => ({ ...prev, amount }));
+    dispatchSwap({ type: "SET_BUY_AMOUNT", amount });
     if (amount === undefined) {
-      setSell((prev) => ({ ...prev, amount: undefined }));
+      dispatchSwap({ type: "SET_SELL_AMOUNT", amount: undefined });
     }
   }, []);
 
@@ -269,23 +319,37 @@ export default function SwapPage() {
     }
   };
 
-  const handleSelectSellToken = useCallback((token: TokenType | null) => {
-    if (token) {
-      setSell((prev) => ({
-        ...prev,
-        token,
-      }));
-    }
-  }, []);
+  const handleSelectSellToken = useCallback(
+    (token: TokenType | null) => {
+      if (!token) return;
+      // If same as current sell token, ignore
+      if (sell.token && token.contract === sell.token.contract) return;
 
-  const handleSelectBuyToken = useCallback((token: TokenType | null) => {
-    if (token) {
-      setBuy((prev) => ({
-        ...prev,
-        token,
-      }));
-    }
-  }, []);
+      // If selecting the token already on buy side -> switch
+      if (buy.token && token.contract === buy.token.contract) {
+        dispatchSwap({ type: "SWITCH_TOKENS" });
+        return;
+      }
+
+      dispatchSwap({ type: "SET_SELL_TOKEN", token });
+    },
+    [buy.token, sell.token],
+  );
+
+  const handleSelectBuyToken = useCallback(
+    (token: TokenType | null) => {
+      if (!token) return;
+      if (buy.token && token.contract === buy.token.contract) return;
+
+      if (sell.token && token.contract === sell.token.contract) {
+        dispatchSwap({ type: "SWITCH_TOKENS" });
+        return;
+      }
+
+      dispatchSwap({ type: "SET_BUY_TOKEN", token });
+    },
+    [sell.token, buy.token],
+  );
 
   return (
     <main className="flex min-h-screen items-center justify-center p-2">
@@ -311,10 +375,10 @@ export default function SwapPage() {
               label="Sell"
               amount={sell.amount ?? undefined}
               setAmount={handleSellAmountChange}
-              token={sell.token}
-              variant="default"
               onSelectToken={handleSelectSellToken}
               isLoading={isQuoteLoading}
+              currentToken={sell.token}
+              oppositeToken={buy.token}
             />
 
             <RotateArrowButton
@@ -332,10 +396,11 @@ export default function SwapPage() {
               label="Buy"
               amount={buy.amount ?? undefined}
               setAmount={handleBuyAmountChange}
-              token={buy.token}
               variant="outline"
               onSelectToken={handleSelectBuyToken}
               isLoading={isQuoteLoading}
+              currentToken={buy.token}
+              oppositeToken={sell.token}
             />
           </div>
           {/* 
@@ -353,7 +418,11 @@ export default function SwapPage() {
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
               <TheButton
-                disabled={!buy.token || !sell.token}
+                disabled={
+                  !buy.token ||
+                  !sell.token ||
+                  sell.token?.contract === buy.token?.contract
+                }
                 className={cn(
                   "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
                 )}

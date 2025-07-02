@@ -14,19 +14,23 @@ export const SwapPanel = ({
   label,
   amount,
   setAmount,
-  token,
   variant = "default",
   onSelectToken,
   isLoading,
+  currentToken,
+  oppositeToken,
 }: {
   label: string;
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
-  token?: TokenType | null;
   variant?: "default" | "outline";
   onSelectToken?: (token: TokenType | null) => void;
   isLoading: boolean;
+  currentToken: TokenType | null;
+  oppositeToken: TokenType | null;
 }) => {
+  const token = currentToken;
+
   return (
     <div
       className={cn(
@@ -52,8 +56,8 @@ export const SwapPanel = ({
         />
 
         <TokenSelector
-          token={token}
-          placeholder="Select token"
+          currentToken={currentToken}
+          oppositeToken={oppositeToken}
           onSelect={onSelectToken}
         />
       </div>
