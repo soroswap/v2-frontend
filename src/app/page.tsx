@@ -9,7 +9,7 @@ import {
   RotateArrowButton,
   ConnectWallet,
 } from "@/components/shared/components/buttons";
-import { SwapPanel } from "@/components/swap";
+import { SwapPanel, SwapModal } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useUserContext } from "@/contexts";
 import {
@@ -19,7 +19,6 @@ import {
   TradeType,
 } from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
-import { SwapModal } from "@/components/swap/SwapModal";
 import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
 // import { SwapSettingsModal } from "@/components/swap/SwapSettingsModal";
@@ -210,28 +209,6 @@ export default function SwapPage() {
       setSell((prev) => ({ ...prev, amount: undefined }));
     }
   }, [activeField]);
-
-  useEffect(() => {
-    if (sell.amount && sell.token) {
-      if (buy.token) {
-        setQuoteRequest({
-          assetIn: sell.token.contract,
-          assetOut: buy.token.contract,
-          amount: parseUnits({ value: sell.amount.toString() }).toString(),
-          tradeType: TradeType.EXACT_IN,
-          protocols: [
-            SupportedProtocols.AQUA,
-            SupportedProtocols.SOROSWAP,
-            SupportedProtocols.PHOENIX,
-          ],
-          parts: 10,
-          slippageTolerance: "100",
-          assetList: ["soroswap"],
-          maxHops: 2,
-        });
-      }
-    }
-  }, [sell, buy.token]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
