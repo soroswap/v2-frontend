@@ -76,52 +76,7 @@ type SwapAction =
   | { type: "SET_BUY_AMOUNT"; amount: string | undefined }
   | { type: "SET_SELL_TOKEN"; token: TokenType | null }
   | { type: "SET_BUY_TOKEN"; token: TokenType | null }
-  | { type: "SWITCH_TOKENS" };
-
-function swapReducer(state: SwapState, action: SwapAction): SwapState {
-  switch (action.type) {
-    case "SET_SELL_AMOUNT":
-      return {
-        ...state,
-        sell: {
-          ...state.sell,
-          amount: action.amount,
-          tradeType: TradeType.EXACT_IN,
-        },
-      };
-    case "SET_BUY_AMOUNT":
-      return {
-        ...state,
-        buy: {
-          ...state.buy,
-          amount: action.amount,
-          tradeType: TradeType.EXACT_OUT,
-        },
-      };
-    case "SET_SELL_TOKEN":
-      return { ...state, sell: { ...state.sell, token: action.token } };
-    case "SET_BUY_TOKEN":
-      return { ...state, buy: { ...state.buy, token: action.token } };
-    case "SWITCH_TOKENS":
-      console.log("SWITCH_TOKENS", state);
-      const switchedState = {
-        sell: {
-          amount: state.buy.amount,
-          token: state.buy.token,
-          tradeType: TradeType.EXACT_IN,
-        },
-        buy: {
-          amount: undefined,
-          token: state.sell.token,
-          tradeType: TradeType.EXACT_OUT,
-        },
-      } as const;
-      console.log("newState", switchedState);
-      return switchedState;
-    default:
-      return state;
-  }
-}
+  | { type: "SWITCH_TOKENS"; payload?: { isTokenSwitched: boolean } };
 
 type QuoteRequestAction = { type: "SET"; payload: QuoteRequest | null };
 
@@ -180,6 +135,68 @@ export default function SwapPage() {
       }
     },
   });
+
+  function swapReducer(state: SwapState, action: SwapAction): SwapState {
+    switch (action.type) {
+      case "SET_SELL_AMOUNT":
+        return {
+          ...state,
+          sell: {
+            ...state.sell,
+            amount: action.amount,
+            tradeType: TradeType.EXACT_IN,
+          },
+        };
+      case "SET_BUY_AMOUNT":
+        return {
+          ...state,
+          buy: {
+            ...state.buy,
+            amount: action.amount,
+            tradeType: TradeType.EXACT_OUT,
+          },
+        };
+      case "SET_SELL_TOKEN":
+        return { ...state, sell: { ...state.sell, token: action.token } };
+      case "SET_BUY_TOKEN":
+        return { ...state, buy: { ...state.buy, token: action.token } };
+      case "SWITCH_TOKENS":
+        console.log("SWITCH_TOKENS", state);
+        if (isTokenSwitched) {
+          const switchedState = {
+            sell: {
+              amount: state.buy.amount,
+              token: state.buy.token,
+              tradeType: TradeType.EXACT_IN,
+            },
+            buy: {
+              amount: undefined,
+              token: state.sell.token,
+              tradeType: TradeType.EXACT_OUT,
+            },
+          } as const;
+          console.log("newState IsTokenSwitched", switchedState);
+          return switchedState;
+        } else if (!isTokenSwitched) {
+          const switchedState = {
+            sell: {
+              amount: undefined,
+              token: state.buy.token,
+              tradeType: TradeType.EXACT_IN,
+            },
+            buy: {
+              amount: state.sell.amount,
+              token: state.sell.token,
+              tradeType: TradeType.EXACT_OUT,
+            },
+          } as const;
+          console.log("newState IsTokenNotSwitched", switchedState);
+          return switchedState;
+        }
+      default:
+        return state;
+    }
+  }
 
   /* Initialize the sell token with the first token in the list */
   useEffect(() => {
@@ -335,9 +352,13 @@ export default function SwapPage() {
   };
 
   const handleSwitchToken = useCallback(() => {
-    setIsTokenSwitched((prev) => !prev);
-    dispatchSwap({ type: "SWITCH_TOKENS" });
-  }, [dispatchSwap]);
+    const newSwitched = !isTokenSwitched;
+    setIsTokenSwitched(newSwitched);
+    dispatchSwap({
+      type: "SWITCH_TOKENS",
+      payload: { isTokenSwitched: newSwitched },
+    });
+  }, [dispatchSwap, isTokenSwitched]);
 
   const handleSellAmountChange = useCallback((amount: string | undefined) => {
     console.log("sell amount", amount);
