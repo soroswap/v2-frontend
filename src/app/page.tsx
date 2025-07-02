@@ -163,6 +163,7 @@ export default function SwapPage() {
       case "SWITCH_TOKENS":
         console.log("SWITCH_TOKENS", state);
         if (isTokenSwitched) {
+          // TODO: Check the behavior of swapping the tokens in initial state.
           const switchedState = {
             sell: {
               amount: state.buy.amount,
