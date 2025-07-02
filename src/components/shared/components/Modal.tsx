@@ -73,14 +73,14 @@ export const Modal = ({
       <div
         ref={modalRef}
         className={cn(
-          "w-full rounded-2xl border border-[#8866DD] bg-[#181A25] p-6 shadow-xl",
+          "flex w-full flex-col gap-4 rounded-2xl border border-[#8866DD] bg-[#181A25] p-6 shadow-xl",
           sizeClasses[size],
           className,
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center justify-between">
             {title && (
               <h2 className="text-xl font-semibold text-white">{title}</h2>
             )}

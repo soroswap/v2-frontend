@@ -16,18 +16,19 @@ import {
   RotateArrowButton,
   ConnectWallet,
 } from "@/components/shared/components/buttons";
-import { SwapPanel, SwapModal } from "@/components/swap";
+import { SwapPanel, SwapModal, SwapSettingsModal } from "@/components/swap";
 import { useTokensList } from "@/hooks/useTokensList";
 import { useUserContext } from "@/contexts";
 import {
   QuoteRequest,
-  SupportedProtocols,
   TokenType,
   TradeType,
+  SwapSettings,
 } from "@/components/shared/types";
 import { SwapStep, useSwap, SwapError, SwapResult } from "@/hooks/useSwap";
 import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
+import { DEFAULT_SWAP_SETTINGS } from "@/lib/constants/swap";
 // import { SwapSettingsModal } from "@/components/swap/SwapSettingsModal";
 // import {  SwapQuoteDetails } from "@/components/swap";
 
@@ -36,30 +37,6 @@ export interface Swap {
   token: TokenType | null;
   tradeType: TradeType;
 }
-
-// interface SwapSettings {
-//   slippageMode: "auto" | "custom";
-//   customSlippage: string;
-//   maxHops: number;
-//   protocols: {
-//     sdex: boolean;
-//     soroswap: boolean;
-//     phoenix: boolean;
-//     aqua: boolean;
-//   };
-// }
-
-// const DEFAULT_SWAP_SETTINGS: SwapSettings = {
-//   slippageMode: "auto",
-//   customSlippage: "1",
-//   maxHops: 2,
-//   protocols: {
-//     sdex: true,
-//     soroswap: true,
-//     phoenix: true,
-//     aqua: true,
-//   },
-// };
 
 interface SwapState {
   sell: Swap;
@@ -92,6 +69,7 @@ function quoteRequestReducer(
   }
 }
 
+//TODO: Add integrated tests to check if the  swap is working as expected.
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
   const { tokensList, isLoading } = useTokensList();
@@ -99,6 +77,11 @@ export default function SwapPage() {
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [swapSettings, setSwapSettings] = useState<SwapSettings>(
+    DEFAULT_SWAP_SETTINGS,
+  );
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
 
   /* Swap (sell/buy) state handled by reducer */
   const [swapState, dispatchSwap] = useReducer(swapReducer, initialSwapState);
@@ -135,6 +118,8 @@ export default function SwapPage() {
       }
     },
   });
+
+  console.log("swapSettings", swapSettings);
 
   function swapReducer(state: SwapState, action: SwapAction): SwapState {
     switch (action.type) {
@@ -261,11 +246,7 @@ export default function SwapPage() {
             assetOut: buy.token.contract,
             amount: parseUnits({ value: sellAmt!.toString() }).toString(),
             tradeType: TradeType.EXACT_IN,
-            protocols: [
-              SupportedProtocols.AQUA,
-              SupportedProtocols.SOROSWAP,
-              SupportedProtocols.PHOENIX,
-            ],
+            protocols: swapSettings.protocols,
             parts: 10,
             slippageTolerance: "100",
             assetList: ["soroswap"],
@@ -280,11 +261,7 @@ export default function SwapPage() {
             assetOut: buy.token.contract,
             amount: parseUnits({ value: buyAmt!.toString() }).toString(),
             tradeType: TradeType.EXACT_OUT,
-            protocols: [
-              SupportedProtocols.AQUA,
-              SupportedProtocols.SOROSWAP,
-              SupportedProtocols.PHOENIX,
-            ],
+            protocols: swapSettings.protocols,
             parts: 10,
             slippageTolerance: "100",
             assetList: ["soroswap"],
@@ -395,7 +372,7 @@ export default function SwapPage() {
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xl text-white sm:text-2xl">Swap</p>
           <button
-            // onClick={() => setIsSettingsModalOpen(true)}
+            onClick={() => setIsSettingsModalOpen(true)}
             className="cursor-pointer rounded-full p-1 transition hover:bg-[#8866DD]/20"
           >
             <Image
@@ -485,14 +462,14 @@ export default function SwapPage() {
             transactionHash={swapResult?.txHash}
           />
         )}
-        {/* {isSettingsModalOpen && (
+        {isSettingsModalOpen && (
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}
             onClose={() => setIsSettingsModalOpen(false)}
             settings={swapSettings}
             onSettingsChange={setSwapSettings}
           />
-        )} */}
+        )}
       </div>
     </main>
   );
