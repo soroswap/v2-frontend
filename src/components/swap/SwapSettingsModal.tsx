@@ -124,7 +124,12 @@ export const SwapSettingsModal = ({
                     : settings.customSlippage
                 }
                 onChange={(e) => handleCustomSlippageChange(e.target.value)}
-                disabled={settings.slippageMode === "auto"}
+                onFocus={() => {
+                  if (settings.slippageMode === "auto") {
+                    handleSlippageModeChange("custom");
+                  }
+                }}
+                readOnly={settings.slippageMode === "auto"}
                 className={cn(
                   "w-[70px] rounded-lg border border-transparent bg-[#23243a] p-2 text-center text-sm text-white outline-none",
                   settings.slippageMode === "auto" && "opacity-50",
