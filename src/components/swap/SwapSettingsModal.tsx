@@ -63,7 +63,10 @@ export const SwapSettingsModal = ({
       ? settings.protocols.filter((p) => p !== protocol)
       : [...settings.protocols, protocol];
 
-    setSwapSettings({ protocols: updatedProtocols });
+    setSwapSettings({
+      ...settings,
+      protocols: updatedProtocols,
+    });
   };
 
   return (

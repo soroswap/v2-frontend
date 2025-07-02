@@ -110,6 +110,29 @@ export default function SwapPage() {
     },
   });
 
+  useEffect(() => {
+    if (!quoteRequest) return;
+
+    const sameProtocols = quoteRequest.protocols === swapSettings.protocols;
+    const sameSlippage =
+      quoteRequest.slippageTolerance ===
+      (Number(swapSettings.customSlippage) * 100).toString();
+
+    // Only re-dispatch if something really changed
+    if (sameProtocols && sameSlippage) return;
+
+    dispatchQuoteRequest({
+      type: "SET",
+      payload: {
+        ...quoteRequest,
+        protocols: swapSettings.protocols,
+        slippageTolerance: (
+          Number(swapSettings.customSlippage) * 100
+        ).toString(),
+      },
+    });
+  }, [swapSettings]);
+
   function swapReducer(state: SwapState, action: SwapAction): SwapState {
     switch (action.type) {
       case "SET_SELL_AMOUNT":
@@ -269,7 +292,7 @@ export default function SwapPage() {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [buy, sell, swapSettings]);
+  }, [buy.amount, sell.amount, buy.token, sell.token]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
