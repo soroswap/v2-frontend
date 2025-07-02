@@ -61,7 +61,6 @@ export default function SwapPage() {
   const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
   const [activeField, setActiveField] = useState<"sell" | "buy" | null>(null);
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
-  const [isUserTyping, setIsUserTyping] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   // const [isSettingsModalOpen, setIsSettingsModalOpen] =
@@ -69,7 +68,6 @@ export default function SwapPage() {
   // const [swapSettings, setSwapSettings] = useState<SwapSettings>(
   //   DEFAULT_SWAP_SETTINGS,
   // );
-  console.log("isUserTyping", isUserTyping);
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
   const {
     executeSwap,
@@ -144,8 +142,6 @@ export default function SwapPage() {
     }
 
     debounceTimeoutRef.current = setTimeout(() => {
-      setIsUserTyping(false);
-
       if (
         activeField === "sell" &&
         sell.amount &&
@@ -215,6 +211,28 @@ export default function SwapPage() {
     }
   }, [activeField]);
 
+  useEffect(() => {
+    if (sell.amount && sell.token) {
+      if (buy.token) {
+        setQuoteRequest({
+          assetIn: sell.token.contract,
+          assetOut: buy.token.contract,
+          amount: parseUnits({ value: sell.amount.toString() }).toString(),
+          tradeType: TradeType.EXACT_IN,
+          protocols: [
+            SupportedProtocols.AQUA,
+            SupportedProtocols.SOROSWAP,
+            SupportedProtocols.PHOENIX,
+          ],
+          parts: 10,
+          slippageTolerance: "100",
+          assetList: ["soroswap"],
+          maxHops: 2,
+        });
+      }
+    }
+  }, [sell, buy.token]);
+
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
       case SwapStep.WAITING_SIGNATURE:
@@ -245,7 +263,6 @@ export default function SwapPage() {
 
   const handleSellAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("sell");
-    setIsUserTyping(true);
     setSell((prev) => ({ ...prev, amount }));
     if (amount === undefined) {
       setBuy((prev) => ({ ...prev, amount: undefined }));
@@ -254,7 +271,6 @@ export default function SwapPage() {
 
   const handleBuyAmountChange = useCallback((amount: string | undefined) => {
     setActiveField("buy");
-    setIsUserTyping(true);
     setBuy((prev) => ({ ...prev, amount }));
     if (amount === undefined) {
       setSell((prev) => ({ ...prev, amount: undefined }));
