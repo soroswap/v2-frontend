@@ -21,6 +21,17 @@ export const SwapSettingsModal = ({
   const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
   const { swapSettings: settings, setSwapSettings } = useSwapSettingsStore();
 
+  const slippageNum = Number(settings.customSlippage);
+  const slippageLevel =
+    slippageNum >= 20 ? "veryHigh" : slippageNum >= 5 ? "high" : null;
+
+  const slippageColor =
+    slippageLevel === "veryHigh"
+      ? "text-red-400"
+      : slippageLevel === "high"
+        ? "text-yellow-400"
+        : "text-gray-400";
+
   const handleSlippageModeChange = (mode: "auto" | "custom") => {
     setSwapSettings({
       ...settings,
@@ -41,28 +52,18 @@ export const SwapSettingsModal = ({
     }
   };
 
-  const slippageNum = Number(settings.customSlippage);
-  const slippageLevel =
-    slippageNum >= 20 ? "veryHigh" : slippageNum >= 5 ? "high" : null;
-
-  const slippageColor =
-    slippageLevel === "veryHigh"
-      ? "text-red-400"
-      : slippageLevel === "high"
-        ? "text-yellow-400"
-        : "text-gray-400";
-
-  // Toggle selection of a protocol and persist the active list
   const handleProtocolToggle = (protocol: SupportedProtocols) => {
     const isActive = settings.protocols.includes(protocol);
+
+    if (isActive && settings.protocols.length === 1) {
+      return;
+    }
+
     const updatedProtocols = isActive
       ? settings.protocols.filter((p) => p !== protocol)
       : [...settings.protocols, protocol];
 
-    setSwapSettings({
-      ...settings,
-      protocols: updatedProtocols,
-    });
+    setSwapSettings({ protocols: updatedProtocols });
   };
 
   return (
