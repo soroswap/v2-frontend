@@ -233,46 +233,6 @@ export default function SwapPage() {
   }, [quote]);
 
   useEffect(() => {
-    // console.log("isTokenSwitched", isTokenSwitched);
-    // if (sell && sell.token && sell.amount && buy && buy.token) {
-    //   console.log("tokenSwitched Changed", isTokenSwitched);
-    //   console.log("values changed", buy, sell);
-    //   const quoteRequest = {
-    //     assetIn: sell.token.contract,
-    //     assetOut: buy.token.contract,
-    //     amount: parseUnits({ value: sell.amount.toString() }).toString(),
-    //     tradeType: isTokenSwitched ? TradeType.EXACT_OUT : TradeType.EXACT_IN,
-    //     protocols: [
-    //       SupportedProtocols.AQUA,
-    //       SupportedProtocols.SOROSWAP,
-    //       SupportedProtocols.PHOENIX,
-    //     ],
-    //     parts: 10,
-    //     slippageTolerance: "100",
-    //     assetList: ["soroswap"],
-    //     maxHops: 2,
-    //   };
-    //   console.log("quoteRequest switcherd", quoteRequest);
-    // } else if (buy && buy.token && buy.amount && sell && sell.token) {
-    //   console.log("buy field switched", buy, sell);
-    //   const quoteRequest = {
-    //     assetIn: buy.token.contract,
-    //     assetOut: sell.token.contract,
-    //     amount: parseUnits({ value: buy.amount.toString() }).toString(),
-    //     tradeType: TradeType.EXACT_OUT,
-    //     protocols: [
-    //       SupportedProtocols.AQUA,
-    //       SupportedProtocols.SOROSWAP,
-    //       SupportedProtocols.PHOENIX,
-    //     ],
-    //     parts: 10,
-    //     slippageTolerance: "100",
-    //     assetList: ["soroswap"],
-    //     maxHops: 2,
-    //   };
-    //   console.log("quoteRequest buy field switched", quoteRequest);
-    // }
-
     if (debounceTimeoutRef.current) {
       clearTimeout(debounceTimeoutRef.current);
     }
