@@ -37,10 +37,10 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
   };
 
   return (
-    <div className="relative">
+    <div className="flex h-full w-full flex-col items-center justify-center">
       <button
         className={cn(
-          "btn relative h-14 rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
+          "btn relative flex h-14 rounded-2xl bg-[#8866DD] text-[20px] font-bold hover:bg-[#8866DD]/80",
           className,
         )}
         onClick={handleConnectWallet}

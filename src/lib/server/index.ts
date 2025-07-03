@@ -1,2 +1,2 @@
-export * from "./axios";
+export * from "./soroswapClient";
 export * from "./constants";

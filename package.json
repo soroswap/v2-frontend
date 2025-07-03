@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@creit.tech/stellar-wallets-kit": "^1.7.5",
+    "@soroswap/sdk": "0.1.1",
     "@stellar/stellar-sdk": "^13.3.0",
     "axios": "^1.10.0",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.522.0",
     "next": "15.3.3",
@@ -19,7 +21,8 @@
     "react-dom": "^19.0.0",
     "swr": "^2.3.3",
     "tailwind-merge": "^3.3.1",
-    "zod": "^3.25.64"
+    "zod": "^3.25.64",
+    "zustand": "^5.0.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
