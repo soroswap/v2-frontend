@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
-import { network } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import { network } from "@/shared/lib/environmentVars";
 
 /*This is the GET method for the quote API. It is used to verify the route is working.*/
 export async function GET() {

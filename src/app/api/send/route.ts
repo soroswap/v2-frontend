@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
-import { network, SOROSWAP } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 
 //TODO: Check the response from sendTransaction
 interface SendTransactionResponse {

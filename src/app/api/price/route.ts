@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { network, SOROSWAP } from "@/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { NextRequest, NextResponse } from "next/server";
 
 /*This is the GET method for the price API. It is used to get the price of a token. It's working for mainnet only.*/

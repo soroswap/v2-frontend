@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { QuoteResponse } from "@/components/shared/types";
-import { network, SOROSWAP } from "@/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { BuildQuoteRequest } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
 

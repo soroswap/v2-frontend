@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
-import { Navbar } from "@/components/navbar";
+import { Navbar } from "@/features/navbar";
 import { UserProvider } from "@/contexts";
 import "./globals.css";
 

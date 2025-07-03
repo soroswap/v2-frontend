@@ -1,17 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/shared/lib/utils/cn";
 import { useState, useCallback, MouseEvent } from "react";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
-} from "@/components/shared/components/buttons";
-import { SwapPanel, SwapModal, SwapSettingsModal } from "@/components/swap";
+} from "@/shared/components/buttons";
+import { SwapPanel, SwapModal, SwapSettingsModal } from "@/features/swap";
 import { useUserContext } from "@/contexts";
-import { SwapStep, SwapResult, SwapError } from "@/hooks/useSwap";
-import { useSwapController } from "@/hooks/useSwapController";
+import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
+import { useSwapController } from "@/features/swap/hooks/useSwapController";
 
 const getSwapButtonText = (step: SwapStep): string => {
   switch (step) {
