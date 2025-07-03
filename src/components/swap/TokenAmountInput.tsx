@@ -28,7 +28,6 @@ export const TokenAmountInput = ({
         if (integerPart === "" || integerPart === "0") return value;
         const formattedValue =
           new Intl.NumberFormat("en-US").format(parseInt(integerPart)) + ".";
-        console.log(formattedValue);
         return formattedValue;
       }
 

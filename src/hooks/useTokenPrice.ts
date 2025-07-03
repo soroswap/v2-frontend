@@ -23,7 +23,6 @@ const fetcher = async (
   }
 
   const result = await response.json();
-  console.log("result", result);
 
   return {
     code: result.code,

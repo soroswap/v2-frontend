@@ -55,7 +55,6 @@ export async function GET(request: NextRequest) {
       asset,
       SOROSWAP.NETWORK,
     );
-    console.log("priceResponse", priceResponse[0]);
 
     return NextResponse.json({
       code: "PRICE_SUCCESS",
