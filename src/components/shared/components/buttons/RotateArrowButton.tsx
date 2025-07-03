@@ -1,3 +1,5 @@
+"use client";
+
 import { cn } from "@/lib/utils/cn";
 import { ButtonHTMLAttributes } from "react";
 import { ArrowDown } from "lucide-react";

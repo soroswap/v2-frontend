@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Image from "next/image";
@@ -11,7 +10,7 @@ import {
 } from "@/components/shared/components/buttons";
 import { SwapPanel, SwapModal, SwapSettingsModal } from "@/components/swap";
 import { useUserContext } from "@/contexts";
-import { SwapStep, SwapResult } from "@/hooks/useSwap";
+import { SwapStep, SwapResult, SwapError } from "@/hooks/useSwap";
 import { useSwapController } from "@/hooks/useSwapController";
 
 const getSwapButtonText = (step: SwapStep): string => {
@@ -28,10 +27,11 @@ const getSwapButtonText = (step: SwapStep): string => {
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
 
-  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isTokenSwitched, setIsTokenSwitched] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
+  const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
 
   const {
     typedValue,
@@ -50,15 +50,15 @@ export default function SwapPage() {
     resetSwap,
   } = useSwapController({
     userAddress: userAddress || undefined,
-    onSuccess: (result) => {
+    onSuccess: (result: SwapResult) => {
       setSwapResult(result);
       setIsSwapModalOpen(true);
     },
-    onError: (error) => {
+    onError: (error: SwapError) => {
       console.error("Swap failed:", error);
       setSwapResult(null);
     },
-    onStepChange: (step) => {
+    onStepChange: (step: SwapStep) => {
       if (step === SwapStep.WAITING_SIGNATURE) {
         setIsSwapModalOpen(true);
       }
@@ -66,7 +66,7 @@ export default function SwapPage() {
   });
 
   const onSwitchTokens = useCallback(() => {
-    setIsTokenSwitched((prev) => !prev);
+    setIsTokenSwitched((prev: boolean) => !prev);
     handleSwitchTokens();
   }, [handleSwitchTokens]);
 

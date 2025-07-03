@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -15,7 +15,7 @@ export const CopyAndPasteButton = ({
   className,
   disabled = false,
 }: CopyButtonProps) => {
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, setIsCopied] = useState<boolean>(false);
 
   const handleCopy = async () => {
     if (!textToCopy || disabled) return;
