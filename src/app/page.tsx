@@ -292,7 +292,7 @@ export default function SwapPage() {
         clearTimeout(debounceTimeoutRef.current);
       }
     };
-  }, [buy.amount, sell.amount, buy.token, sell.token]);
+  }, [buy, sell]);
 
   const getSwapButtonText = (step: SwapStep): string => {
     switch (step) {
@@ -360,7 +360,10 @@ export default function SwapPage() {
         return;
       }
 
+      // Update the sell token and clear the BUY amount so the quote logic
+      // fetches a new quote using the updated token.
       dispatchSwap({ type: "SET_SELL_TOKEN", token });
+      dispatchSwap({ type: "SET_BUY_AMOUNT", amount: undefined });
     },
     [buy.token, sell.token],
   );
@@ -376,7 +379,10 @@ export default function SwapPage() {
         return;
       }
 
+      // Update the buy token and clear the SELL amount so the quote logic
+      // fetches a new quote using the updated token.
       dispatchSwap({ type: "SET_BUY_TOKEN", token });
+      dispatchSwap({ type: "SET_SELL_AMOUNT", amount: undefined });
     },
     [sell.token, buy.token],
   );
