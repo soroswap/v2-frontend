@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+// SwapPage.tsx
 "use client";
 
 import Image from "next/image";
@@ -10,6 +11,7 @@ import {
   useCallback,
   MouseEvent,
   useRef,
+  useMemo,
 } from "react";
 import {
   TheButton,
@@ -25,66 +27,81 @@ import { parseUnits, formatUnits } from "@/lib/utils/parseUnits";
 import { useQuote } from "@/hooks/useQuote";
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 
-export interface Swap {
-  amount: string | undefined;
-  token: TokenType | null;
-  tradeType: TradeType;
-}
+// New State based on Soroswap/Uniswap pattern
+type IndependentField = "sell" | "buy";
 
 interface SwapState {
-  sell: Swap;
-  buy: Swap;
+  typedValue: string;
+  independentField: IndependentField;
+  sellToken: TokenType | null;
+  buyToken: TokenType | null;
 }
 
 const initialSwapState: SwapState = {
-  sell: { amount: undefined, token: null, tradeType: TradeType.EXACT_IN },
-  buy: { amount: undefined, token: null, tradeType: TradeType.EXACT_OUT },
+  typedValue: "",
+  independentField: "sell",
+  sellToken: null,
+  buyToken: null,
 };
 
 type SwapAction =
-  | { type: "SET_SELL_AMOUNT"; amount: string | undefined }
-  | { type: "SET_BUY_AMOUNT"; amount: string | undefined }
-  | { type: "SET_SELL_TOKEN"; token: TokenType | null }
-  | { type: "SET_BUY_TOKEN"; token: TokenType | null }
-  | { type: "SWITCH_TOKENS"; payload?: { isTokenSwitched: boolean } };
+  | { type: "TYPE_INPUT"; field: IndependentField; typedValue: string }
+  | { type: "SET_TOKEN"; field: IndependentField; token: TokenType | null }
+  | { type: "SWITCH_TOKENS" };
 
-type QuoteRequestAction = { type: "SET"; payload: QuoteRequest | null };
-
-function quoteRequestReducer(
-  _state: QuoteRequest | null,
-  action: QuoteRequestAction,
-): QuoteRequest | null {
+function swapReducer(state: SwapState, action: SwapAction): SwapState {
   switch (action.type) {
-    case "SET":
-      return action.payload;
+    case "TYPE_INPUT":
+      return {
+        ...state,
+        typedValue: action.typedValue,
+        independentField: action.field,
+      };
+    case "SET_TOKEN":
+      return {
+        ...state,
+        [action.field === "sell" ? "sellToken" : "buyToken"]: action.token,
+      };
+    case "SWITCH_TOKENS":
+      return {
+        ...state,
+        sellToken: state.buyToken,
+        buyToken: state.sellToken,
+        independentField: state.independentField === "sell" ? "buy" : "sell",
+      };
     default:
-      return _state;
+      return state;
   }
 }
 
-//TODO: Add integrated tests to check if the  swap is working as expected.
+const getSwapButtonText = (step: SwapStep): string => {
+  switch (step) {
+    case SwapStep.WAITING_SIGNATURE:
+      return "Waiting for signature...";
+    case SwapStep.SENDING_TRANSACTION:
+      return "Sending transaction...";
+    default:
+      return "Processing...";
+  }
+};
+
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
   const { tokensList, isLoading } = useTokensList();
-  const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
-  const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { swapSettings } = useSwapSettingsStore();
-  const [isSettingsModalOpen, setIsSettingsModalOpen] =
-    useState<boolean>(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isTokenSwitched, setIsTokenSwitched] = useState(false);
 
-  /* Swap (sell/buy) state handled by reducer */
   const [swapState, dispatchSwap] = useReducer(swapReducer, initialSwapState);
-  const { sell, buy } = swapState;
 
-  /* Quote request state handled by reducer */
-  const [quoteRequest, dispatchQuoteRequest] = useReducer(
-    quoteRequestReducer,
-    null,
-  );
+  const { typedValue, independentField, sellToken, buyToken } = swapState;
 
+  const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
   const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
+
   const {
     executeSwap,
     currentStep,
@@ -92,310 +109,118 @@ export default function SwapPage() {
     reset: resetSwap,
   } = useSwap({
     onSuccess: (result: SwapResult) => {
-      console.log("Swap completed successfully:", result);
       setSwapResult(result);
       setIsSwapModalOpen(true);
-      // resetSwap();
     },
     onError: (error: SwapError) => {
       console.error("Swap failed:", error);
-      setSwapResult(null); // Clear result on error
-      // Keep modal open to show error state
+      setSwapResult(null);
     },
     onStepChange: (step: SwapStep) => {
-      console.log("Swap step changed:", step);
       if (step === SwapStep.WAITING_SIGNATURE) {
         setIsSwapModalOpen(true);
       }
     },
   });
 
-  useEffect(() => {
-    if (!quoteRequest) return;
-
-    const sameProtocols = quoteRequest.protocols === swapSettings.protocols;
-    const sameSlippage =
-      quoteRequest.slippageTolerance ===
-      (Number(swapSettings.customSlippage) * 100).toString();
-
-    // Only re-dispatch if something really changed
-    if (sameProtocols && sameSlippage) return;
-
-    dispatchQuoteRequest({
-      type: "SET",
-      payload: {
-        ...quoteRequest,
-        protocols: swapSettings.protocols,
-        slippageTolerance: (
-          Number(swapSettings.customSlippage) * 100
-        ).toString(),
-      },
-    });
-  }, [swapSettings]);
-
-  function swapReducer(state: SwapState, action: SwapAction): SwapState {
-    switch (action.type) {
-      case "SET_SELL_AMOUNT":
-        return {
-          ...state,
-          sell: {
-            ...state.sell,
-            amount: action.amount,
-            tradeType: TradeType.EXACT_IN,
-          },
-        };
-      case "SET_BUY_AMOUNT":
-        return {
-          ...state,
-          buy: {
-            ...state.buy,
-            amount: action.amount,
-            tradeType: TradeType.EXACT_OUT,
-          },
-        };
-      case "SET_SELL_TOKEN":
-        return { ...state, sell: { ...state.sell, token: action.token } };
-      case "SET_BUY_TOKEN":
-        return { ...state, buy: { ...state.buy, token: action.token } };
-      case "SWITCH_TOKENS":
-        console.log("SWITCH_TOKENS", state);
-        if (isTokenSwitched) {
-          // TODO: Check the behavior of swapping the tokens in initial state.
-          const switchedState = {
-            sell: {
-              amount: state.buy.amount,
-              token: state.buy.token,
-              tradeType: TradeType.EXACT_IN,
-            },
-            buy: {
-              amount: undefined,
-              token: state.sell.token,
-              tradeType: TradeType.EXACT_OUT,
-            },
-          } as const;
-          console.log("newState IsTokenSwitched", switchedState);
-          return switchedState;
-        } else if (!isTokenSwitched) {
-          const switchedState = {
-            sell: {
-              amount: undefined,
-              token: state.buy.token,
-              tradeType: TradeType.EXACT_IN,
-            },
-            buy: {
-              amount: state.sell.amount,
-              token: state.sell.token,
-              tradeType: TradeType.EXACT_OUT,
-            },
-          } as const;
-          console.log("newState IsTokenNotSwitched", switchedState);
-          return switchedState;
-        }
-      default:
-        return state;
-    }
-  }
-
   /* Initialize the sell token with the first token in the list */
   useEffect(() => {
-    if (!isLoading && tokensList.length > 0 && !sell.token) {
-      handleSelectSellToken(tokensList[0]);
+    if (!isLoading && tokensList.length > 0 && !sellToken) {
+      handleTokenSelect("sell")(tokensList[0]);
     }
   }, [isLoading, tokensList]);
 
-  /* Update the token amount when the quote is received */
   useEffect(() => {
-    if (quote && quote.tradeType === TradeType.EXACT_IN) {
-      console.log("EXACT_IN", quote);
-      dispatchSwap({
-        type: "SET_BUY_AMOUNT",
-        amount:
-          sell.amount && Number(sell.amount) > 0
-            ? formatUnits({
-                value: quote.trade.expectedAmountOut?.toString() ?? "0",
-              }).toString()
-            : "0",
-      });
-    } else if (quote && quote.tradeType === TradeType.EXACT_OUT) {
-      console.log("EXACT_OUT", quote);
-      dispatchSwap({
-        type: "SET_SELL_AMOUNT",
-        amount:
-          buy.amount && Number(buy.amount) > 0
-            ? formatUnits({
-                value: quote.trade.expectedAmountIn?.toString() ?? "0",
-              }).toString()
-            : "0",
-      });
-    }
-  }, [quote]);
+    if (!typedValue || !sellToken || !buyToken) return;
 
-  useEffect(() => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+    const payload: QuoteRequest = {
+      assetIn: sellToken.contract,
+      assetOut: buyToken.contract,
+      amount: parseUnits({ value: typedValue }).toString(),
+      tradeType:
+        independentField === "sell" ? TradeType.EXACT_IN : TradeType.EXACT_OUT,
+      protocols: swapSettings.protocols,
+      parts: 10,
+      slippageTolerance: (Number(swapSettings.customSlippage) * 100).toString(),
+      assetList: ["soroswap"],
+      maxHops: 2,
+    };
 
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     debounceTimeoutRef.current = setTimeout(() => {
-      console.log("isTokenSwitched", isTokenSwitched);
-      // -----------------------------------------------------------------
-      //  Determine which side has user-input and request the appropriate
-      //  quote. We only send a request when **exactly one** side has an
-      //  amount value. This prevents duplicate requests when we program-
-      //  matically fill the opposite side after receiving a quote.
-      // -----------------------------------------------------------------
-
-      const sellAmt = sell.amount;
-      const buyAmt = buy.amount;
-
-      const hasSell = sellAmt !== undefined && Number(sellAmt) > 0;
-      const hasBuy = buyAmt !== undefined && Number(buyAmt) > 0;
-
-      if (hasSell && !hasBuy && sell.token && buy.token) {
-        dispatchQuoteRequest({
-          type: "SET",
-          payload: {
-            assetIn: sell.token.contract,
-            assetOut: buy.token.contract,
-            amount: parseUnits({ value: sellAmt!.toString() }).toString(),
-            tradeType: TradeType.EXACT_IN,
-            protocols: swapSettings.protocols,
-            parts: 10,
-            slippageTolerance: (
-              Number(swapSettings.customSlippage) * 100
-            ).toString(),
-            assetList: ["soroswap"],
-            maxHops: 2,
-          },
-        });
-      } else if (hasBuy && !hasSell && buy.token && sell.token) {
-        dispatchQuoteRequest({
-          type: "SET",
-          payload: {
-            assetIn: sell.token.contract,
-            assetOut: buy.token.contract,
-            amount: parseUnits({ value: buyAmt!.toString() }).toString(),
-            tradeType: TradeType.EXACT_OUT,
-            protocols: swapSettings.protocols,
-            parts: 10,
-            slippageTolerance: (
-              Number(swapSettings.customSlippage) * 100
-            ).toString(),
-            assetList: ["soroswap"],
-            maxHops: 2,
-          },
-        });
-      }
-    }, 500);
+      setQuoteRequest(payload);
+    }, 400);
 
     return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
+      const t = debounceTimeoutRef.current;
+      if (t) clearTimeout(t);
     };
-  }, [buy, sell]);
+  }, [typedValue, sellToken, buyToken, independentField, swapSettings]);
 
-  const getSwapButtonText = (step: SwapStep): string => {
-    switch (step) {
-      case SwapStep.WAITING_SIGNATURE:
-        return "Waiting for signature...";
-      case SwapStep.SENDING_TRANSACTION:
-        return "Sending transaction...";
-      default:
-        return "Processing...";
+  const derivedSellAmount = useMemo(() => {
+    if (!quote || independentField === "sell") return undefined;
+
+    if (quote.tradeType === TradeType.EXACT_OUT) {
+      // exact out -> expectedAmountIn is available
+      const expected = (quote.trade as { expectedAmountIn?: bigint })
+        .expectedAmountIn;
+      return formatUnits({ value: expected?.toString() ?? "0" });
     }
-  };
+    // fallback
+    return undefined;
+  }, [quote, independentField]);
+
+  const derivedBuyAmount = useMemo(() => {
+    if (!quote || independentField === "buy") return undefined;
+
+    if (quote.tradeType === TradeType.EXACT_IN) {
+      // exact in -> expectedAmountOut is available
+      const expected = (quote.trade as { expectedAmountOut?: bigint })
+        .expectedAmountOut;
+      return formatUnits({ value: expected?.toString() ?? "0" });
+    }
+    return undefined;
+  }, [quote, independentField]);
+
+  const handleAmountChange = useCallback(
+    (field: IndependentField) => (amount: string | undefined) => {
+      dispatchSwap({ type: "TYPE_INPUT", field, typedValue: amount ?? "" });
+      setQuoteRequest(null);
+    },
+    [],
+  );
+
+  const handleTokenSelect = useCallback(
+    (field: IndependentField) => (token: TokenType | null) => {
+      dispatchSwap({ type: "SET_TOKEN", field, token });
+    },
+    [],
+  );
 
   const handleSwitchToken = useCallback(() => {
-    const newSwitched = !isTokenSwitched;
-    setIsTokenSwitched(newSwitched);
-    dispatchSwap({
-      type: "SWITCH_TOKENS",
-      payload: { isTokenSwitched: newSwitched },
-    });
-  }, [dispatchSwap, isTokenSwitched]);
-
-  const handleSellAmountChange = useCallback((amount: string | undefined) => {
-    console.log("sell amount", amount);
-    // Update SELL side
-    dispatchSwap({ type: "SET_SELL_AMOUNT", amount });
-
-    // Always clear the BUY side so we don't display stale data; a new quote
-    // will repopulate it shortly.
-    dispatchSwap({ type: "SET_BUY_AMOUNT", amount: undefined });
-  }, []);
-
-  const handleBuyAmountChange = useCallback((amount: string | undefined) => {
-    // Update BUY side
-    dispatchSwap({ type: "SET_BUY_AMOUNT", amount });
-
-    // Clear SELL side for the same reason as above.
-    dispatchSwap({ type: "SET_SELL_AMOUNT", amount: undefined });
+    setIsTokenSwitched((prev) => !prev);
+    dispatchSwap({ type: "SWITCH_TOKENS" });
+    setQuoteRequest(null);
   }, []);
 
   const handleSwap = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-
-    if (!quote || !userAddress) {
-      console.error("Missing quote or user address");
-      return;
-    }
-
+    if (!quote || !userAddress) return;
     try {
       await executeSwap(quote, userAddress);
-    } catch (error) {
-      console.error("Swap execution failed:", error);
+    } catch (err) {
+      console.error(err);
     }
   };
-
-  const handleSelectSellToken = useCallback(
-    (token: TokenType | null) => {
-      if (!token) return;
-      // If same as current sell token, ignore
-      if (sell.token && token.contract === sell.token.contract) return;
-
-      // If selecting the token already on buy side -> switch
-      if (buy.token && token.contract === buy.token.contract) {
-        dispatchSwap({ type: "SWITCH_TOKENS" });
-        console.log("HandleSelectSellToken Entering here", swapState);
-        return;
-      }
-
-      // Update the sell token and clear the BUY amount so the quote logic
-      // fetches a new quote using the updated token.
-      dispatchSwap({ type: "SET_SELL_TOKEN", token });
-      dispatchSwap({ type: "SET_BUY_AMOUNT", amount: undefined });
-    },
-    [buy.token, sell.token],
-  );
-
-  const handleSelectBuyToken = useCallback(
-    (token: TokenType | null) => {
-      if (!token) return;
-      if (buy.token && token.contract === buy.token.contract) return;
-
-      if (sell.token && token.contract === sell.token.contract) {
-        dispatchSwap({ type: "SWITCH_TOKENS" });
-        console.log("HandleSelectBuyToken Entering here", swapState);
-        return;
-      }
-
-      // Update the buy token and clear the SELL amount so the quote logic
-      // fetches a new quote using the updated token.
-      dispatchSwap({ type: "SET_BUY_TOKEN", token });
-      dispatchSwap({ type: "SET_SELL_AMOUNT", amount: undefined });
-    },
-    [sell.token, buy.token],
-  );
 
   return (
     <main className="flex min-h-screen items-center justify-center p-2">
       <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
-        {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xl text-white sm:text-2xl">Swap</p>
           <button
             onClick={() => setIsSettingsModalOpen(true)}
-            className="cursor-pointer rounded-full p-1 transition hover:bg-[#8866DD]/20"
+            className="cursor-pointer rounded-full p-1 hover:bg-[#8866DD]/20"
           >
             <Image
               src="/settingsIcon.svg"
@@ -405,49 +230,41 @@ export default function SwapPage() {
             />
           </button>
         </div>
+
         <div className="flex flex-col gap-2">
           <div className="relative z-10">
             <SwapPanel
               label="Sell"
-              amount={sell.amount ?? undefined}
-              setAmount={handleSellAmountChange}
-              onSelectToken={handleSelectSellToken}
+              amount={
+                independentField === "sell" ? typedValue : derivedSellAmount
+              }
+              setAmount={handleAmountChange("sell")}
+              currentToken={sellToken}
+              oppositeToken={buyToken}
+              onSelectToken={handleTokenSelect("sell")}
               isLoading={isQuoteLoading}
-              currentToken={sell.token}
-              oppositeToken={buy.token}
             />
 
             <RotateArrowButton
               onClick={handleSwitchToken}
               className={cn(
-                isTokenSwitched
-                  ? "rotate-180 transition-transform duration-300"
-                  : "rotate-0 transition-transform duration-300",
+                isTokenSwitched ? "rotate-180" : "rotate-0",
+                "transition-transform duration-300",
               )}
               isLoading={isQuoteLoading}
             />
           </div>
-          <div>
-            <SwapPanel
-              label="Buy"
-              amount={buy.amount ?? undefined}
-              setAmount={handleBuyAmountChange}
-              variant="outline"
-              onSelectToken={handleSelectBuyToken}
-              isLoading={isQuoteLoading}
-              currentToken={buy.token}
-              oppositeToken={sell.token}
-            />
-          </div>
-          {/* 
-          {quote && (
-            <SwapQuoteDetails
-              quote={quote}
-              sellToken={sell.token}
-              buyToken={buy.token}
-              className="mt-4"
-            />
-          )} */}
+
+          <SwapPanel
+            label="Buy"
+            amount={independentField === "buy" ? typedValue : derivedBuyAmount}
+            setAmount={handleAmountChange("buy")}
+            currentToken={buyToken}
+            oppositeToken={sellToken}
+            onSelectToken={handleTokenSelect("buy")}
+            isLoading={isQuoteLoading}
+            variant="outline"
+          />
 
           <div className="flex flex-col gap-2">
             {!userAddress ? (
@@ -455,16 +272,14 @@ export default function SwapPage() {
             ) : (
               <TheButton
                 disabled={
-                  !buy.token ||
-                  !sell.token ||
-                  sell.token?.contract === buy.token?.contract
+                  !sellToken ||
+                  !buyToken ||
+                  sellToken.contract === buyToken.contract
                 }
-                className={cn(
-                  "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
-                )}
                 onClick={handleSwap}
+                className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
               >
-                {!buy.token || !sell.token
+                {!buyToken || !sellToken
                   ? "Select a token"
                   : isSwapLoading
                     ? getSwapButtonText(currentStep)
@@ -473,6 +288,7 @@ export default function SwapPage() {
             )}
           </div>
         </div>
+
         {isSwapModalOpen && (
           <SwapModal
             currentStep={currentStep}
@@ -484,6 +300,7 @@ export default function SwapPage() {
             transactionHash={swapResult?.txHash}
           />
         )}
+
         {isSettingsModalOpen && (
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}
