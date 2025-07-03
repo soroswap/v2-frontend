@@ -115,8 +115,10 @@ export default function SwapPage() {
               className={cn(
                 isTokenSwitched ? "rotate-180" : "rotate-0",
                 "transition-transform duration-300",
+                isQuoteLoading && "cursor-default",
               )}
               isLoading={isQuoteLoading}
+              disabled={isQuoteLoading}
             />
           </div>
 
