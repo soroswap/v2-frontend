@@ -1,15 +1,22 @@
+import { SupportedProtocols } from "@soroswap/sdk";
+
+export interface SwapSettings {
+  slippageMode: "auto" | "custom";
+  customSlippage: string;
+  maxHops: number;
+  protocols: SupportedProtocols[];
+}
+
 export type QuoteRequest = {
   assetIn: string;
   assetOut: string;
-  amount: string;
+  amount: string; // TODO: Use the correct type from Soroswap SDK and handle the bigint amount to string.
   tradeType: TradeType;
   protocols: SupportedProtocols[];
   parts: number;
   slippageTolerance: string;
   assetList?: string[];
   maxHops?: number;
-  from?: string; // If user is connected send this [ Connected Wallet ]
-  to?: string; // If user is connected send this [ Connected Wallet ]
 };
 
 export interface QuoteResponse {
@@ -65,13 +72,6 @@ interface ExactOutBuildTradeReturn extends CommonBuildTradeReturnFields {
     path: string[];
     poolHashes?: string[];
   };
-}
-
-export enum SupportedProtocols {
-  SOROSWAP = "soroswap",
-  PHOENIX = "phoenix",
-  AQUA = "aqua",
-  COMET = "comet",
 }
 
 export interface DistributionReturn {

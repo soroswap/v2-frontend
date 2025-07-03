@@ -2,9 +2,11 @@
 import { useState, useCallback } from "react";
 import { STELLAR } from "@/lib/environmentVars";
 import { kit } from "@/lib/server/wallet";
+import { QuoteResponse } from "@/components/shared/types";
 
 export enum SwapStep {
   IDLE = "IDLE",
+  BUILDING_XDR = "BUILDING_XDR",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
   SUCCESS = "SUCCESS",
@@ -17,6 +19,7 @@ export interface SwapError {
   details?: any;
 }
 
+//TODO: Check the response from sendTransaction
 export interface SwapResult {
   txHash?: string;
   success: boolean;
@@ -30,7 +33,7 @@ export interface UseSwapOptions {
 
 export function useSwap(options?: UseSwapOptions) {
   const [currentStep, setCurrentStep] = useState<SwapStep>(SwapStep.IDLE);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<SwapError | null>(null);
 
   const updateStep = useCallback(
@@ -52,6 +55,24 @@ export function useSwap(options?: UseSwapOptions) {
     [options, updateStep],
   );
 
+  const buildXdr = useCallback(
+    async (quote: QuoteResponse["data"], userAddress: string) => {
+      const response = await fetch("/api/quote/build", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          quote: quote,
+          from: userAddress,
+          to: userAddress,
+        }),
+      });
+      return response.json();
+    },
+    [],
+  );
+
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
       const { signedTxXdr } = await kit.signTransaction(xdr, {
@@ -65,12 +86,12 @@ export function useSwap(options?: UseSwapOptions) {
   );
 
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/swap/send", {
+    const response = await fetch("/api/send", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ xdr: signedXdr }),
+      body: JSON.stringify(signedXdr),
     });
 
     if (!response.ok) {
@@ -81,14 +102,21 @@ export function useSwap(options?: UseSwapOptions) {
   }, []);
 
   const executeSwap = useCallback(
-    async (xdr: string, userAddress: string): Promise<SwapResult> => {
+    async (
+      quote: QuoteResponse["data"],
+      userAddress: string,
+    ): Promise<SwapResult> => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Step 1: Sign transaction
+        // Step 1: Build XDR
+        updateStep(SwapStep.BUILDING_XDR);
+        const xdr = await buildXdr(quote, userAddress);
+
+        // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr, userAddress);
+        const signedXdr = await signTransaction(xdr.data, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);
@@ -99,7 +127,7 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const result: SwapResult = {
-          txHash: sendResult.hash,
+          txHash: sendResult.data.txHash,
           success: true,
         };
 
@@ -115,6 +143,7 @@ export function useSwap(options?: UseSwapOptions) {
       currentStep,
       updateStep,
       handleError,
+      buildXdr,
       signTransaction,
       sendTransaction,
       options,

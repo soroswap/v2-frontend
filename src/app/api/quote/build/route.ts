@@ -1,26 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+// import { QuoteResponse } from "@/components/shared/types";
 import { network, SOROSWAP } from "@/lib/environmentVars";
-
-//TODO: Check the response from sendTransaction
-interface SendTransactionResponse {
-  status: string;
-  txHash: string;
-  latestLedger: number;
-  latestLedgerCloseTime: string;
-  oldestLedger: number;
-  oldestLedgerCloseTime: string;
-  ledger: number;
-  createdAt: string;
-  applicationOrder: number;
-  feeBump: boolean;
-  envelopeXdr: any;
-  resultXdr: any;
-  resultMetaXdr: any;
-  returnValue: any;
-  diagnosticEventsXdr: any;
-}
+import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+import { BuildQuoteRequest } from "@soroswap/sdk";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   const origin =
@@ -29,7 +12,7 @@ export async function POST(request: NextRequest) {
   if (!ALLOWED_ORIGINS.some((allowed) => origin.includes(allowed))) {
     return NextResponse.json(
       {
-        code: "SEND_TRANSACTION_ERROR_CORS",
+        code: "BUILD_XDR_ERROR_CORS",
         message: "Forbidden",
       },
       { status: 403 },
@@ -39,7 +22,7 @@ export async function POST(request: NextRequest) {
   if (!network) {
     return NextResponse.json(
       {
-        code: "SEND_TRANSACTION_ERROR_PARAM",
+        code: "BUILD_XDR_ERROR_PARAM",
         message: 'Missing "network" query parameter',
       },
       { status: 400 },
@@ -47,21 +30,20 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const xdr: string = await request.json();
+    const body: BuildQuoteRequest = await request.json();
 
-    const sendTransactionResponse: SendTransactionResponse =
-      await soroswapClient.send(xdr, false, SOROSWAP.NETWORK);
+    const buildXdrResponse = await soroswapClient.build(body, SOROSWAP.NETWORK);
 
     return NextResponse.json({
-      code: "SEND_TRANSACTION_SUCCESS",
-      data: sendTransactionResponse,
+      code: "BUILD_XDR_SUCCESS",
+      data: buildXdrResponse.xdr,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);
 
     return NextResponse.json(
       {
-        code: "SEND_TRANSACTION_ERROR",
+        code: "BUILD_XDR_ERROR",
         message:
           error?.response?.data?.message || error?.message || "Server Error",
       },

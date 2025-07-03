@@ -1,13 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { network } from "@/lib/environmentVars";
-import { ALLOWED_ORIGINS, api } from "@/lib/server";
+import { network, SOROSWAP } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
 import { NextRequest, NextResponse } from "next/server";
-
-interface PriceResponse {
-  asset: string;
-  referenceCurrency: string;
-  price: number | null;
-}
 
 /*This is the GET method for the price API. It is used to get the price of a token. It's working for mainnet only.*/
 export async function GET(request: NextRequest) {
@@ -57,14 +51,14 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
-
-    const priceResponse = await api.get<PriceResponse[]>(
-      `/price?network=${network}&asset=${asset}&referenceCurrency=USD`,
+    const priceResponse = await soroswapClient.getPrice(
+      asset,
+      SOROSWAP.NETWORK,
     );
 
     return NextResponse.json({
       code: "PRICE_SUCCESS",
-      data: priceResponse.data[0],
+      data: priceResponse[0],
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);

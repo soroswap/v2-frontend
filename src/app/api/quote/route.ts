@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { api, ALLOWED_ORIGINS } from "@/lib/server";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
 import { network } from "@/lib/environmentVars";
-import { QuoteResponse } from "@/components/shared/types/swap";
 
 /*This is the GET method for the quote API. It is used to verify the route is working.*/
 export async function GET() {
@@ -40,14 +39,11 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const swapResponse = await api.post<QuoteResponse>(
-      `/quote?network=${network}`,
-      body,
-    );
+    const quoteRequest = await soroswapClient.quote(body);
 
     return NextResponse.json({
       code: "QUOTE_SUCCESS",
-      data: swapResponse.data,
+      data: quoteRequest,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);
