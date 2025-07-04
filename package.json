@@ -12,6 +12,7 @@
     "@creit.tech/stellar-wallets-kit": "^1.7.5",
     "@soroswap/sdk": "0.1.1",
     "@stellar/stellar-sdk": "^13.3.0",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.10.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
