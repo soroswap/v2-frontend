@@ -49,9 +49,23 @@ export const useTokensList = () => {
     );
   }, [data]);
 
+  // Map by token code for quick lookup by symbol (case-insensitive)
+  const tokenCodeMap = useMemo(() => {
+    return (data || []).reduce(
+      (acc, token) => {
+        if (token.code) {
+          acc[token.code.toUpperCase()] = token;
+        }
+        return acc;
+      },
+      {} as Record<string, TokenType>,
+    );
+  }, [data]);
+
   return {
     tokensList: data || [],
     tokenMap,
+    tokenCodeMap,
     isLoading,
     isError: error,
   };

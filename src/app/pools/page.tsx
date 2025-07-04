@@ -7,8 +7,8 @@ import { PlusIcon } from "lucide-react";
 
 export default function PoolsPage() {
   return (
-    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-      <div className="flex w-full max-w-3xl flex-col rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center px-4 md:px-1">
+      <div className="flex w-full max-w-7xl flex-col rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
           <span className="text-xl text-white sm:text-2xl">Pools</span>
