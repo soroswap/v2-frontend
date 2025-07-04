@@ -132,9 +132,12 @@ export const TokenSelector = ({
                         height={28}
                         className="rounded-full bg-white"
                       />
-                      <p className="flex w-full justify-between font-medium">
-                        {token.code}
-                      </p>
+                      <div className="flex flex-col gap-1 text-left font-medium">
+                        <p className="text-sm font-bold text-white">
+                          {token.code}
+                        </p>
+                        <p className="text-xs text-white/70">{token.domain}</p>
+                      </div>
                     </button>
                   );
                 })}

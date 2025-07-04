@@ -182,7 +182,7 @@ export const SwapSettingsModal = ({
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-sm text-[#A0A3C4]/70">
+                      <span className="text-sm text-[#A0A3C4]/70 uppercase">
                         {protocol}
                       </span>
                       <ExternalLink size={12} className="text-gray-400" />
