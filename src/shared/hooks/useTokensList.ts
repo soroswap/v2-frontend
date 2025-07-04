@@ -2,6 +2,7 @@ import useSWR from "swr";
 import { TokenType } from "@/features/swap/types/token";
 import { TOKEN_LIST_URL, xlmTokenList } from "@/shared/lib/constants/tokenList";
 import { network } from "@/shared/lib/environmentVars";
+import { useMemo } from "react";
 
 const fetchTokenList = async () => {
   try {
@@ -37,8 +38,20 @@ export const useTokensList = () => {
     fallbackData: [],
   });
 
+  // Dictionary for 0(1) lookups by contract
+  const tokenMap = useMemo(() => {
+    return (data || []).reduce(
+      (acc, token) => {
+        acc[token.contract] = token;
+        return acc;
+      },
+      {} as Record<string, TokenType>,
+    );
+  }, [data]);
+
   return {
     tokensList: data || [],
+    tokenMap,
     isLoading,
     isError: error,
   };

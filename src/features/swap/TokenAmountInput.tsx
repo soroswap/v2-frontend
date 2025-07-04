@@ -56,7 +56,7 @@ export const TokenAmountInput = ({
 
   return (
     <input
-      className="hide-number-spin w-full bg-transparent text-3xl leading-none font-bold text-white outline-none sm:text-4xl"
+      className="hide-number-spin w-full bg-transparent text-3xl leading-none font-bold text-white outline-none"
       type="text"
       value={amount !== undefined ? formatNumber(amount) : ""}
       onChange={(e) => {

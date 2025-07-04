@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
-import { Navbar } from "@/features/navbar";
 import { UserProvider } from "@/contexts";
+import { Navbar } from "@/features/navbar";
 import "./globals.css";
 
 const interSans = Inter({
@@ -31,14 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${interSans.variable} ${darkerGrotesque.variable} font-sans antialiased`}
+        className={`${interSans.variable} ${darkerGrotesque.variable} bg-svg font-sans antialiased`}
       >
-        <div className="bg-svg min-h-screen">
-          <UserProvider>
-            <Navbar />
-            {children}
-          </UserProvider>
-        </div>
+        <UserProvider>
+          <Navbar />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );

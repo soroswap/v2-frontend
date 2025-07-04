@@ -79,7 +79,7 @@ export default function SwapPage() {
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-2">
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
       <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xl text-white sm:text-2xl">Swap</p>
