@@ -1,5 +1,6 @@
 import { TokenType } from "@/features/swap/types/token";
 
+//TODO: This function should be really easy to remove. The goal is receive the calculated tvl from the pool.
 export interface CalculateTvlParams {
   tokenAContract: string;
   tokenBContract: string;
