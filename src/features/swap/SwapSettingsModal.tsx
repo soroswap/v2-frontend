@@ -99,7 +99,7 @@ export const SwapSettingsModal = ({
               className={cn(
                 "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 settings.slippageMode === "auto"
-                  ? "bg-[#8866DD] text-white"
+                  ? "bg-brand text-white"
                   : "bg-[#23243a] text-gray-400 hover:bg-[#2a2b3f]",
               )}
             >
@@ -110,7 +110,7 @@ export const SwapSettingsModal = ({
               className={cn(
                 "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 settings.slippageMode === "custom"
-                  ? "bg-[#8866DD] text-white"
+                  ? "bg-brand text-white"
                   : "bg-[#23243a] text-gray-400 hover:bg-[#2a2b3f]",
               )}
             >

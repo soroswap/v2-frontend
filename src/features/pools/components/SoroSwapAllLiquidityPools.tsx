@@ -1,9 +1,11 @@
-import Image from "next/image";
 import { ColumnDef } from "@tanstack/react-table";
 import { usePools } from "@/features/pools/hooks/usePools";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { TheTable } from "@/shared/components";
 import { Pool } from "@soroswap/sdk";
+import { ArrowUp } from "lucide-react";
+import { cn } from "@/shared/lib/utils";
+import { TokenIcon } from "@/shared/components";
 
 export const SoroSwapAllLiquidityPools = () => {
   const { pools, isLoading } = usePools();
@@ -11,12 +13,6 @@ export const SoroSwapAllLiquidityPools = () => {
 
   // Define table columns
   const columns: ColumnDef<Pool, unknown>[] = [
-    {
-      id: "index",
-      header: "#",
-      cell: ({ row }) => row.index + 1,
-      size: 40,
-    },
     {
       id: "pair",
       header: "Pool",
@@ -26,22 +22,14 @@ export const SoroSwapAllLiquidityPools = () => {
         return (
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Image
-                src={
-                  tokenCodeMap[pool.tokenA.toUpperCase()]?.icon || "/globe.svg"
-                }
+              <TokenIcon
+                src={tokenCodeMap[pool.tokenA.toUpperCase()]?.icon}
                 alt={pool.tokenA}
-                width={24}
-                height={24}
                 className="rounded-full border border-white bg-white"
               />
-              <Image
-                src={
-                  tokenCodeMap[pool.tokenB.toUpperCase()]?.icon || "/globe.svg"
-                }
+              <TokenIcon
+                src={tokenCodeMap[pool.tokenB.toUpperCase()]?.icon}
                 alt={pool.tokenB}
-                width={24}
-                height={24}
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
@@ -53,23 +41,31 @@ export const SoroSwapAllLiquidityPools = () => {
       },
     },
     {
-      accessorKey: "reserveA",
-      header: "TVL",
+      accessorKey: "tvl",
+      header: ({ column }) => (
+        <div className="flex items-center justify-end gap-2">
+          <span className="text-white">TVL</span>
+          <ArrowUp
+            className={cn(
+              "size-4 cursor-pointer text-white transition-transform duration-300",
+              column.getIsSorted() === "asc" && "text-brand rotate-0",
+              column.getIsSorted() === "desc" && "text-brand rotate-180",
+              column.getIsSorted() === false && "text-white opacity-40",
+            )}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          />
+        </div>
+      ),
       cell: ({ getValue }) => {
         const value = getValue<bigint>();
-        return <span>{value.toString()}</span>;
+        return <span className="flex justify-end">{value.toString()}</span>;
       },
-    },
-    {
-      accessorKey: "totalFeeBps",
-      header: "APR",
-      cell: ({ getValue }) => `${getValue<number>()}%`,
     },
   ];
 
   return (
-    <section className="max-h-[500px] overflow-y-auto">
-      <h2 className="sr-only">All pools</h2>
+    <section className="flex flex-col gap-4">
+      <h2 className="text-2xl font-bold">All pools</h2>
 
       <TheTable
         data={pools}

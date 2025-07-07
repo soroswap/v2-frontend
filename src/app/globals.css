@@ -11,6 +11,8 @@
   --color-foreground: var(--foreground);
   --font-inter: var(--font-inter);
   --font-darker-grotesque: var(--font-darker-grotesque);
+  --color-brand: #8866dd;
+  --color-surface: #181a25;
 }
 
 @media (prefers-color-scheme: dark) {

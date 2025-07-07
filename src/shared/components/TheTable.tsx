@@ -3,8 +3,10 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getSortedRowModel,
   useReactTable,
   RowData,
+  SortingState,
 } from "@tanstack/react-table";
 import { cva, VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils/cn";
@@ -100,10 +102,17 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
     className,
   } = props;
 
+  // Local sorting state (client-side)
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+
   // Build TanStack Table instance
   const table = useReactTable({
     data: data ?? [],
     columns,
+    // Sorting
+    state: { sorting },
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     getRowId,
     getCoreRowModel: getCoreRowModel(),
   });

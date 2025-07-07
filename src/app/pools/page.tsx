@@ -16,7 +16,7 @@ export default function PoolsPage() {
           {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
             href="/add-liquidity"
-            className="inline-flex items-center gap-2 rounded-full bg-[#8866DD]/20 px-3 py-1.5 text-sm font-medium text-[#8866DD] hover:bg-[#8866DD]/30"
+            className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
           >
             <span className="text-lg leading-none">
               <PlusIcon />

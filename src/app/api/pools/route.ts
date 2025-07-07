@@ -52,9 +52,11 @@ export async function GET(request: NextRequest) {
         { status: 400 },
       );
     }
-    const poolsResponse = await soroswapClient.getPools(SOROSWAP.NETWORK, [
-      SupportedProtocols.SOROSWAP,
-    ]);
+    const poolsResponse = await soroswapClient.getPools(
+      SOROSWAP.NETWORK,
+      [SupportedProtocols.SOROSWAP],
+      //// [SupportedAssetLists.SOROSWAP],
+    );
 
     return NextResponse.json({
       code: "POOLS_SUCCESS",
