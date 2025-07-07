@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const poolsResponse = await soroswapClient.getPools(
       SOROSWAP.NETWORK,
       [SupportedProtocols.SOROSWAP],
-      //// [SupportedAssetLists.SOROSWAP],
+      //// [SupportedAssetLists.SOROSWAP], //TODO: Add this assets list to filter correctly.
     );
 
     return NextResponse.json({
