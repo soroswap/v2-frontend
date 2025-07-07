@@ -72,10 +72,10 @@ export const UserLiquidity = () => {
       header: () => (
         <span className="flex justify-end font-semibold text-white">TVL</span>
       ),
-      cell: ({ row }) => {
+      cell: () => {
         // const pool = row.original;
         return (
-          <span className="flex justify-end font-semibold text-white">tvl</span>
+          <span className="flex justify-end font-semibold text-white">tvl</span> //TODO: Calculate TVL correctly
         );
       },
     },
