@@ -1,25 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, Info, ExternalLink, AlertTriangle } from "lucide-react";
+import { Info, AlertTriangle } from "lucide-react";
 import { Modal } from "@/shared/components/Modal";
 import { cn } from "@/shared/lib/utils/cn";
-import { ToggleButton } from "@/shared/components/buttons";
-import { SupportedProtocols } from "@soroswap/sdk";
 import { isDecimalInRange } from "@/shared/lib/utils/validators";
-import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
+import { usePoolsSettingsStore } from "@/contexts/store/pools-settings";
 
-interface SwapSettingsModalProps {
+interface PoolsSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const SwapSettingsModal = ({
+export const PoolsSettingsModal = ({
   isOpen,
   onClose,
-}: SwapSettingsModalProps) => {
-  const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
-  const { swapSettings: settings, setSwapSettings } = useSwapSettingsStore();
+}: PoolsSettingsModalProps) => {
+  const { poolsSettings: settings, setPoolsSettings } = usePoolsSettingsStore();
 
   const slippageNum = Number(settings.customSlippage);
   const slippageLevel =
@@ -33,7 +29,7 @@ export const SwapSettingsModal = ({
         : "text-gray-400";
 
   const handleSlippageModeChange = (mode: "auto" | "custom") => {
-    setSwapSettings({
+    setPoolsSettings({
       ...settings,
       slippageMode: mode,
       customSlippage: mode === "auto" ? "1" : settings.customSlippage,
@@ -45,32 +41,21 @@ export const SwapSettingsModal = ({
     const normalized = value.startsWith(".") ? `0${value}` : value;
 
     if (isDecimalInRange(normalized, 0, 100, 2)) {
-      setSwapSettings({
+      setPoolsSettings({
         ...settings,
         customSlippage: normalized,
       });
     }
   };
 
-  const handleProtocolToggle = (protocol: SupportedProtocols) => {
-    const isActive = settings.protocols.includes(protocol);
-
-    if (isActive && settings.protocols.length === 1) {
-      return;
-    }
-
-    const updatedProtocols = isActive
-      ? settings.protocols.filter((p) => p !== protocol)
-      : [...settings.protocols, protocol];
-
-    setSwapSettings({
-      ...settings,
-      protocols: updatedProtocols,
-    });
-  };
-
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" className="px-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      className="px-4"
+      title="Settings"
+    >
       <div className="flex h-full flex-col gap-4">
         {/* Max Slippage */}
         <div className="flex h-full flex-col gap-2">
@@ -149,51 +134,6 @@ export const SwapSettingsModal = ({
               </span>
             </div>
           </div>
-        </div>
-
-        {/* Protocols */}
-        <div className="flex h-full flex-col gap-2">
-          <button
-            onClick={() => setIsProtocolExpanded(!isProtocolExpanded)}
-            className="flex w-full items-center justify-between"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-medium text-[#A0A3C4]">
-                Protocols
-              </span>
-              <Info size={14} className="text-gray-400" />
-            </div>
-            <ChevronDown
-              size={24}
-              className={cn(
-                "text-gray-400 transition-transform duration-500",
-                isProtocolExpanded ? "rotate-180" : "rotate-0",
-              )}
-            />
-          </button>
-
-          {isProtocolExpanded && (
-            <div className="flex h-full flex-col gap-2">
-              {Object.values(SupportedProtocols).map((protocol) => (
-                <div
-                  key={protocol}
-                  className="flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#A0A3C4]/70 uppercase">
-                      {protocol}
-                    </span>
-                    <ExternalLink size={12} className="text-gray-400" />
-                  </div>
-
-                  <ToggleButton
-                    isActive={settings.protocols.includes(protocol)}
-                    onClick={() => handleProtocolToggle(protocol)}
-                  />
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </Modal>

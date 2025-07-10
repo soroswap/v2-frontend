@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
-import { QuoteResponse } from "@/features/swap/types";
+import { QuoteResponse } from "@soroswap/sdk";
 
 export enum SwapStep {
   IDLE = "IDLE",
@@ -56,7 +56,7 @@ export function useSwap(options?: UseSwapOptions) {
   );
 
   const buildXdr = useCallback(
-    async (quote: QuoteResponse["data"], userAddress: string) => {
+    async (quote: QuoteResponse, userAddress: string) => {
       const response = await fetch("/api/quote/build", {
         method: "POST",
         headers: {
@@ -102,21 +102,19 @@ export function useSwap(options?: UseSwapOptions) {
   }, []);
 
   const executeSwap = useCallback(
-    async (
-      quote: QuoteResponse["data"],
-      userAddress: string,
-    ): Promise<SwapResult> => {
+    async (quote: QuoteResponse, userAddress: string): Promise<SwapResult> => {
       try {
         setIsLoading(true);
         setError(null);
 
         // Step 1: Build XDR
         updateStep(SwapStep.BUILDING_XDR);
+        console.log("BuildXDR, quote", quote);
         const xdr = await buildXdr(quote, userAddress);
 
         // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr.data, userAddress);
+        const signedXdr = await signTransaction(xdr, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);
@@ -127,7 +125,7 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const result: SwapResult = {
-          txHash: sendResult.data.txHash,
+          txHash: sendResult.txHash,
           success: true,
         };
 

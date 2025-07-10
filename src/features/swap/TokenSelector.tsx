@@ -3,7 +3,7 @@
 import { cn } from "@/shared/lib/utils/cn";
 import { useEffect, useState } from "react";
 import { useTokensList } from "@/shared/hooks/useTokensList";
-import { TokenType } from "@/features/swap/types/token";
+import { AssetInfo } from "@soroswap/sdk";
 import { ChevronDown, XIcon } from "lucide-react";
 import Image from "next/image";
 
@@ -13,10 +13,10 @@ export const TokenSelector = ({
   placeholder = "Select token",
   onSelect,
 }: {
-  currentToken: TokenType | null;
-  oppositeToken: TokenType | null;
+  currentToken: AssetInfo | null;
+  oppositeToken: AssetInfo | null;
   placeholder?: string;
-  onSelect?: (token: TokenType | null) => void;
+  onSelect?: (token: AssetInfo | null) => void;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const { tokensList } = useTokensList();
@@ -25,7 +25,7 @@ export const TokenSelector = ({
   const current = currentToken;
   const opposite = oppositeToken;
 
-  const handleSelectToken = (token: TokenType | null) => {
+  const handleSelectToken = (token: AssetInfo | null) => {
     if (!token || token.contract === current?.contract) {
       return; // no-op when clicking the already selected token
     }
@@ -102,13 +102,13 @@ export const TokenSelector = ({
                 .filter(
                   (token) =>
                     token.code
-                      .toLowerCase()
+                      ?.toLowerCase()
                       .includes(searchValue.toLowerCase()) ||
                     token.contract
-                      .toLowerCase()
+                      ?.toLowerCase()
                       .includes(searchValue.toLowerCase()),
                 )
-                .map((token: TokenType) => {
+                .map((token: AssetInfo) => {
                   const isDisabled = token.contract === current?.contract;
                   const isOtherSelected = token.contract === opposite?.contract;
                   return (

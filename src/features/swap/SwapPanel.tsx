@@ -1,7 +1,7 @@
 "use client";
 
 import { TokenSelector } from "@/features/swap/TokenSelector";
-import { TokenType } from "@/features/swap/types/token";
+import { AssetInfo } from "@soroswap/sdk";
 import { cn } from "@/shared/lib/utils/cn";
 import { PricePanel } from "@/features/swap/PricePanel";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
@@ -24,10 +24,10 @@ export const SwapPanel = ({
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
   variant?: "default" | "outline";
-  onSelectToken?: (token: TokenType | null) => void;
+  onSelectToken?: (token: AssetInfo | null) => void;
   isLoading: boolean;
-  currentToken: TokenType | null;
-  oppositeToken: TokenType | null;
+  currentToken: AssetInfo | null;
+  oppositeToken: AssetInfo | null;
 }) => {
   const token = currentToken;
 

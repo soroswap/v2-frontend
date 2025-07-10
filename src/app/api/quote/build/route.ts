@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: BuildQuoteRequest = await request.json();
-
+    console.log("body body", body);
     const buildXdrResponse = await soroswapClient.build(body, SOROSWAP.NETWORK);
-
+    console.log("buildXdrResponse", buildXdrResponse);
     return NextResponse.json({
       code: "BUILD_XDR_SUCCESS",
       data: buildXdrResponse.xdr,

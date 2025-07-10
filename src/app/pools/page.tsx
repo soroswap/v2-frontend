@@ -4,6 +4,7 @@ import Link from "next/link";
 import { UserLiquidity } from "@/features/pools/components/UserLiquidity";
 import { SoroSwapAllLiquidityPools } from "@/features/pools/components/SoroSwapAllLiquidityPools";
 import { PlusIcon } from "lucide-react";
+import { xlmTokenList } from "@/shared/lib/constants/tokenList";
 
 export default function PoolsPage() {
   return (
@@ -15,7 +16,7 @@ export default function PoolsPage() {
 
           {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
-            href="/add-liquidity"
+            href={`/pools/add/${xlmTokenList[0].assets[0].contract}/`}
             className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
           >
             <span className="text-lg leading-none">
@@ -25,26 +26,6 @@ export default function PoolsPage() {
             <span className="xs:hidden">Add</span>
           </Link>
         </div>
-
-        {/* Top‑level metrics */}
-        {/* <div className="mb-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-          <span className="text-sm text-[#A0A3C4]">Total TVL</span>
-          <div className="text-xl font-bold text-white sm:text-2xl">6.2M</div>
-        </div>
-        <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-          <span className="text-sm text-[#A0A3C4]">Active Pools</span>
-          <div className="text-xl font-bold text-white sm:text-2xl">
-            {pools.filter((p) => p.poolType === "pool").length}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-          <span className="text-sm text-[#A0A3C4]">Avg. APR (active)</span>
-          <div className="text-xl font-bold text-white sm:text-2xl">
-            {avgApr}
-          </div>
-        </div>
-      </div> */}
 
         <UserLiquidity />
 

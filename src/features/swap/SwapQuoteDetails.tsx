@@ -1,19 +1,15 @@
 "use client";
 
 import { cn } from "@/shared/lib/utils/cn";
-import { TokenType } from "@/features/swap/types/token";
-import {
-  BuildTradeReturn,
-  BuildSplitTradeReturn,
-  TradeType,
-} from "@/features/swap/types/swap";
+import { AssetInfo } from "@soroswap/sdk";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import { useState } from "react";
+import { QuoteResponse, TradeType } from "@soroswap/sdk";
 
 interface SwapQuoteDetailsProps {
-  quote: BuildTradeReturn | BuildSplitTradeReturn | null;
-  sellToken: TokenType | null;
-  buyToken: TokenType | null;
+  quote: QuoteResponse | null;
+  sellToken: AssetInfo | null;
+  buyToken: AssetInfo | null;
   className?: string;
 }
 
@@ -33,55 +29,48 @@ export const SwapQuoteDetails = ({
   const getConversionRate = () => {
     if (quote.tradeType === TradeType.EXACT_IN) {
       const amountIn = Number(
-        formatUnits({ value: quote.trade.amountIn.toString() }),
+        formatUnits({ value: quote.amountIn.toString() }),
       );
       const expectedOut = Number(
         formatUnits({
-          value: quote.trade.expectedAmountOut?.toString() ?? "0",
+          value: quote.amountOut?.toString() ?? "0",
         }),
       );
       return expectedOut / amountIn;
     } else {
       const amountOut = Number(
-        formatUnits({ value: quote.trade.amountOut.toString() }),
+        formatUnits({ value: quote.amountOut.toString() }),
       );
       const expectedIn = Number(
-        formatUnits({ value: quote.trade.expectedAmountIn?.toString() ?? "0" }),
+        formatUnits({ value: quote.amountIn?.toString() ?? "0" }),
       );
       return amountOut / expectedIn;
     }
-  };
-
-  // Calculate price impact percentage
-  const getPriceImpact = () => {
-    const impact =
-      Number(quote.priceImpact.numerator) /
-      Number(quote.priceImpact.denominator);
-    return (impact * 100).toFixed(2);
   };
 
   // Get expected output amount
   const getExpectedOutput = () => {
     if (quote.tradeType === TradeType.EXACT_IN) {
       return formatUnits({
-        value: quote.trade.expectedAmountOut?.toString() ?? "0",
+        value: quote.amountOut?.toString() ?? "0",
       });
     } else {
-      return formatUnits({ value: quote.trade.amountOut.toString() });
+      return formatUnits({ value: quote.amountOut.toString() });
     }
   };
 
   // Get network fee
   const getNetworkFee = () => {
-    if (quote.feeAmount) {
-      return formatUnits({ value: quote.feeAmount.toString() });
+    if (quote.platformFee?.feeAmount) {
+      return formatUnits({ value: quote.platformFee.feeAmount.toString() });
     }
     return "0.00001"; // Default estimated network fee
   };
 
-  // Get trading path
   const getTradingPath = () => {
-    if ("path" in quote.trade) {
+    //TODO: Implement this with the routePlan object
+
+    if ("path" in quote.rawTrade) {
       // For regular trades, we need to map contract addresses to token symbols
       // For now, we'll show a simplified path
       return `${sellToken.code} > ${buyToken.code}`;
@@ -159,14 +148,14 @@ export const SwapQuoteDetails = ({
             <span
               className={cn(
                 "text-sm",
-                Number(getPriceImpact()) > 5
+                Number(quote.priceImpactPct) > 5
                   ? "text-red-400"
-                  : Number(getPriceImpact()) > 2
+                  : Number(quote.priceImpactPct) > 2
                     ? "text-yellow-400"
                     : "text-green-400",
               )}
             >
-              ~{getPriceImpact()}%
+              ~{quote.priceImpactPct}%
             </span>
           </div>
 

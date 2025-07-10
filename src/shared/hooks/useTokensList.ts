@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { TokenType } from "@/features/swap/types/token";
+import { AssetInfo } from "@soroswap/sdk";
 import { TOKEN_LIST_URL, xlmTokenList } from "@/shared/lib/constants/tokenList";
 import { network } from "@/shared/lib/environmentVars";
 import { useMemo } from "react";
@@ -18,7 +18,7 @@ const fetchTokenList = async () => {
     if (xlmToken) {
       data.assets.unshift(xlmToken[0]);
     }
-    const tokensList: TokenType[] = data.assets;
+    const tokensList: AssetInfo[] = data.assets;
     return tokensList;
   } catch (error) {
     console.error("Error fetching token list:", error);
@@ -42,10 +42,10 @@ export const useTokensList = () => {
   const tokenMap = useMemo(() => {
     return (data || []).reduce(
       (acc, token) => {
-        acc[token.contract] = token;
+        acc[token.contract ?? ""] = token;
         return acc;
       },
-      {} as Record<string, TokenType>,
+      {} as Record<string, AssetInfo>,
     );
   }, [data]);
 
@@ -58,7 +58,7 @@ export const useTokensList = () => {
         }
         return acc;
       },
-      {} as Record<string, TokenType>,
+      {} as Record<string, AssetInfo>,
     );
   }, [data]);
 

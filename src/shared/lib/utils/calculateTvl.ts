@@ -1,4 +1,4 @@
-import { TokenType } from "@/features/swap/types/token";
+import { AssetInfo } from "@soroswap/sdk";
 
 //TODO: This function should be really easy to remove. The goal is receive the calculated tvl from the pool.
 export interface CalculateTvlParams {
@@ -6,7 +6,7 @@ export interface CalculateTvlParams {
   tokenBContract: string;
   reserveA: bigint;
   reserveB: bigint;
-  tokenMap: Record<string, TokenType>;
+  tokenMap: Record<string, AssetInfo>;
   priceMap: Record<string, number>;
 }
 

@@ -136,6 +136,7 @@ export function usePools() {
 
   return {
     pools: enrichedPools,
+    rawPools: remotePools ?? [],
     isLoading: remotePoolsLoading || tokenListLoading || pricesLoading || false,
     isError: error || pricesError,
   } as const;

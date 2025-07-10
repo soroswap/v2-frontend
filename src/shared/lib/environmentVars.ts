@@ -50,8 +50,8 @@ export const envVars = {
   },
 
   SOROSWAP: {
-    EMAIL: process.env.SOROSWAP_EMAIL || "",
-    PASSWORD: process.env.SOROSWAP_PASSWORD || "",
+    API_KEY: process.env.SOROSWAP_API_KEY || "",
+    BASE_URL: process.env.SOROSWAP_API_URL || "",
     NETWORK:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? SupportedNetworks.TESTNET

@@ -1,7 +1,7 @@
 "use client";
 
 import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
-import { TokenType } from "@/features/swap/types";
+import { AssetInfo } from "@soroswap/sdk";
 
 export const PricePanel = ({
   isLoading,
@@ -9,7 +9,7 @@ export const PricePanel = ({
   amount,
 }: {
   isLoading: boolean;
-  token: TokenType | null | undefined;
+  token: AssetInfo | null | undefined;
   amount: string | undefined;
 }) => {
   const { price, isLoading: isLoadingPrice } = useTokenPrice(

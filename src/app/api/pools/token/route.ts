@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (!ALLOWED_ORIGINS.some((allowed) => origin.includes(allowed))) {
     return NextResponse.json(
       {
-        code: "POOLS_ERROR_CORS",
+        code: "USER_POOLS_POSITIONS_ERROR_CORS",
         message: "Forbidden",
       },
       { status: 403 },
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   if (!network) {
     return NextResponse.json(
       {
-        code: "POOLS_ERROR_PARAM",
+        code: "USER_POOLS_POSITIONS_ERROR_PARAM",
         message: 'Missing "network" query parameter',
       },
       { status: 400 },
@@ -31,13 +31,14 @@ export async function GET(request: NextRequest) {
 
   try {
     const headers = request.headers;
-    const asset = headers.get("asset");
+    const tokenA = headers.get("tokenA");
+    const tokenB = headers.get("tokenB");
 
-    if (!asset) {
+    if (!tokenA || !tokenB) {
       return NextResponse.json(
         {
-          code: "POOLS_ERROR_PARAM",
-          message: 'Missing "asset" query parameter',
+          code: "USER_POOLS_POSITIONS_ERROR_PARAM",
+          message: 'Missing "tokenA" or "tokenB" query parameter',
         },
         { status: 400 },
       );
@@ -46,28 +47,30 @@ export async function GET(request: NextRequest) {
     if (network === "testnet") {
       return NextResponse.json(
         {
-          code: "POOLS_WRONG_NETWORK",
-          message: "Pools is not available for testnet",
+          code: "USER_POOLS_POSITIONS_WRONG_NETWORK",
+          message: "User pools positions is not available for testnet",
         },
         { status: 400 },
       );
     }
-    const poolsResponse = await soroswapClient.getPools(
+
+    const poolByTokens = await soroswapClient.getPoolByTokens(
+      tokenA,
+      tokenB,
       SOROSWAP.NETWORK,
       [SupportedProtocols.SOROSWAP],
-      // [SupportedAssetLists.SOROSWAP], //TODO: Add this assets list to filter correctly.
     );
 
     return NextResponse.json({
-      code: "POOLS_SUCCESS",
-      data: poolsResponse,
+      code: "USER_POOLS_POSITIONS_SUCCESS",
+      data: poolByTokens,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);
 
     return NextResponse.json(
       {
-        code: "POOLS_ERROR",
+        code: "USER_POOLS_POSITIONS_ERROR",
         message:
           error?.response?.data?.message || error?.message || "Server Error",
       },

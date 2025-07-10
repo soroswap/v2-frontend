@@ -1,6 +1,6 @@
 "use client";
 
-import { TokenType } from "@/features/swap/types";
+import { AssetInfo } from "@soroswap/sdk";
 
 export const TokenAmountInput = ({
   amount,
@@ -11,7 +11,7 @@ export const TokenAmountInput = ({
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
   isLoading: boolean;
-  token: TokenType | null | undefined;
+  token: AssetInfo | null | undefined;
 }) => {
   // Format with thousand separators while preserving decimal input
   const formatNumber = (value: string): string => {

@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
-import { QuoteRequest, TokenType, TradeType } from "@/features/swap/types";
 import { parseUnits, formatUnits } from "@/shared/lib/utils/parseUnits";
 import { useQuote } from "@/features/swap/hooks/useQuote";
 import {
@@ -19,6 +18,8 @@ import {
   SwapError,
   SwapResult,
 } from "@/features/swap/hooks/useSwap";
+import { QuoteRequest, TradeType } from "@soroswap/sdk";
+import { AssetInfo } from "@soroswap/sdk";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
@@ -28,8 +29,8 @@ type IndependentField = "sell" | "buy";
 interface SwapState {
   typedValue: string;
   independentField: IndependentField;
-  sellToken: TokenType | null;
-  buyToken: TokenType | null;
+  sellToken: AssetInfo | null;
+  buyToken: AssetInfo | null;
 }
 
 const initialSwapState: SwapState = {
@@ -44,7 +45,7 @@ const initialSwapState: SwapState = {
  */
 type SwapAction =
   | { type: "TYPE_INPUT"; field: IndependentField; typedValue: string }
-  | { type: "SET_TOKEN"; field: IndependentField; token: TokenType | null }
+  | { type: "SET_TOKEN"; field: IndependentField; token: AssetInfo | null }
   | { type: "SWITCH_TOKENS" };
 
 function swapReducer(state: SwapState, action: SwapAction): SwapState {
@@ -122,17 +123,24 @@ export function useSwapController({
 
   // Build the quote request payload every time the user changes relevant data.
   useEffect(() => {
-    if (!typedValue || !sellToken || !buyToken) return;
+    if (
+      !typedValue ||
+      !sellToken ||
+      !buyToken ||
+      !sellToken.contract ||
+      !buyToken.contract
+    )
+      return;
 
     const payload: QuoteRequest = {
       assetIn: sellToken.contract,
       assetOut: buyToken.contract,
-      amount: parseUnits({ value: typedValue }).toString(),
+      amount: parseUnits({ value: typedValue }),
       tradeType:
         independentField === "sell" ? TradeType.EXACT_IN : TradeType.EXACT_OUT,
       protocols: swapSettings.protocols,
       parts: 10,
-      slippageTolerance: (Number(swapSettings.customSlippage) * 100).toString(),
+      slippageTolerance: Number(swapSettings.customSlippage),
       assetList: ["soroswap"],
       maxHops: 2,
     };
@@ -156,10 +164,8 @@ export function useSwapController({
     if (!quote || independentField === "sell") return undefined;
 
     if (quote.tradeType === TradeType.EXACT_OUT) {
-      // exact out -> expectedAmountIn is available
-      const expected = (quote.trade as { expectedAmountIn?: bigint })
-        .expectedAmountIn;
-      return formatUnits({ value: expected?.toString() ?? "0" });
+      // exact out -> amountIn is available
+      return formatUnits({ value: quote.amountIn?.toString() ?? "0" });
     }
     return undefined;
   }, [quote, independentField]);
@@ -168,10 +174,8 @@ export function useSwapController({
     if (!quote || independentField === "buy") return undefined;
 
     if (quote.tradeType === TradeType.EXACT_IN) {
-      // exact in -> expectedAmountOut is available
-      const expected = (quote.trade as { expectedAmountOut?: bigint })
-        .expectedAmountOut;
-      return formatUnits({ value: expected?.toString() ?? "0" });
+      // exact in -> amountOut is available
+      return formatUnits({ value: quote.amountOut?.toString() ?? "0" });
     }
     return undefined;
   }, [quote, independentField]);
@@ -209,7 +213,7 @@ export function useSwapController({
    * Called when the user selects a token from the picker.
    */
   const handleTokenSelect = useCallback(
-    (field: IndependentField) => (token: TokenType | null) => {
+    (field: IndependentField) => (token: AssetInfo | null) => {
       dispatchSwap({ type: "SET_TOKEN", field, token });
     },
     [],

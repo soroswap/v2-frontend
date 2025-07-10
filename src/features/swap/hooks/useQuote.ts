@@ -1,16 +1,29 @@
 import useSWR from "swr";
-import { QuoteRequest, QuoteResponse } from "@/features/swap/types/swap";
+import { QuoteRequest, QuoteResponse } from "@soroswap/sdk";
+
+interface QuoteResponseData {
+  code: string;
+  data: QuoteResponse;
+}
+
+// BigInt replacer function to convert BigInt values to strings
+const bigIntReplacer = (key: string, value: unknown): unknown => {
+  if (typeof value === "bigint") {
+    return value.toString();
+  }
+  return value;
+};
 
 const fetcher = async (
   url: string,
   quoteRequest: QuoteRequest,
-): Promise<QuoteResponse> => {
+): Promise<QuoteResponseData> => {
   const response = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(quoteRequest),
+    body: JSON.stringify(quoteRequest, bigIntReplacer, 2),
   });
 
   if (!response.ok) {
