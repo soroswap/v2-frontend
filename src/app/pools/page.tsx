@@ -16,7 +16,7 @@ export default function PoolsPage() {
 
           {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
-            href={`/pools/add/${xlmTokenList[0].assets[0].contract}/`}
+            href={`/pools/add-liquidity/${xlmTokenList[0].assets[0].contract}/`}
             className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
           >
             <span className="text-lg leading-none">

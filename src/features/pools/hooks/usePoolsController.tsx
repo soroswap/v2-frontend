@@ -121,7 +121,7 @@ export function usePoolsController({
     if (isNaN(amountB) || poolRatio === 0) return undefined;
 
     const amountA = amountB / poolRatio;
-    return amountA.toString();
+    return amountA.toFixed(7); // We need to fix the decimals to , because a lot of assets in Stellar have 7 decimals.
   }, [poolRatio, independentField, typedValue]);
 
   const derived_TOKEN_B_Amount = useMemo(() => {
@@ -133,7 +133,7 @@ export function usePoolsController({
     if (isNaN(amountA)) return undefined;
 
     const amountB = amountA * poolRatio;
-    return amountB.toString();
+    return amountB.toFixed(7); // We need to fix the decimals to 7, because a lot of assets in Stellar have 7 decimals.
   }, [poolRatio, independentField, typedValue]);
 
   const { address: userAddress } = useUserContext();

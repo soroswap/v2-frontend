@@ -29,7 +29,7 @@ const getSwapButtonText = (step: PoolStep): string => {
   }
 };
 
-export default function PoolsAddPage() {
+export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
@@ -70,7 +70,6 @@ export default function PoolsAddPage() {
   const onAddLiquidityPool = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      console.log("onAddLiquidityPool");
       handleAddLiquidity();
     },
     [handleAddLiquidity],
