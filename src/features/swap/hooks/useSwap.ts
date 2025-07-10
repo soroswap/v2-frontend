@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from "react";
 import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
 import { QuoteResponse } from "@soroswap/sdk";
+import { useCallback, useState } from "react";
 
 export enum SwapStep {
   IDLE = "IDLE",
@@ -114,7 +114,7 @@ export function useSwap(options?: UseSwapOptions) {
 
         // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr, userAddress);
+        const signedXdr = await signTransaction(xdr.data, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);
