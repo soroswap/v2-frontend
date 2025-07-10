@@ -3,21 +3,21 @@
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 import { useQuote } from "@/features/swap/hooks/useQuote";
 import {
-    SwapError,
-    SwapResult,
-    SwapStep,
-    useSwap,
+  SwapError,
+  SwapResult,
+  SwapStep,
+  useSwap,
 } from "@/features/swap/hooks/useSwap";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
-import { AssetInfo, QuoteRequest, TradeType } from "@soroswap/sdk";
+import { AssetInfo, QuoteRequest, SupportedAssetLists, TradeType } from "@soroswap/sdk";
 import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useReducer,
-    useRef,
-    useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
 } from "react";
 
 // -----------------------------------------------------------------------------
@@ -140,7 +140,7 @@ export function useSwapController({
       protocols: swapSettings.protocols,
       parts: 10,
       slippageBps: Number(swapSettings.customSlippage),
-      assetList: ["soroswap"],
+      assetList: [SupportedAssetLists.SOROSWAP],
       maxHops: 2,
     };
 
