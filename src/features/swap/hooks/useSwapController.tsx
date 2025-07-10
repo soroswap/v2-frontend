@@ -10,7 +10,13 @@ import {
 } from "@/features/swap/hooks/useSwap";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
-import { AssetInfo, QuoteRequest, SupportedAssetLists, TradeType } from "@soroswap/sdk";
+import { slippageBps } from "@/shared/lib/utils/slippageBps";
+import {
+  AssetInfo,
+  QuoteRequest,
+  SupportedAssetLists,
+  TradeType,
+} from "@soroswap/sdk";
 import {
   useCallback,
   useEffect,
@@ -139,7 +145,7 @@ export function useSwapController({
         independentField === "sell" ? TradeType.EXACT_IN : TradeType.EXACT_OUT,
       protocols: swapSettings.protocols,
       parts: 10,
-      slippageBps: Number(swapSettings.customSlippage),
+      slippageBps: slippageBps(swapSettings.customSlippage),
       assetList: [SupportedAssetLists.SOROSWAP],
       maxHops: 2,
     };

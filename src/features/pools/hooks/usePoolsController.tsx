@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { useGetPoolByTokens } from "./useGetPoolByTokens";
 import type { PoolError, PoolResult } from "./usePool";
 import { usePool } from "./usePool";
+import { slippageBps } from "@/shared/lib/utils/slippageBps";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
@@ -200,7 +201,7 @@ export function usePoolsController({
         amountA: BigInt(amountA),
         amountB: BigInt(amountB),
         to: userAddress,
-        slippageBps: poolsSettings.customSlippage.toString(),
+        slippageBps: slippageBps(poolsSettings.customSlippage).toString(),
       };
       console.log("addLiquidityRequest", addLiquidityRequest);
       await executeAddLiquidity(addLiquidityRequest);
