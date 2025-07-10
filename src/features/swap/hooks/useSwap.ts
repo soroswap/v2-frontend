@@ -4,6 +4,11 @@ import { kit } from "@/shared/lib/server/wallet";
 import { QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 
+interface BuildXdrResponseData {
+  code: string;
+  data: string;
+}
+
 export enum SwapStep {
   IDLE = "IDLE",
   BUILDING_XDR = "BUILDING_XDR",
@@ -56,7 +61,10 @@ export function useSwap(options?: UseSwapOptions) {
   );
 
   const buildXdr = useCallback(
-    async (quote: QuoteResponse, userAddress: string) => {
+    async (
+      quote: QuoteResponse,
+      userAddress: string,
+    ): Promise<BuildXdrResponseData> => {
       const response = await fetch("/api/quote/build", {
         method: "POST",
         headers: {
@@ -109,7 +117,6 @@ export function useSwap(options?: UseSwapOptions) {
 
         // Step 1: Build XDR
         updateStep(SwapStep.BUILDING_XDR);
-        console.log("BuildXDR, quote", quote);
         const xdr = await buildXdr(quote, userAddress);
 
         // Step 2: Sign transaction
@@ -125,7 +132,7 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const result: SwapResult = {
-          txHash: sendResult.txHash,
+          txHash: sendResult,
           success: true,
         };
 

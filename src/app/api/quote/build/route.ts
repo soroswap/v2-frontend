@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { QuoteResponse } from "@/components/shared/types";
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { BuildQuoteRequest } from "@soroswap/sdk";
@@ -31,9 +30,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: BuildQuoteRequest = await request.json();
-    console.log("body body", body);
     const buildXdrResponse = await soroswapClient.build(body, SOROSWAP.NETWORK);
-    console.log("buildXdrResponse", buildXdrResponse);
     return NextResponse.json({
       code: "BUILD_XDR_SUCCESS",
       data: buildXdrResponse.xdr,

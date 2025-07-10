@@ -22,6 +22,11 @@ interface SendTransactionResponse {
   diagnosticEventsXdr: any;
 }
 
+interface SendTransactionResponseData {
+  code: string;
+  data: SendTransactionResponse;
+}
+
 export async function POST(request: NextRequest) {
   const origin =
     request.headers.get("origin") || request.headers.get("referer") || "";
@@ -49,12 +54,12 @@ export async function POST(request: NextRequest) {
   try {
     const xdr: string = await request.json();
 
-    const sendTransactionResponse: SendTransactionResponse =
+    const sendTransactionResponse: SendTransactionResponseData =
       await soroswapClient.send(xdr, false, SOROSWAP.NETWORK);
 
     return NextResponse.json({
       code: "SEND_TRANSACTION_SUCCESS",
-      data: sendTransactionResponse,
+      data: sendTransactionResponse.data,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);
