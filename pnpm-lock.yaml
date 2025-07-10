@@ -12,8 +12,8 @@ importers:
         specifier: ^1.7.5
         version: 1.7.5(@stellar/stellar-base@13.1.0)(@stellar/stellar-sdk@13.3.0)(@trezor/connect@9.5.1(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@soroswap/sdk':
-        specifier: 0.3.0
-        version: 0.3.0
+        specifier: 0.3.2
+        version: 0.3.2
       '@stellar/stellar-sdk':
         specifier: ^13.3.0
         version: 13.3.0
@@ -907,8 +907,8 @@ packages:
     peerDependencies:
       typescript: '>=5'
 
-  '@soroswap/sdk@0.3.0':
-    resolution: {integrity: sha512-1LynB5SmYiCgkyxJtB8hnoq1uEk8wtbtFgFZxszshFy6ajE5K2hW7IG1idwKLo7jtdtp8KeMHaY88fPdvK1/3g==}
+  '@soroswap/sdk@0.3.2':
+    resolution: {integrity: sha512-2HFw5dUNV2C/I+DTugagAMb4WPoKenMhBqDQ4QH42SYG2M78N/sOqUf9WpQxYPfjVtq4iiyxAEDGCgB7zBXc7A==}
     engines: {node: '>=16.0.0'}
 
   '@stablelib/aead@1.0.1':
@@ -4844,7 +4844,7 @@ snapshots:
       - fastestsmallesttextencoderdecoder
       - ws
 
-  '@soroswap/sdk@0.3.0':
+  '@soroswap/sdk@0.3.2':
     dependencies:
       axios: 1.10.0
     transitivePeerDependencies:
