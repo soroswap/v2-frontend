@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   if (!ALLOWED_ORIGINS.some((allowed) => origin.includes(allowed))) {
     return NextResponse.json(
       {
-        code: "USER_POOLS_POSITIONS_ERROR_CORS",
+        code: "GET_POOLS_BY_TOKENS_ERROR_CORS",
         message: "Forbidden",
       },
       { status: 403 },
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   if (!network) {
     return NextResponse.json(
       {
-        code: "USER_POOLS_POSITIONS_ERROR_PARAM",
+        code: "GET_POOLS_BY_TOKENS_ERROR_PARAM",
         message: 'Missing "network" query parameter',
       },
       { status: 400 },
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (!tokenA || !tokenB) {
       return NextResponse.json(
         {
-          code: "USER_POOLS_POSITIONS_ERROR_PARAM",
+          code: "GET_POOLS_BY_TOKENS_ERROR_PARAM",
           message: 'Missing "tokenA" or "tokenB" query parameter',
         },
         { status: 400 },
@@ -47,8 +47,8 @@ export async function GET(request: NextRequest) {
     if (network === "testnet") {
       return NextResponse.json(
         {
-          code: "USER_POOLS_POSITIONS_WRONG_NETWORK",
-          message: "User pools positions is not available for testnet",
+          code: "GET_POOLS_BY_TOKENS_WRONG_NETWORK",
+          message: "Get pools by tokens is not available for testnet",
         },
         { status: 400 },
       );
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({
-      code: "USER_POOLS_POSITIONS_SUCCESS",
+      code: "GET_POOLS_BY_TOKENS_SUCCESS",
       data: poolByTokens,
     });
   } catch (error: any) {
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       {
-        code: "USER_POOLS_POSITIONS_ERROR",
+        code: "GET_POOLS_BY_TOKENS_ERROR",
         message:
           error?.response?.data?.message || error?.message || "Server Error",
       },
