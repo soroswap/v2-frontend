@@ -33,9 +33,12 @@ export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
-  const [swapResult, setSwapResult] = useState<PoolResult | null>(null);
+  const [addLiquidityResult, setAddLiquidityResult] =
+    useState<PoolResult | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
+
+  console.log("addLiquidityResult", addLiquidityResult);
 
   const {
     typedValue,
@@ -53,12 +56,12 @@ export default function PoolsAddLiquidityPage() {
     resetSwap,
   } = usePoolsController({
     onSuccess: (result: PoolResult) => {
-      setSwapResult(result);
+      setAddLiquidityResult(result);
       setIsSwapModalOpen(true);
     },
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);
-      setSwapResult(null);
+      setAddLiquidityResult(null);
     },
     onStepChange: (step: PoolStep) => {
       if (step === PoolStep.WAITING_SIGNATURE) {
@@ -158,10 +161,10 @@ export default function PoolsAddLiquidityPage() {
             currentStep={currentStep}
             onClose={() => {
               setIsSwapModalOpen(false);
-              setSwapResult(null);
+              setAddLiquidityResult(null);
               resetSwap();
             }}
-            transactionHash={swapResult?.txHash}
+            transactionHash={addLiquidityResult?.txHash}
           />
         )}
 

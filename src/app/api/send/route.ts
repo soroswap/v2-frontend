@@ -22,7 +22,7 @@ interface SendTransactionResponse {
   diagnosticEventsXdr: any;
 }
 
-interface SendTransactionResponseData {
+export interface SendTransactionResponseData {
   code: string;
   data: SendTransactionResponse;
 }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       code: "SEND_TRANSACTION_SUCCESS",
-      data: sendTransactionResponse.data,
+      data: sendTransactionResponse,
     });
   } catch (error: any) {
     console.error("[API ERROR]", error?.message || error);

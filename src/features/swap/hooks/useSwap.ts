@@ -3,6 +3,7 @@ import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
 import { QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
+import { SendTransactionResponseData } from "@/app/api/send/route";
 
 interface BuildXdrResponseData {
   code: string;
@@ -93,21 +94,24 @@ export function useSwap(options?: UseSwapOptions) {
     [],
   );
 
-  const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(signedXdr),
-    });
+  const sendTransaction = useCallback(
+    async (signedXdr: string): Promise<SendTransactionResponseData> => {
+      const response = await fetch("/api/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signedXdr),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to send transaction: ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`Failed to send transaction: ${response.status}`);
+      }
 
-    return await response.json();
-  }, []);
+      return await response.json();
+    },
+    [],
+  );
 
   const executeSwap = useCallback(
     async (quote: QuoteResponse, userAddress: string): Promise<SwapResult> => {
@@ -132,8 +136,8 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const result: SwapResult = {
-          txHash: sendResult,
-          success: true,
+          txHash: sendResult.data.txHash,
+          success: sendResult.data.status === "success" ? true : false,
         };
 
         options?.onSuccess?.(result);

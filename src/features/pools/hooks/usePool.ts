@@ -6,6 +6,7 @@ import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
 import { AddLiquidityRequest, LiquidityResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
+import { SendTransactionResponseData } from "@/app/api/send/route";
 
 interface AddLiquidityResponseData {
   code: string;
@@ -106,21 +107,24 @@ export function usePool(options?: UsePoolOptions) {
   );
 
   /* 3) Broadcast to Soroban/Stellar network */
-  const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(signedXdr),
-    });
+  const sendTransaction = useCallback(
+    async (signedXdr: string): Promise<SendTransactionResponseData> => {
+      const response = await fetch("/api/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signedXdr),
+      });
 
-    if (!response.ok) {
-      throw new Error(`Failed to send transaction: ${response.status}`);
-    }
+      if (!response.ok) {
+        throw new Error(`Failed to send transaction: ${response.status}`);
+      }
 
-    return await response.json();
-  }, []);
+      return await response.json();
+    },
+    [],
+  );
 
   /* -------------------------------------------------------------- */
   /* Public: executeAddLiquidity                                    */
@@ -133,9 +137,7 @@ export function usePool(options?: UsePoolOptions) {
 
         // Step 1 – build XDR
         updateStep(PoolStep.ADD_LIQUIDITY);
-        console.log("params", params);
         const addLiquidityTx = await addLiquidity(params);
-        console.log("addLiquidityTx", addLiquidityTx);
 
         // Step 2 – sign
         updateStep(PoolStep.WAITING_SIGNATURE);
@@ -146,12 +148,15 @@ export function usePool(options?: UsePoolOptions) {
 
         // Step 3 – send
         updateStep(PoolStep.SENDING_TRANSACTION);
-        const { txHash } = await sendTransaction(signedXdr);
+        const sendResult = await sendTransaction(signedXdr);
 
         updateStep(PoolStep.SUCCESS);
         setIsLoading(false);
 
-        const result: PoolResult = { txHash, success: true };
+        const result: PoolResult = {
+          txHash: sendResult.data.txHash,
+          success: sendResult.data.status === "success" ? true : false,
+        };
         options?.onSuccess?.(result);
         return result;
       } catch (err: any) {
