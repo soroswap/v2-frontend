@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useCallback } from "react";
-import { SOROSWAP, STELLAR } from "@/shared/lib/environmentVars";
-import { kit } from "@/shared/lib/server/wallet";
-import { soroswapClient } from "@/shared/lib/server/soroswapClient";
-import { AddLiquidityRequest } from "@soroswap/sdk";
 import { useUserContext } from "@/contexts";
+import { SOROSWAP, STELLAR } from "@/shared/lib/environmentVars";
+import { soroswapClient } from "@/shared/lib/server/soroswapClient";
+import { kit } from "@/shared/lib/server/wallet";
+import { AddLiquidityRequest } from "@soroswap/sdk";
+import { useCallback, useState } from "react";
 
 /** Steps for an add-liquidity transaction – mirrors the flow used in useSwap */
 export enum PoolStep {
@@ -71,7 +71,7 @@ export function usePool(options?: UsePoolOptions) {
       amountA: params.amountA,
       amountB: params.amountB,
       to: params.to,
-      slippageTolerance: params.slippageTolerance,
+      slippageBps: params.slippageBps,
     };
     const addLiquidityTx = await soroswapClient.addLiquidity(
       liquityData,

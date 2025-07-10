@@ -14,7 +14,7 @@ export interface SwapSettings {
 //   tradeType: TradeType;
 //   protocols: SupportedProtocols[];
 //   parts: number;
-//   slippageTolerance: string;
+//   slippageBps: string;
 //   assetList?: string[];
 //   maxHops?: number;
 // };

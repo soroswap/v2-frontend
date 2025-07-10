@@ -1,25 +1,24 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import {
-  useState,
-  useReducer,
-  useEffect,
-  useCallback,
-  useRef,
-  useMemo,
-} from "react";
-import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
-import { parseUnits, formatUnits } from "@/shared/lib/utils/parseUnits";
 import { useQuote } from "@/features/swap/hooks/useQuote";
 import {
-  SwapStep,
-  useSwap,
-  SwapError,
-  SwapResult,
+    SwapError,
+    SwapResult,
+    SwapStep,
+    useSwap,
 } from "@/features/swap/hooks/useSwap";
-import { QuoteRequest, TradeType } from "@soroswap/sdk";
-import { AssetInfo } from "@soroswap/sdk";
+import { useTokensList } from "@/shared/hooks/useTokensList";
+import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
+import { AssetInfo, QuoteRequest, TradeType } from "@soroswap/sdk";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useRef,
+    useState,
+} from "react";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
@@ -140,7 +139,7 @@ export function useSwapController({
         independentField === "sell" ? TradeType.EXACT_IN : TradeType.EXACT_OUT,
       protocols: swapSettings.protocols,
       parts: 10,
-      slippageTolerance: Number(swapSettings.customSlippage),
+      slippageBps: Number(swapSettings.customSlippage),
       assetList: ["soroswap"],
       maxHops: 2,
     };

@@ -1,16 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 
-import { useReducer, useEffect, useCallback, useMemo } from "react";
-import { useTokensList } from "@/shared/hooks/useTokensList";
-import { useGetPoolByTokens } from "./useGetPoolByTokens";
-import { usePool } from "./usePool";
-import type { PoolError, PoolResult } from "./usePool";
-import { parseUnits } from "@/shared/lib/utils/parseUnits";
 import { useUserContext } from "@/contexts";
-import { PoolStep } from "@/features/pools/hooks/usePool";
-import { AddLiquidityRequest } from "@soroswap/sdk";
 import { usePoolsSettingsStore } from "@/contexts/store/pools-settings";
-import { AssetInfo } from "@soroswap/sdk";
+import { PoolStep } from "@/features/pools/hooks/usePool";
+import { useTokensList } from "@/shared/hooks/useTokensList";
+import { parseUnits } from "@/shared/lib/utils/parseUnits";
+import { AddLiquidityRequest, AssetInfo } from "@soroswap/sdk";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
+import { useGetPoolByTokens } from "./useGetPoolByTokens";
+import type { PoolError, PoolResult } from "./usePool";
+import { usePool } from "./usePool";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
@@ -201,7 +200,7 @@ export function usePoolsController({
         amountA: BigInt(amountA),
         amountB: BigInt(amountB),
         to: userAddress,
-        slippageTolerance: poolsSettings.customSlippage.toString(),
+        slippageBps: poolsSettings.customSlippage.toString(),
       };
       console.log("addLiquidityRequest", addLiquidityRequest);
       await executeAddLiquidity(addLiquidityRequest);
