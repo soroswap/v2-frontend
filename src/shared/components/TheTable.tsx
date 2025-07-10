@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import {
   ColumnDef,
   flexRender,
@@ -7,6 +7,7 @@ import {
   useReactTable,
   RowData,
   SortingState,
+  Row,
 } from "@tanstack/react-table";
 import { cva, VariantProps } from "class-variance-authority";
 import { cn } from "@/shared/lib/utils/cn";
@@ -88,7 +89,21 @@ export interface TheTableProps<T extends RowData>
    * Additional table className
    */
   className?: string;
+  /**
+   * Enable row selection functionality
+   */
+  enableRowSelection?: boolean;
+  /**
+   * Callback when a row is clicked
+   */
+  onRowClick?: (row: T) => void;
 }
+
+export type RowSelectionState = Record<string, boolean>;
+
+export type RowSelectionTableState = {
+  rowSelection: RowSelectionState;
+};
 
 export function TheTable<T extends RowData>(props: TheTableProps<T>) {
   const {
@@ -100,22 +115,44 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
     getRowId,
     emptyLabel = "No data to display",
     className,
+    enableRowSelection,
+    onRowClick,
   } = props;
 
   // Local sorting state (client-side)
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // Build TanStack Table instance
   const table = useReactTable({
     data: data ?? [],
     columns,
     // Sorting
-    state: { sorting },
+    state: {
+      sorting,
+      ...(enableRowSelection && { rowSelection }),
+    },
     onSortingChange: setSorting,
+    ...(enableRowSelection && {
+      onRowSelectionChange: setRowSelection,
+      enableRowSelection: true,
+    }),
     getSortedRowModel: getSortedRowModel(),
     getRowId,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const handleRowClick = (row: Row<T>) => {
+    if (enableRowSelection) {
+      // Toggle row selection when clicked
+      row.toggleSelected();
+    }
+
+    // Call the onRowClick callback if provided
+    if (onRowClick) {
+      onRowClick(row.original);
+    }
+  };
 
   return (
     <div className="w-full overflow-auto">
@@ -160,7 +197,17 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
 
           {!isLoading &&
             table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className={rowVariants({ variant })}>
+              <tr
+                key={row.id}
+                className={cn(
+                  rowVariants({ variant }),
+                  enableRowSelection &&
+                    row.getIsSelected() &&
+                    "bg-[#8866dd]/10",
+                  (enableRowSelection || onRowClick) && "cursor-pointer",
+                )}
+                onClick={() => handleRowClick(row)}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-3 text-sm">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

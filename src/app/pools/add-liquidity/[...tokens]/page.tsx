@@ -178,3 +178,8 @@ export default function PoolsAddLiquidityPage() {
     </main>
   );
 }
+
+//TODO In Remove Liquidity:
+// 1. lp - balance = user- position
+// 2. xlm / eurc reserveA / reserve B
+// 3. Total LP should be after the calculation don't need now.

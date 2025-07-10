@@ -4,16 +4,25 @@ import { useUserContext } from "@/contexts";
 import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { ConnectWallet } from "@/shared/components/buttons";
-import { TheTable } from "@/shared/components";
+import { Modal, TheTable } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
 import { ColumnDef } from "@tanstack/react-table";
 import { TokenIcon } from "@/shared/components";
+import { useState } from "react";
 
 export const UserLiquidity = () => {
   const { address } = useUserContext();
   const { tokenMap } = useTokensList();
   const { positions: userPositions, isLoading: positionsLoading } =
     useUserPoolPositions(address);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [rowData, setRowData] = useState<UserPosition | null>(null);
+
+  const handleRowClick = (position: UserPosition) => {
+    console.log("Row clicked:", position);
+    setIsModalOpen(true);
+    setRowData(position);
+  };
 
   const columns: ColumnDef<UserPosition, unknown>[] = [
     {
@@ -115,9 +124,68 @@ export const UserLiquidity = () => {
           userPositions &&
           userPositions.length > 0 &&
           !positionsLoading && (
-            <TheTable columns={columns} data={userPositions} />
+            <TheTable
+              columns={columns}
+              data={userPositions}
+              enableRowSelection={true}
+              onRowClick={handleRowClick}
+            />
           )}
       </div>
+      {isModalOpen && rowData && (
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <div className="flex flex-col items-start gap-4">
+            <div className="relative">
+              <TokenIcon
+                src={tokenMap[rowData?.poolInfo.tokenA]?.icon}
+                alt={rowData?.poolInfo.tokenA}
+                className="rounded-full border border-white bg-white"
+              />
+              <TokenIcon
+                src={tokenMap[rowData?.poolInfo.tokenB]?.icon}
+                alt={rowData?.poolInfo.tokenB}
+                className="absolute top-0 left-3 rounded-full border border-white bg-white"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-semibold text-white">
+                {tokenMap[rowData?.poolInfo.tokenA]?.code ??
+                  rowData?.poolInfo.tokenA.slice(0, 4)}
+                /
+                {tokenMap[rowData?.poolInfo.tokenB]?.code ??
+                  rowData?.poolInfo.tokenB.slice(0, 4)}
+              </span>
+            </div>
+            <div className="flex w-full flex-col">
+              <p className="text-sm text-[#A0A3C4]">Liquidity Pool</p>
+              <div className="flex w-full items-center justify-between text-sm text-white">
+                <div className="flex items-center gap-2">
+                  <TokenIcon
+                    src={tokenMap[rowData?.poolInfo.tokenA]?.icon}
+                    alt={rowData?.poolInfo.tokenA}
+                    className="rounded-full border border-white bg-white"
+                  />
+                  {tokenMap[rowData?.poolInfo.tokenA]?.code ??
+                    rowData?.poolInfo.tokenA.slice(0, 4)}
+                </div>
+                <p>{rowData.poolInfo.reserveA}</p>
+              </div>
+              <div className="flex w-full items-center justify-between text-sm text-white">
+                <div className="flex items-center gap-2">
+                  <TokenIcon
+                    src={tokenMap[rowData?.poolInfo.tokenB]?.icon}
+                    alt={rowData?.poolInfo.tokenB}
+                    className="rounded-full border border-white bg-white"
+                  />
+                  {tokenMap[rowData?.poolInfo.tokenB]?.code ??
+                    rowData?.poolInfo.tokenB.slice(0, 4)}
+                </div>
+                <p className="flex">{rowData.poolInfo.reserveB}</p>
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 };
