@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useUserContext } from "@/contexts";
-import { SOROSWAP, STELLAR } from "@/shared/lib/environmentVars";
+import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
+import { STELLAR } from "@/shared/lib/environmentVars";
 import { soroswapClient } from "@/shared/lib/server/soroswapClient";
 import { kit } from "@/shared/lib/server/wallet";
 import { AddLiquidityRequest } from "@soroswap/sdk";
@@ -37,7 +38,7 @@ export interface UsePoolOptions {
 
 export function usePool(options?: UsePoolOptions) {
   const [currentStep, setCurrentStep] = useState<PoolStep>(PoolStep.IDLE);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<PoolError | null>(null);
   const { address: userAddress } = useUserContext();
 
@@ -73,11 +74,17 @@ export function usePool(options?: UsePoolOptions) {
       to: params.to,
       slippageBps: params.slippageBps,
     };
-    const addLiquidityTx = await soroswapClient.addLiquidity(
-      liquityData,
-      SOROSWAP.NETWORK,
-    );
-    return addLiquidityTx;
+    const response = await fetch("/api/pools/add-liquidity", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(liquityData, bigIntReplacer, 2),
+    });
+    if (!response.ok) {
+      throw new Error(`Failed to add liquidity: ${response.status}`);
+    }
+    return await response.json();
   }, []);
 
   /* 2) Sign transaction with connected wallet */

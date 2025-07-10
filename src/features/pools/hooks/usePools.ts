@@ -5,6 +5,7 @@ import { Pool, SupportedProtocols } from "@soroswap/sdk";
 import { useBatchTokenPrices } from "@/features/swap/hooks/useBatchTokenPrices";
 import { calculateTvl } from "@/shared/lib/utils";
 
+//TODO: Adjust to use the getPoolByTokens hook or create it to use it in the add liquidity page
 const FALLBACK_POOLS: Pool[] = [
   {
     protocol: SupportedProtocols.SOROSWAP,

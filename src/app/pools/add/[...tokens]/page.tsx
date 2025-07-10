@@ -57,7 +57,7 @@ export default function PoolsAddPage() {
       setIsSwapModalOpen(true);
     },
     onError: (error: PoolError) => {
-      console.error("Swap failed:", error);
+      console.error("Pool failed:", error);
       setSwapResult(null);
     },
     onStepChange: (step: PoolStep) => {
@@ -67,9 +67,10 @@ export default function PoolsAddPage() {
     },
   });
 
-  const onSwapClick = useCallback(
+  const onAddLiquidityPool = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
+      console.log("onAddLiquidityPool");
       handleAddLiquidity();
     },
     [handleAddLiquidity],
@@ -140,7 +141,7 @@ export default function PoolsAddPage() {
                 disabled={
                   !TOKEN_A || !TOKEN_B || TOKEN_A.contract === TOKEN_B.contract
                 }
-                onClick={onSwapClick}
+                onClick={onAddLiquidityPool}
                 className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
               >
                 {!TOKEN_A || !TOKEN_B
