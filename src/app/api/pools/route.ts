@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
-import { SupportedProtocols } from "@soroswap/sdk";
+import { SupportedAssetLists, SupportedProtocols } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 /*This is the GET method for the pools API. It is used to get the pools of a token. It's working for mainnet only.*/
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const poolsResponse = await soroswapClient.getPools(
       SOROSWAP.NETWORK,
       [SupportedProtocols.SOROSWAP],
-      // [SupportedAssetLists.SOROSWAP], //TODO: Add this assets list to filter correctly.
+      [SupportedAssetLists.SOROSWAP],
     );
 
     return NextResponse.json({
