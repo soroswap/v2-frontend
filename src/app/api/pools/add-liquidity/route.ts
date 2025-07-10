@@ -32,8 +32,6 @@ export async function POST(request: NextRequest) {
   try {
     const body: AddLiquidityRequest = await request.json();
 
-    console.log("body", body);
-
     // Validate required fields
     if (
       !body.assetA ||
