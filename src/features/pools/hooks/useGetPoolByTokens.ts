@@ -14,11 +14,19 @@ interface UseGetPoolByTokensReturn {
 }
 
 // --- Internal fetcher ------------------------------------------------------
-const fetchPools = async (): Promise<Pool[]> => {
-  const res = await fetch("/api/pools", { headers: { asset: "soroswap" } });
+const fetchPoolByTokens = async (
+  tokenA: string,
+  tokenB: string,
+): Promise<Pool[] | null> => {
+  const res = await fetch("/api/pools/token", {
+    headers: {
+      tokenA,
+      tokenB,
+    },
+  });
   if (!res.ok) throw new Error(await res.text());
   const { data } = await res.json();
-  return data as Pool[];
+  return data as Pool[] | null;
 };
 
 export const useGetPoolByTokens = ({
@@ -26,11 +34,15 @@ export const useGetPoolByTokens = ({
   tokenBContract,
 }: UseGetPoolByTokensProps): UseGetPoolByTokensReturn => {
   // Call SWR only when both contracts are defined
-  const { data, error, isLoading } = useSWR(
+  const {
+    data: pool,
+    error,
+    isLoading,
+  } = useSWR(
     tokenAContract && tokenBContract
-      ? ["pools", tokenAContract, tokenBContract]
+      ? ["pool", tokenAContract, tokenBContract]
       : null,
-    fetchPools,
+    () => fetchPoolByTokens(tokenAContract!, tokenBContract!),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -38,25 +50,14 @@ export const useGetPoolByTokens = ({
     },
   );
 
-  const pool: Pool | null = (() => {
-    if (!data || !tokenAContract || !tokenBContract) return null;
-    return (
-      data.find(
-        (p) =>
-          (p.tokenA === tokenAContract && p.tokenB === tokenBContract) ||
-          (p.tokenA === tokenBContract && p.tokenB === tokenAContract),
-      ) || null
-    );
-  })();
-
   const ratio: number | null = pool
-    ? pool.tokenA === tokenAContract
-      ? Number(pool.reserveB) / Number(pool.reserveA)
-      : Number(pool.reserveA) / Number(pool.reserveB)
+    ? pool[0].tokenA === tokenAContract
+      ? Number(pool[0].reserveB) / Number(pool[0].reserveA)
+      : Number(pool[0].reserveA) / Number(pool[0].reserveB)
     : null;
 
   return {
-    pool,
+    pool: pool?.[0] || null,
     ratio,
     isLoading,
     isError: Boolean(error),

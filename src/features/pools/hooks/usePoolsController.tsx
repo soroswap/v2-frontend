@@ -203,7 +203,6 @@ export function usePoolsController({
         to: userAddress,
         slippageBps: slippageBps(poolsSettings.customSlippage).toString(),
       };
-      console.log("addLiquidityRequest", addLiquidityRequest);
       await executeAddLiquidity(addLiquidityRequest);
     } catch (err) {
       console.error(err);
