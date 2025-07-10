@@ -1,27 +1,7 @@
 import useSWR from "swr";
 
 /**
- * Fetch price for a single asset from the existing /api/price endpoint.
- */
-const fetchSinglePrice = async (asset: string): Promise<number> => {
-  const res = await fetch("/api/price", {
-    method: "GET",
-    headers: {
-      asset,
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error(`Price fetch failed (${res.status}) for asset ${asset}`);
-  }
-
-  const json = await res.json();
-  // Endpoint returns { code, data: { price: number, ... } }
-  return json?.data?.price ?? 0;
-};
-
-/**
- * Batch-fetch prices for all provided contract addresses.
+ * Batch-fetch prices for all provided contract addresses using the updated API.
  * Returns a map { [contract]: priceUSD }.
  */
 const fetchBatchPrices = async ([, addresses]: [string, string[]]): Promise<
@@ -29,19 +9,38 @@ const fetchBatchPrices = async ([, addresses]: [string, string[]]): Promise<
 > => {
   if (!addresses || addresses.length === 0) return {};
 
-  const entries = await Promise.all(
-    addresses.map(async (addr) => {
-      try {
-        const price = await fetchSinglePrice(addr);
-        return [addr, price] as [string, number];
-      } catch (err) {
-        console.error("[useBatchTokenPrices]", err);
-        return [addr, 0] as [string, number];
-      }
-    }),
-  );
+  try {
+    // Use the new batch API endpoint
+    const assetsParam = addresses.join(",");
+    const res = await fetch(
+      `/api/price?assets=${encodeURIComponent(assetsParam)}`,
+      {
+        method: "GET",
+      },
+    );
 
-  return Object.fromEntries(entries);
+    if (!res.ok) {
+      throw new Error(`Batch price fetch failed (${res.status})`);
+    }
+
+    const json = await res.json();
+
+    // The API now returns { code, data: { [asset]: { price: number, ... } } }
+    const priceMap = json?.data || {};
+
+    // Extract just the price values for backward compatibility
+    const result: Record<string, number> = {};
+    Object.entries(priceMap).forEach(([asset, data]) => {
+      const priceData = data as { price?: number };
+      result[asset] = priceData?.price ?? 0;
+    });
+
+    return result;
+  } catch (err) {
+    console.error("[useBatchTokenPrices]", err);
+    // Return empty map on error, individual prices will be 0
+    return {};
+  }
 };
 
 export function useBatchTokenPrices(addresses: string[]) {

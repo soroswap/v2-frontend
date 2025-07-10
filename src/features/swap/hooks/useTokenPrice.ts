@@ -1,10 +1,15 @@
-/* eslint-disable react-hooks/rules-of-hooks */
 import useSWR from "swr";
 import { PriceData } from "@soroswap/sdk";
+import { isStellarAddress } from "@/shared/lib/utils/isStellarAddress";
 
 interface PriceResponse {
   code: string;
   data: PriceData;
+}
+
+interface BatchPriceResponse {
+  code: string;
+  data: Record<string, PriceData>;
 }
 
 const fetcher = async (
@@ -17,6 +22,30 @@ const fetcher = async (
       asset: contractAddress,
     },
   });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+
+  return {
+    code: result.code,
+    data: result.data,
+  };
+};
+
+const batchFetcher = async (
+  url: string,
+  contractAddresses: string[],
+): Promise<BatchPriceResponse> => {
+  const assetsParam = contractAddresses.join(",");
+  const response = await fetch(
+    `${url}?assets=${encodeURIComponent(assetsParam)}`,
+    {
+      method: "GET",
+    },
+  );
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -52,12 +81,33 @@ export function useTokenPrice(contractAddress: string | null) {
 }
 
 export function useTokenPrices(contractAddresses: (string | null)[]) {
-  const results = contractAddresses.map((address) => useTokenPrice(address));
+  // Filter out null addresses and create a stable array
+  const validAddresses = contractAddresses.filter(
+    (addr): addr is string => addr !== null && isStellarAddress(addr),
+  );
+
+  const { data, error, isLoading, mutate } = useSWR(
+    validAddresses.length > 0 ? ["/api/price", validAddresses] : null,
+    ([url, addresses]) => batchFetcher(url, addresses),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 3000000, // 50 minutes cache
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+    },
+  );
+
+  // Map the results back to the original array order, with null for invalid addresses
+  const prices = contractAddresses.map((address) => {
+    if (address === null) return null;
+    return data?.data[address]?.price || null;
+  });
 
   return {
-    prices: results.map((result) => result.price),
-    isLoading: results.some((result) => result.isLoading),
-    isError: results.some((result) => result.isError),
-    mutateAll: () => results.forEach((result) => result.mutate()),
+    prices,
+    isLoading,
+    isError: error,
+    mutateAll: mutate,
   };
 }
