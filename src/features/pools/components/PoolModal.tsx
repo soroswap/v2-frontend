@@ -21,14 +21,12 @@ export const PoolModal = ({
     switch (step) {
       case PoolStep.ADD_LIQUIDITY:
         return "Adding liquidity...";
-      case PoolStep.WAITING_SIGNATURE:
-        return "Waiting for Signature";
       case PoolStep.SENDING_TRANSACTION:
         return "Sending Transaction";
       case PoolStep.SUCCESS:
-        return "Swap Completed";
+        return "Liquidity Added";
       case PoolStep.ERROR:
-        return "Swap Failed";
+        return "Liquidity Addition Failed";
       default:
         return "Processing";
     }
@@ -36,11 +34,6 @@ export const PoolModal = ({
 
   const getStepContent: Record<Exclude<PoolStep, PoolStep.IDLE>, ReactNode> = {
     [PoolStep.ADD_LIQUIDITY]: (
-      <div>
-        <p>Building transaction...</p>
-      </div>
-    ),
-    [PoolStep.BUILDING_XDR]: (
       <div>
         <p>Building transaction...</p>
       </div>

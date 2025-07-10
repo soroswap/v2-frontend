@@ -3,16 +3,19 @@
 import { useUserContext } from "@/contexts";
 import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
 import { STELLAR } from "@/shared/lib/environmentVars";
-import { soroswapClient } from "@/shared/lib/server/soroswapClient";
 import { kit } from "@/shared/lib/server/wallet";
-import { AddLiquidityRequest } from "@soroswap/sdk";
+import { AddLiquidityRequest, LiquidityResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
+
+interface AddLiquidityResponseData {
+  code: string;
+  data: LiquidityResponse;
+}
 
 /** Steps for an add-liquidity transaction – mirrors the flow used in useSwap */
 export enum PoolStep {
   IDLE = "IDLE",
   ADD_LIQUIDITY = "ADD_LIQUIDITY",
-  BUILDING_XDR = "BUILDING_XDR",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
   SUCCESS = "SUCCESS",
@@ -65,27 +68,30 @@ export function usePool(options?: UsePoolOptions) {
   );
 
   /* 1 - Add Liquidity */
-  const addLiquidity = useCallback(async (params: AddLiquidityRequest) => {
-    const liquityData: AddLiquidityRequest = {
-      assetA: params.assetA,
-      assetB: params.assetB,
-      amountA: params.amountA,
-      amountB: params.amountB,
-      to: params.to,
-      slippageBps: params.slippageBps,
-    };
-    const response = await fetch("/api/pools/add-liquidity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(liquityData, bigIntReplacer, 2),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to add liquidity: ${response.status}`);
-    }
-    return await response.json();
-  }, []);
+  const addLiquidity = useCallback(
+    async (params: AddLiquidityRequest): Promise<AddLiquidityResponseData> => {
+      const liquityData: AddLiquidityRequest = {
+        assetA: params.assetA,
+        assetB: params.assetB,
+        amountA: params.amountA,
+        amountB: params.amountB,
+        to: params.to,
+        slippageBps: params.slippageBps,
+      };
+      const response = await fetch("/api/pools/add-liquidity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(liquityData, bigIntReplacer, 2),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to add liquidity: ${response.status}`);
+      }
+      return await response.json();
+    },
+    [],
+  );
 
   /* 2) Sign transaction with connected wallet */
   const signTransaction = useCallback(
@@ -101,8 +107,19 @@ export function usePool(options?: UsePoolOptions) {
 
   /* 3) Broadcast to Soroban/Stellar network */
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const result = await soroswapClient.send(signedXdr, false);
-    return result;
+    const response = await fetch("/api/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(signedXdr),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to send transaction: ${response.status}`);
+    }
+
+    return await response.json();
   }, []);
 
   /* -------------------------------------------------------------- */
@@ -123,7 +140,7 @@ export function usePool(options?: UsePoolOptions) {
         // Step 2 – sign
         updateStep(PoolStep.WAITING_SIGNATURE);
         const signedXdr = await signTransaction(
-          addLiquidityTx.xdr,
+          addLiquidityTx.data.xdr,
           userAddress ?? "",
         );
 
