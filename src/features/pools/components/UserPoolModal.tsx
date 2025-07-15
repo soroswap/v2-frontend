@@ -1,7 +1,7 @@
 "use client";
 
 import { useTokensList } from "@/shared/hooks/useTokensList";
-import { Modal, TheButton } from "@/shared/components";
+import { Modal } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
 import Link from "next/link";
@@ -123,9 +123,12 @@ export const UserPoolModal = ({
             </Link>
           </div>
           <div className="flex w-full">
-            <TheButton className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80">
+            <Link
+              href={`/pools/remove-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
+              className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80"
+            >
               Remove Liquidity
-            </TheButton>
+            </Link>
           </div>
         </div>
       </div>
