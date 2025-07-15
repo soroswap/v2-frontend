@@ -1,7 +1,7 @@
 "use client";
 
 import { useTokensList } from "@/shared/hooks/useTokensList";
-import { Modal } from "@/shared/components";
+import { Modal, TheButton } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
 
@@ -110,6 +110,19 @@ export const UserPoolModal = ({
               {displayTokenBName}
             </div>
             <span>-</span>
+          </div>
+        </div>
+
+        <div className="flex w-full gap-1">
+          <div className="flex w-full">
+            <TheButton className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80">
+              Add Liquidity
+            </TheButton>
+          </div>
+          <div className="flex w-full">
+            <TheButton className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80">
+              Remove Liquidity
+            </TheButton>
           </div>
         </div>
       </div>
