@@ -50,11 +50,12 @@ export const useGetPoolByTokens = ({
     },
   );
 
-  const ratio: number | null = pool
-    ? pool[0].tokenA === tokenAContract
-      ? Number(pool[0].reserveB) / Number(pool[0].reserveA)
-      : Number(pool[0].reserveA) / Number(pool[0].reserveB)
-    : null;
+  const ratio: number | null =
+    pool && pool.length > 0 && pool[0]
+      ? pool[0].tokenA === tokenAContract
+        ? Number(pool[0].reserveB) / Number(pool[0].reserveA)
+        : Number(pool[0].reserveA) / Number(pool[0].reserveB)
+      : null;
 
   return {
     pool: pool?.[0] || null,

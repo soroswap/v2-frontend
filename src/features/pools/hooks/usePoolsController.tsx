@@ -68,12 +68,19 @@ export interface UsePoolsControllerProps {
   onSuccess?: (result: PoolResult) => void;
   onError?: (error: PoolError) => void;
   onStepChange?: (step: PoolStep) => void;
+  /**
+   * Initial token addresses to pre-select tokens from URL parameters
+   */
+  initialTokenAAddress?: string;
+  initialTokenBAddress?: string;
 }
 
 export function usePoolsController({
   onSuccess,
   onError,
   onStepChange,
+  initialTokenAAddress,
+  initialTokenBAddress,
 }: UsePoolsControllerProps) {
   // ---------------------------------------------------------------------------
   // External (global) state / data.
@@ -222,10 +229,39 @@ export function usePoolsController({
   // Effects: initialise default values once token list is fetched.
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!isTokensLoading && tokensList.length > 0 && !TOKEN_A) {
-      handleTokenSelect("TOKEN_A")(tokensList[0]);
+    if (!isTokensLoading && tokensList.length > 0) {
+      // If URL parameters provided, find and select those tokens
+      if (initialTokenAAddress && !TOKEN_A) {
+        const tokenA = tokensList.find(
+          (token) => token.contract === initialTokenAAddress,
+        );
+        if (tokenA) {
+          handleTokenSelect("TOKEN_A")(tokenA);
+        }
+      }
+
+      if (initialTokenBAddress && !TOKEN_B) {
+        const tokenB = tokensList.find(
+          (token) => token.contract === initialTokenBAddress,
+        );
+        if (tokenB) {
+          handleTokenSelect("TOKEN_B")(tokenB);
+        }
+      }
+
+      // Default behavior: if no URL parameters and no TOKEN_A selected, select first token
+      if (!initialTokenAAddress && !TOKEN_A) {
+        handleTokenSelect("TOKEN_A")(tokensList[0]);
+      }
     }
-  }, [isTokensLoading, tokensList]);
+  }, [
+    isTokensLoading,
+    tokensList,
+    initialTokenAAddress,
+    initialTokenBAddress,
+    TOKEN_A,
+    TOKEN_B,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Return – the public API of this hook.

@@ -1,7 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Image from "next/image";
-import { useState, useCallback, MouseEvent } from "react";
+import { useState, useCallback, MouseEvent, useEffect } from "react";
 import { TheButton, ConnectWallet } from "@/shared/components/buttons";
 import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
@@ -15,6 +16,7 @@ import {
   PoolStep,
 } from "@/features/pools/hooks/usePool";
 import { PoolModal } from "@/features/pools/components/PoolModal";
+import { useParams, useRouter } from "next/navigation";
 
 const getSwapButtonText = (step: PoolStep): string => {
   switch (step) {
@@ -31,6 +33,8 @@ const getSwapButtonText = (step: PoolStep): string => {
 
 export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
+  const params = useParams();
+  const router = useRouter();
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [addLiquidityResult, setAddLiquidityResult] =
@@ -38,7 +42,10 @@ export default function PoolsAddLiquidityPage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
 
-  console.log("addLiquidityResult", addLiquidityResult);
+  // Extract token addresses from URL parameters
+  const tokenAddresses = params?.tokens as string[] | undefined;
+  const tokenAAddress = tokenAddresses?.[0];
+  const tokenBAddress = tokenAddresses?.[1];
 
   const {
     typedValue,
@@ -55,6 +62,8 @@ export default function PoolsAddLiquidityPage() {
     handleAddLiquidity,
     resetSwap,
   } = usePoolsController({
+    initialTokenAAddress: tokenAAddress,
+    initialTokenBAddress: tokenBAddress,
     onSuccess: (result: PoolResult) => {
       setAddLiquidityResult(result);
       setIsSwapModalOpen(true);
@@ -69,6 +78,22 @@ export default function PoolsAddLiquidityPage() {
       }
     },
   });
+
+  // Update URL when tokens change
+  useEffect(() => {
+    if (TOKEN_A?.contract || TOKEN_B?.contract) {
+      const newTokenA = TOKEN_A?.contract;
+      const newTokenB = TOKEN_B?.contract;
+
+      if (newTokenA && newTokenB) {
+        const newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
+        router.replace(newUrl);
+      } else if (newTokenA) {
+        const newUrl = `/pools/add-liquidity/${newTokenA}`;
+        router.replace(newUrl);
+      }
+    }
+  }, [TOKEN_A?.contract, TOKEN_B?.contract]);
 
   const onAddLiquidityPool = useCallback(
     (e: MouseEvent<HTMLButtonElement>) => {

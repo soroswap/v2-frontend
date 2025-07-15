@@ -4,6 +4,7 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { Modal, TheButton } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
+import Link from "next/link";
 
 export const UserPoolModal = ({
   isOpen,
@@ -15,7 +16,6 @@ export const UserPoolModal = ({
   rowData: UserPosition;
 }) => {
   const { tokenMap } = useTokensList();
-
   const displayTokenA = tokenMap[rowData.poolInfo.tokenA]?.icon;
   const displayTokenB = tokenMap[rowData.poolInfo.tokenB]?.icon;
   const displayTokenAName =
@@ -115,9 +115,12 @@ export const UserPoolModal = ({
 
         <div className="flex w-full gap-1">
           <div className="flex w-full">
-            <TheButton className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80">
+            <Link
+              className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80"
+              href={`/pools/add-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
+            >
               Add Liquidity
-            </TheButton>
+            </Link>
           </div>
           <div className="flex w-full">
             <TheButton className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80">
