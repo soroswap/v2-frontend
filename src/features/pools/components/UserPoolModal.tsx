@@ -15,6 +15,16 @@ export const UserPoolModal = ({
   rowData: UserPosition;
 }) => {
   const { tokenMap } = useTokensList();
+
+  const displayTokenA = tokenMap[rowData.poolInfo.tokenA]?.icon;
+  const displayTokenB = tokenMap[rowData.poolInfo.tokenB]?.icon;
+  const displayTokenAName =
+    tokenMap[rowData.poolInfo.tokenA]?.code ??
+    rowData.poolInfo.tokenA.slice(0, 4);
+  const displayTokenBName =
+    tokenMap[rowData.poolInfo.tokenB]?.code ??
+    rowData.poolInfo.tokenB.slice(0, 4);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="flex flex-col gap-6">
@@ -22,28 +32,18 @@ export const UserPoolModal = ({
         <div className="flex items-center gap-4">
           <div className="relative">
             <TokenIcon
-              src={tokenMap[rowData.poolInfo.tokenA]?.icon}
-              alt={
-                tokenMap[rowData.poolInfo.tokenA]?.code ??
-                rowData.poolInfo.tokenA
-              }
+              src={displayTokenA}
+              alt={displayTokenAName}
               className="rounded-full border border-white bg-white"
             />
             <TokenIcon
-              src={tokenMap[rowData.poolInfo.tokenB]?.icon}
-              alt={
-                tokenMap[rowData.poolInfo.tokenB]?.code ??
-                rowData.poolInfo.tokenB
-              }
+              src={displayTokenB}
+              alt={displayTokenBName}
               className="absolute top-0 left-3 rounded-full border border-white bg-white"
             />
           </div>
           <span className="font-semibold text-white">
-            {tokenMap[rowData.poolInfo.tokenA]?.code ??
-              rowData.poolInfo.tokenA.slice(0, 4)}
-            /
-            {tokenMap[rowData.poolInfo.tokenB]?.code ??
-              rowData.poolInfo.tokenB.slice(0, 4)}
+            {displayTokenAName}/{displayTokenBName}
           </span>
         </div>
 
@@ -57,30 +57,22 @@ export const UserPoolModal = ({
           <div className="flex w-full items-center justify-between text-sm text-white">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[rowData.poolInfo.tokenA]?.icon}
-                alt={
-                  tokenMap[rowData.poolInfo.tokenA]?.code ??
-                  rowData.poolInfo.tokenA
-                }
+                src={displayTokenA}
+                alt={displayTokenAName}
                 className="rounded-full border border-white bg-white"
               />
-              {tokenMap[rowData.poolInfo.tokenA]?.code ??
-                rowData.poolInfo.tokenA.slice(0, 4)}
+              {displayTokenAName}
             </div>
             <span>-</span>
           </div>
           <div className="flex w-full items-center justify-between text-sm text-white">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[rowData.poolInfo.tokenB]?.icon}
-                alt={
-                  tokenMap[rowData.poolInfo.tokenB]?.code ??
-                  rowData.poolInfo.tokenB
-                }
+                src={displayTokenB}
+                alt={displayTokenBName}
                 className="rounded-full border border-white bg-white"
               />
-              {tokenMap[rowData.poolInfo.tokenB]?.code ??
-                rowData.poolInfo.tokenB.slice(0, 4)}
+              {displayTokenBName}
             </div>
             <span>-</span>
           </div>
@@ -100,30 +92,22 @@ export const UserPoolModal = ({
           <div className="flex w-full items-center justify-between text-sm text-white">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[rowData.poolInfo.tokenA]?.icon}
-                alt={
-                  tokenMap[rowData.poolInfo.tokenA]?.code ??
-                  rowData.poolInfo.tokenA
-                }
+                src={displayTokenA}
+                alt={displayTokenAName}
                 className="rounded-full border border-white bg-white"
               />
-              {tokenMap[rowData.poolInfo.tokenA]?.code ??
-                rowData.poolInfo.tokenA.slice(0, 4)}
+              {displayTokenAName}
             </div>
             <span>-</span>
           </div>
           <div className="flex w-full items-center justify-between text-sm text-white">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[rowData.poolInfo.tokenB]?.icon}
-                alt={
-                  tokenMap[rowData.poolInfo.tokenB]?.code ??
-                  rowData.poolInfo.tokenB
-                }
+                src={displayTokenB}
+                alt={displayTokenBName}
                 className="rounded-full border border-white bg-white"
               />
-              {tokenMap[rowData.poolInfo.tokenB]?.code ??
-                rowData.poolInfo.tokenB.slice(0, 4)}
+              {displayTokenBName}
             </div>
             <span>-</span>
           </div>
