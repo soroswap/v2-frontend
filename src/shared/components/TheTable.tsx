@@ -210,7 +210,12 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
               >
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-3 text-sm">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {cell.column.columnDef.cell
+                      ? flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )
+                      : cell.getValue()?.toString() || ""}
                   </td>
                 ))}
               </tr>

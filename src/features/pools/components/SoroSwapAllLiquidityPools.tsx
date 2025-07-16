@@ -19,6 +19,19 @@ export const SoroSwapAllLiquidityPools = () => {
       accessorFn: (row) => `${row.tokenA}/${row.tokenB}`,
       cell: ({ row }) => {
         const pool = row.original;
+
+        if (!pool.tokenA || !pool.tokenB) {
+          return (
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="skeleton h-8 w-8 rounded-full" />
+                <div className="skeleton absolute top-0 left-3 h-8 w-8 rounded-full" />
+              </div>
+              <div className="skeleton h-4 w-24" />
+            </div>
+          );
+        }
+
         return (
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -58,7 +71,11 @@ export const SoroSwapAllLiquidityPools = () => {
       ),
       cell: ({ getValue }) => {
         const value = getValue<bigint>();
-        return <span className="flex justify-end">{value.toString()}</span>;
+        return (
+          <span className="flex justify-end">
+            {value ? value.toString() : <div className="skeleton h-4 w-16" />}
+          </span>
+        );
       },
     },
   ];

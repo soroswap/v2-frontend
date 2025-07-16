@@ -32,6 +32,18 @@ export const UserLiquidity = () => {
       cell: ({ row }) => {
         const pool = row.original;
 
+        if (!pool.poolInfo.tokenA || !pool.poolInfo.tokenB) {
+          return (
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="skeleton h-8 w-8 rounded-full" />
+                <div className="skeleton absolute top-0 left-3 h-8 w-8 rounded-full" />
+              </div>
+              <div className="skeleton h-4 w-24" />
+            </div>
+          );
+        }
+
         // Convert contract addresses to human-readable token codes when possible
         const displayTokenA =
           tokenMap[pool.poolInfo.tokenA]?.code ??
@@ -72,7 +84,11 @@ export const UserLiquidity = () => {
         const pool = row.original;
         return (
           <span className="flex justify-end font-semibold text-white">
-            {pool.userPosition}
+            {pool.userPosition ? (
+              pool.userPosition.toString()
+            ) : (
+              <div className="skeleton h-4 w-16" />
+            )}
           </span>
         );
       },
@@ -85,7 +101,9 @@ export const UserLiquidity = () => {
       cell: () => {
         // const pool = row.original;
         return (
-          <span className="flex justify-end font-semibold text-white">tvl</span> //TODO: Calculate TVL correctly
+          <span className="flex justify-end font-semibold text-white">
+            <div className="skeleton h-4 w-12" />
+          </span> //TODO: Calculate TVL correctly
         );
       },
     },
