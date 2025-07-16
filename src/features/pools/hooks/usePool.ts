@@ -4,11 +4,20 @@ import { useUserContext } from "@/contexts";
 import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
 import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
-import { AddLiquidityRequest, LiquidityResponse } from "@soroswap/sdk";
+import {
+  AddLiquidityRequest,
+  LiquidityResponse,
+  RemoveLiquidityRequest,
+} from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
 
 interface AddLiquidityResponseData {
+  code: string;
+  data: LiquidityResponse;
+}
+
+interface RemoveLiquidityResponseData {
   code: string;
   data: LiquidityResponse;
 }
@@ -88,6 +97,35 @@ export function usePool(options?: UsePoolOptions) {
       });
       if (!response.ok) {
         throw new Error(`Failed to add liquidity: ${response.status}`);
+      }
+      return await response.json();
+    },
+    [],
+  );
+
+  /* 1 - Remove Liquidity */
+  const removeLiquidity = useCallback(
+    async (
+      params: RemoveLiquidityRequest,
+    ): Promise<RemoveLiquidityResponseData> => {
+      const removeLiquidityData: RemoveLiquidityRequest = {
+        assetA: params.assetA,
+        assetB: params.assetB,
+        liquidity: params.liquidity,
+        amountA: params.amountA,
+        amountB: params.amountB,
+        to: params.to,
+        slippageBps: params.slippageBps,
+      };
+      const response = await fetch("/api/pools/remove-liquidity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(removeLiquidityData, bigIntReplacer, 2),
+      });
+      if (!response.ok) {
+        throw new Error(`Failed to remove liquidity: ${response.status}`);
       }
       return await response.json();
     },
@@ -177,6 +215,57 @@ export function usePool(options?: UsePoolOptions) {
     ],
   );
 
+  /* -------------------------------------------------------------- */
+  /* Public: executeRemoveLiquidity                                 */
+  /* -------------------------------------------------------------- */
+  const executeRemoveLiquidity = useCallback(
+    async (params: RemoveLiquidityRequest): Promise<PoolResult> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Step 1 – build XDR
+        updateStep(PoolStep.ADD_LIQUIDITY);
+        const removeLiquidityTx = await removeLiquidity(params);
+
+        // Step 2 – sign
+        updateStep(PoolStep.WAITING_SIGNATURE);
+        const signedXdr = await signTransaction(
+          removeLiquidityTx.data.xdr,
+          userAddress ?? "",
+        );
+
+        // Step 3 – send
+        updateStep(PoolStep.SENDING_TRANSACTION);
+        const sendResult = await sendTransaction(signedXdr);
+
+        updateStep(PoolStep.SUCCESS);
+        setIsLoading(false);
+
+        const result: PoolResult = {
+          txHash: sendResult.data.txHash,
+          success: sendResult.data.status === "success" ? true : false,
+        };
+        options?.onSuccess?.(result);
+        return result;
+      } catch (err: any) {
+        const msg = err?.message || "Unknown error";
+        handleError(currentStep, msg, err);
+        throw err;
+      }
+    },
+    [
+      signTransaction,
+      sendTransaction,
+      currentStep,
+      updateStep,
+      handleError,
+      options,
+      userAddress,
+      removeLiquidity,
+    ],
+  );
+
   const reset = useCallback(() => {
     setCurrentStep(PoolStep.IDLE);
     setIsLoading(false);
@@ -185,6 +274,7 @@ export function usePool(options?: UsePoolOptions) {
 
   return {
     executeAddLiquidity,
+    executeRemoveLiquidity,
     currentStep,
     isLoading,
     error,

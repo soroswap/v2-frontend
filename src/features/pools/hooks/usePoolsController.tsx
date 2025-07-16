@@ -5,7 +5,11 @@ import { usePoolsSettingsStore } from "@/contexts/store/pools-settings";
 import { PoolStep } from "@/features/pools/hooks/usePool";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { parseUnits } from "@/shared/lib/utils/parseUnits";
-import { AddLiquidityRequest, AssetInfo } from "@soroswap/sdk";
+import {
+  AddLiquidityRequest,
+  AssetInfo,
+  RemoveLiquidityRequest,
+} from "@soroswap/sdk";
 import { useCallback, useEffect, useMemo, useReducer } from "react";
 import { useGetPoolByTokens } from "./useGetPoolByTokens";
 import type { PoolError, PoolResult } from "./usePool";
@@ -107,6 +111,7 @@ export function usePoolsController({
   // ---------------------------------------------------------------------------
   const {
     executeAddLiquidity,
+    executeRemoveLiquidity,
     currentStep,
     isLoading: isSwapLoading,
     reset: resetSwap,
@@ -225,6 +230,47 @@ export function usePoolsController({
     executeAddLiquidity,
   ]);
 
+  /**
+   * Executes the remove liquidity transaction via the Soroswap SDK API.
+   */
+  const handleRemoveLiquidity = useCallback(
+    async (
+      params: Pick<RemoveLiquidityRequest, "liquidity" | "amountA" | "amountB">,
+    ) => {
+      if (
+        !TOKEN_A ||
+        !TOKEN_B ||
+        !userAddress ||
+        !TOKEN_A.contract ||
+        !TOKEN_B.contract
+      )
+        return;
+
+      try {
+        const removeLiquidityRequest: RemoveLiquidityRequest = {
+          assetA: TOKEN_A.contract,
+          assetB: TOKEN_B.contract,
+          liquidity: BigInt(params.liquidity),
+          amountA: BigInt(params.amountA),
+          amountB: BigInt(params.amountB),
+          to: userAddress,
+          slippageBps: slippageBps(poolsSettings.customSlippage).toString(),
+        };
+        console.log("removeLiquidityRequest", removeLiquidityRequest);
+        await executeRemoveLiquidity(removeLiquidityRequest);
+      } catch (err) {
+        console.error(err);
+      }
+    },
+    [
+      TOKEN_A,
+      TOKEN_B,
+      userAddress,
+      executeRemoveLiquidity,
+      poolsSettings.customSlippage,
+    ],
+  );
+
   // ---------------------------------------------------------------------------
   // Effects: initialise default values once token list is fetched.
   // ---------------------------------------------------------------------------
@@ -288,6 +334,7 @@ export function usePoolsController({
     handleAmountChange,
     handleTokenSelect,
     handleAddLiquidity,
+    handleRemoveLiquidity,
 
     // misc
     resetSwap,

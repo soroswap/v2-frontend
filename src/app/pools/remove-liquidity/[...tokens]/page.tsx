@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import Image from "next/image";
@@ -12,6 +11,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
 import { TokenIcon } from "@/shared/components";
+import { usePoolsController } from "@/features/pools/hooks/usePoolsController";
+import { PoolError, PoolStep } from "@/features/pools/hooks/usePool";
 
 export default function RemoveLiquidityPage() {
   const { address: userAddress } = useUserContext();
@@ -43,25 +44,82 @@ export default function RemoveLiquidityPage() {
   const tokenA = tokenMap[tokenAAddress || ""];
   const tokenB = tokenMap[tokenBAddress || ""];
 
-  // Calculate amounts based on percentage
+  // Use the pools controller for remove liquidity functionality
+  const { handleRemoveLiquidity, isSwapLoading } = usePoolsController({
+    initialTokenAAddress: tokenAAddress,
+    initialTokenBAddress: tokenBAddress,
+    onSuccess: () => {
+      console.log("Remove liquidity success");
+      setIsSettingsModalOpen(true);
+    },
+    onError: (error: PoolError) => {
+      console.error("Remove liquidity failed:", error);
+    },
+    onStepChange: (step: PoolStep) => {
+      if (step === PoolStep.WAITING_SIGNATURE) {
+        setIsSettingsModalOpen(true);
+      }
+    },
+  });
+
   const calculateAmounts = useCallback(() => {
     if (!poolPosition) return { amountA: "0", amountB: "0" };
 
-    const percentage = liquidityPercentage / 100;
-    const userPosition =
-      typeof poolPosition.userPosition === "bigint"
-        ? Number(poolPosition.userPosition)
-        : parseFloat(String(poolPosition.userPosition || "0"));
-    const totalPosition = userPosition * percentage;
+    const percent = liquidityPercentage;
 
-    // For demo purposes, using fixed ratios - in real implementation this would come from pool data
-    const ratio = 2.6082806; // 1 XLM = 2.6082806 EURC (from the image)
+    if (isNaN(percent)) {
+      return { amountA: "0", amountB: "0" };
+    }
 
-    const amountA = (totalPosition / (1 + ratio)).toFixed(7);
-    const amountB = (totalPosition - parseFloat(amountA)).toFixed(7);
+    const getNewCurrencyValue = (tokenAddress: string) => {
+      // Get user's liquidity balance em formato decimal
+      const userBalance =
+        typeof poolPosition.userPosition === "bigint"
+          ? Number(poolPosition.userPosition) / 10000000 // Converter de stroops para unidade
+          : parseFloat(String(poolPosition.userPosition || "0")) / 10000000;
+
+      if (userBalance === 0) {
+        return "0";
+      }
+
+      // Get pool info
+      const poolInfo = poolPosition.poolInfo;
+
+      // Get total reserves in decimal format
+      const reserveA =
+        typeof poolInfo.reserveA === "bigint"
+          ? Number(poolInfo.reserveA) / 10000000
+          : parseFloat(String(poolInfo.reserveA || "0")) / 10000000;
+
+      const reserveB =
+        typeof poolInfo.reserveB === "bigint"
+          ? Number(poolInfo.reserveB) / 10000000
+          : parseFloat(String(poolInfo.reserveB || "0")) / 10000000;
+
+      // Total LP Supply hardcoded for now
+      const totalSupply = 4650140128520; // TODO REMOVE HARDCODED
+      const totalLP = totalSupply / 10000000; // Convert to decimal = 465014.012852
+
+      // Calculate how much the user can receive of each token based on their participation
+      // Share = userBalance / totalLP
+      // UserTokenAmount = (userBalance / totalLP) * reserveTotal
+      const userMaxTokenA = (userBalance / totalLP) * reserveA; // ≈ 1.8218855 XLM
+      const userMaxTokenB = (userBalance / totalLP) * reserveB; // ≈ 0.7260629 EURC
+
+      // Apply the selected percentage
+      const userTokenAmount =
+        tokenAddress === poolInfo.tokenA
+          ? userMaxTokenA * (percent / 100)
+          : userMaxTokenB * (percent / 100);
+
+      return userTokenAmount.toFixed(7);
+    };
+
+    const amountA = getNewCurrencyValue(tokenAAddress || "");
+    const amountB = getNewCurrencyValue(tokenBAddress || "");
 
     return { amountA, amountB };
-  }, [poolPosition, liquidityPercentage]);
+  }, [poolPosition, liquidityPercentage, tokenAAddress, tokenBAddress]);
 
   const { amountA, amountB } = calculateAmounts();
 
@@ -69,17 +127,35 @@ export default function RemoveLiquidityPage() {
     setLiquidityPercentage(percentage);
   };
 
-  const handleRemoveLiquidity = useCallback(
-    (e: MouseEvent<HTMLButtonElement>) => {
+  const handleRemoveLiquidityClick = useCallback(
+    async (e: MouseEvent<HTMLButtonElement>) => {
       e.preventDefault();
-      // TODO: Implement remove liquidity logic
-      console.log("Remove liquidity:", {
-        liquidityPercentage,
-        amountA,
-        amountB,
+
+      if (!poolPosition || liquidityPercentage === 0) return;
+
+      // Calculate liquidity to burn
+      const userBalance = Number(poolPosition.userPosition);
+      const liquidityToBurn = Math.floor(
+        (userBalance * liquidityPercentage) / 100,
+      );
+
+      // Convert amounts to stroops (multiply by 10^7)
+      const amountAStroops = Math.floor(parseFloat(amountA) * 10000000);
+      const amountBStroops = Math.floor(parseFloat(amountB) * 10000000);
+
+      await handleRemoveLiquidity({
+        liquidity: BigInt(liquidityToBurn),
+        amountA: BigInt(amountAStroops),
+        amountB: BigInt(amountBStroops),
       });
     },
-    [liquidityPercentage, amountA, amountB],
+    [
+      liquidityPercentage,
+      amountA,
+      amountB,
+      poolPosition,
+      handleRemoveLiquidity,
+    ],
   );
 
   // Update URL when tokens change
@@ -179,7 +255,7 @@ export default function RemoveLiquidityPage() {
               <button
                 key={percentage}
                 onClick={() => handlePercentageChange(percentage)}
-                className={`rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
+                className={`cursor-pointer rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
                   liquidityPercentage === percentage
                     ? "bg-[#8866DD] text-white"
                     : "bg-[#23243A] text-[#A0A3C4] hover:bg-[#8866DD]/20"
@@ -200,10 +276,10 @@ export default function RemoveLiquidityPage() {
                 <TokenIcon
                   src={tokenA?.icon}
                   alt={tokenA?.code || "Token A"}
-                  className="h-8 w-8 rounded-full"
+                  className="size-8 rounded-full"
                 />
                 <span className="font-medium text-white">
-                  {tokenA?.code || "XLM"} {amountA}
+                  {tokenA?.code || ""} {amountA}
                 </span>
               </div>
             </div>
@@ -212,10 +288,10 @@ export default function RemoveLiquidityPage() {
                 <TokenIcon
                   src={tokenB?.icon}
                   alt={tokenB?.code || "Token B"}
-                  className="h-8 w-8 rounded-full"
+                  className="size-8 rounded-full"
                 />
                 <span className="font-medium text-white">
-                  {tokenB?.code || "EURC"} {amountB}
+                  {tokenB?.code || ""} {amountB}
                 </span>
               </div>
             </div>
@@ -230,11 +306,11 @@ export default function RemoveLiquidityPage() {
         {/* Remove Button */}
         <div className="flex flex-col gap-2">
           <TheButton
-            disabled={liquidityPercentage === 0}
-            onClick={handleRemoveLiquidity}
+            disabled={liquidityPercentage === 0 || isSwapLoading}
+            onClick={handleRemoveLiquidityClick}
             className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
           >
-            Remove
+            {isSwapLoading ? "Removing..." : "Remove"}
           </TheButton>
         </div>
 
