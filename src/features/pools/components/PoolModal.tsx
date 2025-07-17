@@ -6,27 +6,33 @@ import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButt
 import { network } from "@/shared/lib/environmentVars";
 import { PoolStep } from "../hooks/usePool";
 
+type LiquidityOperation = "add" | "remove";
+
 interface PoolModalProps {
   currentStep: PoolStep;
   onClose: () => void;
   transactionHash?: string;
+  operationType?: LiquidityOperation;
 }
 
 export const PoolModal = ({
   currentStep,
   onClose,
   transactionHash,
+  operationType = "add",
 }: PoolModalProps) => {
   const getStepTitle = (step: PoolStep): string => {
+    const isAdd = operationType === "add";
+
     switch (step) {
       case PoolStep.ADD_LIQUIDITY:
-        return "Adding liquidity...";
+        return isAdd ? "Adding liquidity..." : "Removing liquidity...";
       case PoolStep.SENDING_TRANSACTION:
         return "Sending Transaction";
       case PoolStep.SUCCESS:
-        return "Liquidity Added";
+        return isAdd ? "Liquidity Added" : "Liquidity Removed";
       case PoolStep.ERROR:
-        return "Liquidity Addition Failed";
+        return isAdd ? "Liquidity Addition Failed" : "Liquidity Removal Failed";
       default:
         return "Processing";
     }

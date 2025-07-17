@@ -190,6 +190,7 @@ export default function PoolsAddLiquidityPage() {
               resetSwap();
             }}
             transactionHash={addLiquidityResult?.txHash}
+            operationType="add"
           />
         )}
 

@@ -12,18 +12,28 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
 import { TokenIcon } from "@/shared/components";
 import { usePoolsController } from "@/features/pools/hooks/usePoolsController";
-import { PoolError, PoolStep } from "@/features/pools/hooks/usePool";
+import {
+  PoolError,
+  PoolResult,
+  PoolStep,
+} from "@/features/pools/hooks/usePool";
+import { PoolModal } from "@/features/pools/components/PoolModal";
 
+// TODO: When the token data is [ ] u can type wathever u want
+// TODO: Flickering
+// TODO: http://localhost:3000/pools/add-liquidity --> Replace to http://localhost:3000/pools/add-liquidity/[tokenA]
 export default function RemoveLiquidityPage() {
   const { address: userAddress } = useUserContext();
   const params = useParams();
   const router = useRouter();
   const { tokenMap } = useTokensList();
 
+  const [isPoolModalOpen, setIsPoolModalOpen] = useState<boolean>(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
   const [liquidityPercentage, setLiquidityPercentage] = useState<number>(28);
-
+  const [removeLiquidityResult, setRemoveLiquidityResult] =
+    useState<PoolResult | null>(null);
   // Extract token addresses from URL parameters
   const tokenAddresses = params?.tokens as string[] | undefined;
   const tokenAAddress = tokenAddresses?.[0];
@@ -45,22 +55,23 @@ export default function RemoveLiquidityPage() {
   const tokenB = tokenMap[tokenBAddress || ""];
 
   // Use the pools controller for remove liquidity functionality
-  const { handleRemoveLiquidity, isSwapLoading } = usePoolsController({
-    initialTokenAAddress: tokenAAddress,
-    initialTokenBAddress: tokenBAddress,
-    onSuccess: () => {
-      console.log("Remove liquidity success");
-      setIsSettingsModalOpen(true);
-    },
-    onError: (error: PoolError) => {
-      console.error("Remove liquidity failed:", error);
-    },
-    onStepChange: (step: PoolStep) => {
-      if (step === PoolStep.WAITING_SIGNATURE) {
-        setIsSettingsModalOpen(true);
-      }
-    },
-  });
+  const { handleRemoveLiquidity, isSwapLoading, currentStep, resetSwap } =
+    usePoolsController({
+      initialTokenAAddress: tokenAAddress,
+      initialTokenBAddress: tokenBAddress,
+      onSuccess: () => {
+        console.log("Remove liquidity success");
+        setIsPoolModalOpen(true);
+      },
+      onError: (error: PoolError) => {
+        console.error("Remove liquidity failed:", error);
+      },
+      onStepChange: (step: PoolStep) => {
+        if (step === PoolStep.WAITING_SIGNATURE) {
+          setIsPoolModalOpen(true);
+        }
+      },
+    });
 
   const calculateAmounts = useCallback(() => {
     if (!poolPosition) return { amountA: "0", amountB: "0" };
@@ -292,6 +303,19 @@ export default function RemoveLiquidityPage() {
             <ConnectWallet className="flex w-full justify-center" />
           )}
         </div>
+
+        {isPoolModalOpen && (
+          <PoolModal
+            currentStep={currentStep}
+            onClose={() => {
+              setIsPoolModalOpen(false);
+              setRemoveLiquidityResult(null);
+              resetSwap();
+            }}
+            transactionHash={removeLiquidityResult?.txHash}
+            operationType="remove"
+          />
+        )}
 
         {isSettingsModalOpen && (
           <PoolsSettingsModal
