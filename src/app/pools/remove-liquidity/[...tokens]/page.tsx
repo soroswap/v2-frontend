@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useCallback, MouseEvent, useEffect } from "react";
 import { TheButton, ConnectWallet } from "@/shared/components/buttons";
 import { useUserContext } from "@/contexts";
 import { PoolsSettingsModal } from "@/features/pools/components/PoolsSettingsModal";
 import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
@@ -166,36 +166,11 @@ export default function RemoveLiquidityPage() {
     }
   }, [tokenAAddress, tokenBAddress, router]);
 
-  if (!userAddress) {
-    return (
-      <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-        <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
-          <ConnectWallet className="flex w-full justify-center" />
-        </div>
-      </main>
-    );
-  }
-
   if (positionsLoading) {
     return (
       <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
         <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
           <div className="skeleton h-64 w-full" />
-        </div>
-      </main>
-    );
-  }
-
-  if (!poolPosition) {
-    return (
-      <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-        <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
-          <div className="text-center text-white">
-            <p>No liquidity position found for this pool.</p>
-            <Link href="/pools" className="text-[#8866DD] hover:underline">
-              Back to Pools
-            </Link>
-          </div>
         </div>
       </main>
     );
@@ -226,12 +201,12 @@ export default function RemoveLiquidityPage() {
         {/* Liquidity Percentage Slider */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
-            <span className="text-lg font-semibold text-white">
+            <p className="text-lg font-semibold text-white">
               Liquidity Percentage
-            </span>
-            <span className="text-lg font-semibold text-white">
+            </p>
+            <p className="text-lg font-semibold text-white">
               {liquidityPercentage}%
-            </span>
+            </p>
           </div>
 
           {/* Slider */}
@@ -305,13 +280,17 @@ export default function RemoveLiquidityPage() {
 
         {/* Remove Button */}
         <div className="flex flex-col gap-2">
-          <TheButton
-            disabled={liquidityPercentage === 0 || isSwapLoading}
-            onClick={handleRemoveLiquidityClick}
-            className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
-          >
-            {isSwapLoading ? "Removing..." : "Remove"}
-          </TheButton>
+          {userAddress && poolPosition ? (
+            <TheButton
+              disabled={liquidityPercentage === 0 || isSwapLoading}
+              onClick={handleRemoveLiquidityClick}
+              className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
+            >
+              {isSwapLoading ? "Removing..." : "Remove"}
+            </TheButton>
+          ) : (
+            <ConnectWallet className="flex w-full justify-center" />
+          )}
         </div>
 
         {isSettingsModalOpen && (
