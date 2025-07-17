@@ -4,22 +4,36 @@ import { TOKEN_LIST_URL, xlmTokenList } from "@/shared/lib/constants/tokenList";
 import { network } from "@/shared/lib/environmentVars";
 import { useMemo } from "react";
 
-const fetchTokenList = async () => {
-  try {
-    const xlmToken = xlmTokenList.find(
-      (set) => set.network === network,
-    )?.assets;
+interface NetworkData {
+  network: string;
+  assets: AssetInfo[];
+}
 
+const fetchTokenList = async () => {
+  const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
+  try {
     const response = await fetch(TOKEN_LIST_URL);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    if (xlmToken) {
-      data.assets.unshift(xlmToken[0]);
+    if (network === "mainnet") {
+      const assets: AssetInfo[] = data.assets;
+
+      if (xlmToken) {
+        assets.unshift(xlmToken[0]);
+      }
+
+      return assets;
+    } else if (network === "testnet") {
+      // Find the testnet network object and extract its assets
+      const testnetData = data.find(
+        (item: NetworkData) => item.network === "testnet",
+      );
+      const assets: AssetInfo[] = testnetData?.assets || [];
+
+      return assets;
     }
-    const tokensList: AssetInfo[] = data.assets;
-    return tokensList;
   } catch (error) {
     console.error("Error fetching token list:", error);
     throw error;
