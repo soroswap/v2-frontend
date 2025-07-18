@@ -6,6 +6,11 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { AssetInfo } from "@soroswap/sdk";
 import { ChevronDown, XIcon } from "lucide-react";
 import Image from "next/image";
+import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
+import { findAsset } from "../pools/utils/findAsset";
+import { Modal } from "@/shared/components/Modal";
+import { TheButton } from "@/shared/components";
+import { addUserToken } from "@/shared/lib/utils/addUserToken";
 
 export const TokenSelector = ({
   currentToken,
@@ -19,8 +24,43 @@ export const TokenSelector = ({
   onSelect?: (token: AssetInfo | null) => void;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { tokensList } = useTokensList();
+  const [isOpenModalUserCustomAsset, setIsOpenModalUserCustomAsset] =
+    useState<boolean>(false);
   const [searchValue, setSearchValue] = useState<string>("");
+  const {} = useUserAssetList();
+  const { tokensList } = useTokensList();
+  const userTokenList: AssetInfo[] = [];
+  const [userCustomAsset, setUserCustomAsset] = useState<AssetInfo | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchValue("");
+    }
+  }, [searchValue, isOpen]);
+
+  const findSearchedAsset = async (value: string) => {
+    try {
+      const asset = await findAsset(value);
+      console.log("asset = ", asset);
+      setUserCustomAsset(asset);
+      // addUserToken(asset);
+      return asset;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    if (
+      searchValue &&
+      isOpen &&
+      !tokensList.some((token) => token.contract == searchValue)
+    ) {
+      findSearchedAsset(searchValue);
+    }
+  }, [searchValue]);
 
   const current = currentToken;
   const opposite = oppositeToken;
@@ -29,15 +69,19 @@ export const TokenSelector = ({
     if (!token || token.contract === current?.contract) {
       return; // no-op when clicking the already selected token
     }
+    if (
+      userCustomAsset &&
+      !tokensList.some((token) => token.contract === token.contract)
+    ) {
+      setIsOpenModalUserCustomAsset(true);
+    }
     onSelect?.(token);
     setIsOpen(false);
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      setSearchValue("");
-    }
-  }, [searchValue, isOpen]);
+  const handleSearch = (value: string) => {
+    setSearchValue(value);
+  };
 
   return (
     <>
@@ -92,7 +136,7 @@ export const TokenSelector = ({
                 placeholder="Search name"
                 className="w-full rounded-lg border border-[#35374a] bg-[#23243a] px-3 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none"
                 onChange={(e) => {
-                  setSearchValue(e.target.value);
+                  handleSearch(e.target.value);
                 }}
               />
             </div>
@@ -111,6 +155,7 @@ export const TokenSelector = ({
                 .map((token: AssetInfo) => {
                   const isDisabled = token.contract === current?.contract;
                   const isOtherSelected = token.contract === opposite?.contract;
+                  console.log("tokentoken", token);
                   return (
                     <button
                       key={token.contract}
@@ -141,9 +186,57 @@ export const TokenSelector = ({
                     </button>
                   );
                 })}
+              {userCustomAsset && (
+                <button
+                  onClick={() => handleSelectToken(userCustomAsset)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
+                    "cursor-pointer text-white hover:bg-[#23243a]",
+                  )}
+                >
+                  <Image
+                    src={userCustomAsset?.icon ?? ""}
+                    alt={userCustomAsset?.name ?? ""}
+                    width={28}
+                    height={28}
+                    className="rounded-full bg-white"
+                  />
+                  <div className="flex flex-col gap-1 text-left font-medium">
+                    <p className="text-sm font-bold text-white">
+                      {userCustomAsset.code}
+                    </p>
+                    <p className="text-xs text-white/70">
+                      {userCustomAsset.domain}
+                    </p>
+                  </div>
+                </button>
+              )}
             </div>
           </div>
         </div>
+      )}
+      {isOpenModalUserCustomAsset && (
+        <Modal
+          isOpen={isOpenModalUserCustomAsset}
+          onClose={() => setIsOpenModalUserCustomAsset(false)}
+        >
+          <div className="flex flex-col gap-2">Warning</div>
+          <div>
+            <p>
+              This token isn&apos;t traded on leading U.S. centralized exchanges
+              or frequently swapped on Soroswap. Always conduct your own
+              research before trading.
+            </p>
+          </div>
+          <div>
+            <TheButton
+              className="w-full"
+              onClick={() => addUserToken(userTokenList[0])}
+            >
+              I understand
+            </TheButton>
+          </div>
+        </Modal>
       )}
     </>
   );

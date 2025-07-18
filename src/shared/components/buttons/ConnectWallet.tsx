@@ -4,7 +4,7 @@ import { useState } from "react";
 import { TheButton } from "@/shared/components/buttons";
 import { ISupportedWallet } from "@creit.tech/stellar-wallets-kit";
 import { cn } from "@/shared/lib/utils/cn";
-import { formatUserAddress } from "@/shared/lib/utils/formatUserAddress";
+import { formatAddress } from "@/shared/lib/utils/formatAddress";
 import { useUserContext } from "@/contexts";
 import { kit } from "@/shared/lib/server/wallet";
 
@@ -47,7 +47,7 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
         aria-expanded={isDropdownOpen}
         aria-haspopup="true"
       >
-        {userAddress ? formatUserAddress(userAddress) : "Connect Wallet"}
+        {userAddress ? formatAddress(userAddress) : "Connect Wallet"}
       </button>
 
       {isDropdownOpen && userAddress && (
