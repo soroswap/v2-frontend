@@ -1,10 +1,10 @@
 "use client";
 
 import { cn } from "@/shared/lib/utils/cn";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { AssetInfo } from "@soroswap/sdk";
-import { ChevronDown, XIcon } from "lucide-react";
+import { ChevronDown, TriangleAlert, XIcon } from "lucide-react";
 import Image from "next/image";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { findAsset } from "../pools/utils/findAsset";
@@ -27,9 +27,9 @@ export const TokenSelector = ({
   const [isOpenModalUserCustomAsset, setIsOpenModalUserCustomAsset] =
     useState<boolean>(false);
   const [searchValue, setSearchValue] = useState<string>("");
-  const {} = useUserAssetList();
+  const [isSearchingAsset, setIsSearchingAsset] = useState<boolean>(false);
+  const userTokenList = useUserAssetList();
   const { tokensList } = useTokensList();
-  const userTokenList: AssetInfo[] = [];
   const [userCustomAsset, setUserCustomAsset] = useState<AssetInfo | null>(
     null,
   );
@@ -37,44 +37,64 @@ export const TokenSelector = ({
   useEffect(() => {
     if (!isOpen) {
       setSearchValue("");
+      setUserCustomAsset(null);
     }
-  }, [searchValue, isOpen]);
+  }, [isOpen]);
 
-  const findSearchedAsset = async (value: string) => {
+  const findSearchedAsset = useCallback(async (value: string) => {
+    if (!value.trim()) return;
+
+    setIsSearchingAsset(true);
     try {
       const asset = await findAsset(value);
-      console.log("asset = ", asset);
       setUserCustomAsset(asset);
-      // addUserToken(asset);
       return asset;
     } catch (error) {
-      console.error(error);
+      console.error("Error finding asset:", error);
+      setUserCustomAsset(null);
+    } finally {
+      setIsSearchingAsset(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (
-      searchValue &&
-      isOpen &&
-      !tokensList.some((token) => token.contract == searchValue)
-    ) {
-      findSearchedAsset(searchValue);
-    }
-  }, [searchValue]);
+    const timeoutId = setTimeout(() => {
+      if (
+        searchValue &&
+        isOpen &&
+        !tokensList.some((token) => token.contract === searchValue) &&
+        !userTokenList.some((token) => token.contract === searchValue)
+      ) {
+        findSearchedAsset(searchValue);
+      } else {
+        setUserCustomAsset(null);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchValue, isOpen, tokensList, userTokenList, findSearchedAsset]);
 
   const current = currentToken;
   const opposite = oppositeToken;
 
   const handleSelectToken = (token: AssetInfo | null) => {
     if (!token || token.contract === current?.contract) {
-      return; // no-op when clicking the already selected token
+      return;
     }
-    if (
-      userCustomAsset &&
-      !tokensList.some((token) => token.contract === token.contract)
-    ) {
+
+    const isCustomToken = userCustomAsset?.contract === token.contract;
+    const isInTokensList = tokensList.some(
+      (t) => t.contract === token.contract,
+    );
+    const isInUserTokens = userTokenList.some(
+      (t) => t.contract === token.contract,
+    );
+
+    if (isCustomToken && !isInTokensList && !isInUserTokens) {
       setIsOpenModalUserCustomAsset(true);
+      return;
     }
+
     onSelect?.(token);
     setIsOpen(false);
   };
@@ -82,6 +102,30 @@ export const TokenSelector = ({
   const handleSearch = (value: string) => {
     setSearchValue(value);
   };
+
+  const handleConfirmAddToken = async () => {
+    if (!userCustomAsset) return;
+
+    try {
+      await addUserToken(userCustomAsset);
+      onSelect?.(userCustomAsset);
+      setIsOpen(false);
+      setIsOpenModalUserCustomAsset(false);
+    } catch (error) {
+      console.error("Error adding user token:", error);
+    }
+  };
+
+  const allTokens = [...tokensList, ...userTokenList];
+
+  const filteredTokens = allTokens.filter((token) => {
+    const searchTerm = searchValue.toLowerCase();
+    return (
+      token.code?.toLowerCase().includes(searchTerm) ||
+      token.name?.toLowerCase().includes(searchTerm) ||
+      token.contract?.toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
     <>
@@ -109,7 +153,7 @@ export const TokenSelector = ({
         <ChevronDown className="size-4" />
       </button>
       {isOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center">
+        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -133,8 +177,9 @@ export const TokenSelector = ({
             <div className="flex items-center space-y-2">
               <input
                 type="text"
-                placeholder="Search name"
+                placeholder="Search name or paste address"
                 className="w-full rounded-lg border border-[#35374a] bg-[#23243a] px-3 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none"
+                value={searchValue}
                 onChange={(e) => {
                   handleSearch(e.target.value);
                 }}
@@ -142,56 +187,53 @@ export const TokenSelector = ({
             </div>
 
             <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
-              {tokensList
-                .filter(
-                  (token) =>
-                    token.code
-                      ?.toLowerCase()
-                      .includes(searchValue.toLowerCase()) ||
-                    token.contract
-                      ?.toLowerCase()
-                      .includes(searchValue.toLowerCase()),
-                )
-                .map((token: AssetInfo) => {
-                  const isDisabled = token.contract === current?.contract;
-                  const isOtherSelected = token.contract === opposite?.contract;
-                  console.log("tokentoken", token);
-                  return (
-                    <button
-                      key={token.contract}
-                      onClick={() => handleSelectToken(token)}
-                      className={cn(
-                        "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
-                        isDisabled
-                          ? "cursor-not-allowed bg-[#23243a]/80 text-white/40"
-                          : isOtherSelected
-                            ? "cursor-pointer border border-[#8866DD]/20 bg-[#23243a]/40 text-white"
-                            : "cursor-pointer text-white hover:bg-[#23243a]",
-                      )}
-                      disabled={isDisabled}
-                    >
-                      <Image
-                        src={token?.icon ?? ""}
-                        alt={token?.name ?? ""}
-                        width={28}
-                        height={28}
-                        className="rounded-full bg-white"
-                      />
-                      <div className="flex flex-col gap-1 text-left font-medium">
-                        <p className="text-sm font-bold text-white">
-                          {token.code}
-                        </p>
-                        <p className="text-xs text-white/70">{token.domain}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              {userCustomAsset && (
+              {filteredTokens.map((token: AssetInfo) => {
+                const isDisabled = token.contract === current?.contract;
+                const isOtherSelected = token.contract === opposite?.contract;
+                return (
+                  <button
+                    key={token.contract}
+                    onClick={() => handleSelectToken(token)}
+                    className={cn(
+                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
+                      isDisabled
+                        ? "cursor-not-allowed bg-[#23243a]/80 text-white/40"
+                        : isOtherSelected
+                          ? "cursor-pointer border border-[#8866DD]/20 bg-[#23243a]/40 text-white"
+                          : "cursor-pointer text-white hover:bg-[#23243a]",
+                    )}
+                    disabled={isDisabled}
+                  >
+                    <Image
+                      src={token?.icon ?? ""}
+                      alt={token?.name ?? ""}
+                      width={28}
+                      height={28}
+                      className="rounded-full bg-white"
+                    />
+                    <div className="flex flex-col gap-1 text-left font-medium">
+                      <p className="text-sm font-bold text-white">
+                        {token.code}
+                      </p>
+                      <p className="text-xs text-white/70">{token.domain}</p>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {isSearchingAsset && (
+                <div className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-white/70">
+                  <div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
+                  <span className="text-sm">Searching for asset...</span>
+                </div>
+              )}
+
+              {userCustomAsset && !isSearchingAsset && (
                 <button
                   onClick={() => handleSelectToken(userCustomAsset)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
-                    "cursor-pointer text-white hover:bg-[#23243a]",
+                    "cursor-pointer border border-[#7055b5] bg-[#7055b5] text-white hover:bg-[#7055b5]/80",
                   )}
                 >
                   <Image
@@ -206,35 +248,62 @@ export const TokenSelector = ({
                       {userCustomAsset.code}
                     </p>
                     <p className="text-xs text-white/70">
-                      {userCustomAsset.domain}
+                      {userCustomAsset.domain || "Custom Token"}
                     </p>
                   </div>
                 </button>
               )}
             </div>
           </div>
-        </div>
+        </Modal>
       )}
-      {isOpenModalUserCustomAsset && (
+      {isOpenModalUserCustomAsset && userCustomAsset && (
         <Modal
           isOpen={isOpenModalUserCustomAsset}
           onClose={() => setIsOpenModalUserCustomAsset(false)}
         >
-          <div className="flex flex-col gap-2">Warning</div>
-          <div>
-            <p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col items-center justify-center gap-2">
+              <div>
+                <TriangleAlert className="size-16 text-red-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Warning</h3>
+            </div>
+
+            {/* <div className="flex items-center gap-3 rounded-lg border border-[#35374a] bg-[#23243a] p-3">
+              <TokenIcon
+                src={userCustomAsset?.icon ?? ""}
+                alt={userCustomAsset?.name ?? ""}
+                className="rounded-full bg-white"
+              />
+              <div className="flex flex-col gap-1">
+                <p className="text-sm font-bold text-white">
+                  {userCustomAsset.code}
+                </p>
+                <p className="flex items-center gap-1 font-mono text-xs text-white/50">
+                  {formatAddress(userCustomAsset.contract ?? "")}
+                  <CopyAndPasteButton
+                    textToCopy={userCustomAsset.contract ?? ""}
+                    className="p-0"
+                  />
+                </p>
+              </div>
+            </div> */}
+
+            <p className="flex text-center text-sm text-gray-400">
               This token isn&apos;t traded on leading U.S. centralized exchanges
               or frequently swapped on Soroswap. Always conduct your own
               research before trading.
             </p>
-          </div>
-          <div>
-            <TheButton
-              className="w-full"
-              onClick={() => addUserToken(userTokenList[0])}
-            >
-              I understand
-            </TheButton>
+
+            <div className="flex gap-2">
+              <TheButton
+                onClick={handleConfirmAddToken}
+                className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
+              >
+                I understand
+              </TheButton>
+            </div>
           </div>
         </Modal>
       )}
