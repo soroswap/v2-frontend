@@ -80,7 +80,13 @@ export const Modal = ({
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between">
+          <div
+            className={cn(
+              "flex items-center",
+              title && "justify-between",
+              !title && "justify-end",
+            )}
+          >
             {title && (
               <h2 className="text-xl font-semibold text-white">{title}</h2>
             )}
