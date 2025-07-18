@@ -177,6 +177,7 @@ export const TokenSelector = ({
             <div className="flex items-center space-y-2">
               <input
                 type="text"
+                autoFocus
                 placeholder="Search name or paste address"
                 className="w-full rounded-lg border border-[#35374a] bg-[#23243a] px-3 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none"
                 value={searchValue}
