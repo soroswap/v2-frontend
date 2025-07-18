@@ -26,6 +26,8 @@ interface PoolState {
   independentField: IndependentField;
   TOKEN_A: AssetInfo | null;
   TOKEN_B: AssetInfo | null;
+  tokenAAmount: string;
+  tokenBAmount: string;
 }
 
 const initialPoolState: PoolState = {
@@ -33,6 +35,8 @@ const initialPoolState: PoolState = {
   independentField: "TOKEN_A",
   TOKEN_A: null,
   TOKEN_B: null,
+  tokenAAmount: "",
+  tokenBAmount: "",
 };
 
 /**
@@ -49,6 +53,10 @@ function poolReducer(state: PoolState, action: PoolAction): PoolState {
         ...state,
         typedValue: action.typedValue,
         independentField: action.field,
+        tokenAAmount:
+          action.field === "TOKEN_A" ? action.typedValue : state.tokenAAmount,
+        tokenBAmount:
+          action.field === "TOKEN_B" ? action.typedValue : state.tokenBAmount,
       };
 
     case "SET_TOKEN":
@@ -96,7 +104,14 @@ export function usePoolsController({
   // Local component state.
   // ---------------------------------------------------------------------------
   const [poolState, dispatchPool] = useReducer(poolReducer, initialPoolState);
-  const { typedValue, independentField, TOKEN_A, TOKEN_B } = poolState;
+  const {
+    typedValue,
+    independentField,
+    TOKEN_A,
+    TOKEN_B,
+    tokenAAmount,
+    tokenBAmount,
+  } = poolState;
 
   // ---------------------------------------------------------------------------
   // Pool ratio logic – useGetPoolByTokens provides the matched pool & ratio.
@@ -126,27 +141,31 @@ export function usePoolsController({
   // ---------------------------------------------------------------------------
   const derived_TOKEN_A_Amount = useMemo(() => {
     // User types TOKEN_B, we derive TOKEN_A
-    if (poolRatio == null || independentField === "TOKEN_A" || !typedValue)
-      return undefined;
+    if (poolRatio == null || independentField === "TOKEN_A" || !typedValue) {
+      // If no pool ratio or user is typing in TOKEN_A, preserve existing TOKEN_A amount
+      return tokenAAmount || undefined;
+    }
 
     const amountB = parseFloat(typedValue);
-    if (isNaN(amountB) || poolRatio === 0) return undefined;
+    if (isNaN(amountB) || poolRatio === 0) return tokenAAmount || undefined;
 
     const amountA = amountB / poolRatio;
     return amountA.toFixed(7); // We need to fix the decimals to , because a lot of assets in Stellar have 7 decimals.
-  }, [poolRatio, independentField, typedValue]);
+  }, [poolRatio, independentField, typedValue, tokenAAmount]);
 
   const derived_TOKEN_B_Amount = useMemo(() => {
     // User types TOKEN_A, we derive TOKEN_B
-    if (poolRatio == null || independentField === "TOKEN_B" || !typedValue)
-      return undefined;
+    if (poolRatio == null || independentField === "TOKEN_B" || !typedValue) {
+      // If no pool ratio or user is typing in TOKEN_B, preserve existing TOKEN_B amount
+      return tokenBAmount || undefined;
+    }
 
     const amountA = parseFloat(typedValue);
-    if (isNaN(amountA)) return undefined;
+    if (isNaN(amountA)) return tokenBAmount || undefined;
 
     const amountB = amountA * poolRatio;
     return amountB.toFixed(7); // We need to fix the decimals to 7, because a lot of assets in Stellar have 7 decimals.
-  }, [poolRatio, independentField, typedValue]);
+  }, [poolRatio, independentField, typedValue, tokenBAmount]);
 
   const { address: userAddress } = useUserContext();
 
@@ -187,13 +206,27 @@ export function usePoolsController({
     )
       return;
 
-    // Determine amounts based on which field the user typed.
-    const amountAInput =
-      independentField === "TOKEN_A" ? typedValue : derived_TOKEN_A_Amount;
-    const amountBInput =
-      independentField === "TOKEN_B" ? typedValue : derived_TOKEN_B_Amount;
+    // Determine amounts based on pool ratio availability
+    let amountAInput: string | undefined;
+    let amountBInput: string | undefined;
 
-    if (!amountAInput || !amountBInput) return;
+    if (poolRatio == null || poolRatio === undefined) {
+      // No pool ratio: use independent amounts for both fields
+      amountAInput = tokenAAmount;
+      amountBInput = tokenBAmount;
+
+      // Both fields need to have values when there's no pool ratio
+      if (!amountAInput || !amountBInput) return;
+    } else {
+      // Pool ratio exists: use derivation logic
+      amountAInput =
+        independentField === "TOKEN_A" ? typedValue : derived_TOKEN_A_Amount;
+      amountBInput =
+        independentField === "TOKEN_B" ? typedValue : derived_TOKEN_B_Amount;
+
+      // With pool ratio, we can derive one from the other
+      if (!amountAInput || !amountBInput) return;
+    }
 
     // Convert to smallest units.
     const amountA = parseUnits({
@@ -270,7 +303,6 @@ export function usePoolsController({
       poolsSettings.customSlippage,
     ],
   );
-
   // ---------------------------------------------------------------------------
   // Effects: initialise default values once token list is fetched.
   // ---------------------------------------------------------------------------
@@ -320,6 +352,8 @@ export function usePoolsController({
     independentField,
     TOKEN_A,
     TOKEN_B,
+    tokenAAmount,
+    tokenBAmount,
 
     // ratio info
     isQuoteLoading: isRatioLoading,
