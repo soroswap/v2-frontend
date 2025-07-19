@@ -105,7 +105,7 @@ export default function PoolsAddLiquidityPage() {
 
   return (
     <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-      <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+      <div className="w- flex max-w-[480px] flex-col gap-2 rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
           <Link href="/pools">
             <ArrowLeft />
@@ -122,6 +122,16 @@ export default function PoolsAddLiquidityPage() {
               height={38}
             />
           </button>
+        </div>
+        <div className="flex flex-col gap-2 rounded-md bg-[#181a25]/80 p-2">
+          <p className="text-sm text-white">
+            <strong>Tip:</strong> When you add liquidity, you will receive LP
+            tokens representing your position.
+          </p>
+          <p className="text-sm text-white">
+            These tokens automatically earn fees proportional to your share of
+            the pool. Can be redeemed at any time.
+          </p>
         </div>
 
         <div className="flex flex-col gap-2">

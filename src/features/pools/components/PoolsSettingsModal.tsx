@@ -5,6 +5,7 @@ import { Modal } from "@/shared/components/Modal";
 import { cn } from "@/shared/lib/utils/cn";
 import { isDecimalInRange } from "@/shared/lib/utils/validators";
 import { usePoolsSettingsStore } from "@/contexts/store/pools-settings";
+import { Tooltip } from "react-tooltip";
 
 interface PoolsSettingsModalProps {
   isOpen: boolean;
@@ -64,7 +65,15 @@ export const PoolsSettingsModal = ({
               <span className="text-lg font-medium text-[#A0A3C4]">
                 Max slippage
               </span>
-              <Info size={14} className="text-gray-400" />
+              <Info
+                size={14}
+                className="text-gray-400"
+                data-tooltip-id="max-slippage-tooltip"
+              />
+              <Tooltip
+                id="max-slippage-tooltip"
+                content="Your transaction will revert if the price changes unfavorably by more than this percentage."
+              />
             </div>
             {slippageLevel && (
               <div className={cn("flex items-center gap-2", slippageColor)}>
