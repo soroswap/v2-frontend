@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { TheButton } from "@/shared/components/buttons";
+
 import { ISupportedWallet } from "@creit.tech/stellar-wallets-kit";
 import { cn } from "@/shared/lib/utils/cn";
 import { formatAddress } from "@/shared/lib/utils/formatAddress";
 import { useUserContext } from "@/contexts";
 import { kit } from "@/shared/lib/server/wallet";
+import { LogOut } from "lucide-react";
 
 interface ConnectWalletProps {
   className?: string;
@@ -37,7 +38,7 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
   };
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center">
+    <div className="relative flex h-full w-full flex-col items-center justify-center">
       <button
         className={cn(
           "btn relative flex h-14 rounded-2xl bg-[#8866DD] text-[20px] font-bold hover:bg-[#8866DD]/80",
@@ -52,14 +53,19 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
 
       {isDropdownOpen && userAddress && (
         <div
-          className="absolute right-0 z-50 rounded-2xl border border-[#23243a] bg-[#181A25] p-4 shadow-xl"
+          className="absolute top-full left-1/2 z-50 mt-1 -translate-x-1/2 transform rounded-xl bg-[#8866DD] p-1 shadow-lg"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="wallet-menu"
         >
-          <TheButton onClick={handleDisconnect} role="menuitem">
+          <button
+            onClick={handleDisconnect}
+            role="menuitem"
+            className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+          >
+            <LogOut size={16} />
             Disconnect
-          </TheButton>
+          </button>
         </div>
       )}
     </div>
