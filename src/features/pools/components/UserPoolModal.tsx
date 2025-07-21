@@ -116,7 +116,7 @@ export const UserPoolModal = ({
         <div className="flex w-full gap-1">
           <div className="flex w-full">
             <Link
-              className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD]/10 p-4 font-bold hover:bg-[#8866DD]/80"
+              className="btn text-md relative h-14 w-full rounded-2xl border-[#8866DD] bg-[#8866DD] p-4 font-bold hover:bg-[#8866DD]/80"
               href={`/pools/add-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
             >
               Add Liquidity
