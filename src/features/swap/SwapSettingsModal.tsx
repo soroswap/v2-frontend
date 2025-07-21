@@ -8,6 +8,7 @@ import { ToggleButton } from "@/shared/components/buttons";
 import { SupportedProtocols } from "@soroswap/sdk";
 import { isDecimalInRange } from "@/shared/lib/utils/validators";
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
+import { Tooltip } from "react-tooltip";
 
 interface SwapSettingsModalProps {
   isOpen: boolean;
@@ -20,6 +21,28 @@ export const SwapSettingsModal = ({
 }: SwapSettingsModalProps) => {
   const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
   const { swapSettings: settings, setSwapSettings } = useSwapSettingsStore();
+
+  const protocolInfo: Record<
+    SupportedProtocols,
+    { name: string; url: string }
+  > = {
+    [SupportedProtocols.SOROSWAP]: {
+      name: "Soroswap",
+      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
+    },
+    [SupportedProtocols.PHOENIX]: {
+      name: "Phoenix",
+      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
+    },
+    [SupportedProtocols.AQUA]: {
+      name: "Aqua",
+      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
+    },
+    [SupportedProtocols.SDEX]: {
+      name: "SDEX",
+      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
+    },
+  };
 
   const slippageNum = Number(settings.customSlippage);
   const slippageLevel =
@@ -79,7 +102,19 @@ export const SwapSettingsModal = ({
               <span className="text-lg font-medium text-[#A0A3C4]">
                 Max slippage
               </span>
-              <Info size={14} className="text-gray-400" />
+              <Info
+                size={14}
+                className="text-gray-400"
+                data-tooltip-id="max-slippage-tooltip"
+              />
+              <Tooltip id="max-slippage-tooltip">
+                <div className="flex max-w-[350px] flex-col gap-2 text-sm text-white">
+                  <p>
+                    Your transaction will revert if the price changes
+                    unfavorably by more than this percentage.
+                  </p>
+                </div>
+              </Tooltip>
             </div>
             {slippageLevel && (
               <div className={cn("flex items-center gap-2", slippageColor)}>
@@ -161,7 +196,19 @@ export const SwapSettingsModal = ({
               <span className="text-lg font-medium text-[#A0A3C4]">
                 Protocols
               </span>
-              <Info size={14} className="text-gray-400" />
+              <Info
+                size={14}
+                className="text-gray-400"
+                data-tooltip-id="protocols-tooltip"
+              />
+              <Tooltip id="protocols-tooltip">
+                <div className="flex max-w-[350px] flex-col gap-2 text-sm text-white">
+                  <p>
+                    The protocols Soroswap.Finance will use to calculate the
+                    most efficient path for your transaction.
+                  </p>
+                </div>
+              </Tooltip>
             </div>
             <ChevronDown
               size={24}
@@ -180,10 +227,17 @@ export const SwapSettingsModal = ({
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#A0A3C4]/70 uppercase">
-                      {protocol}
+                    <span className="text-sm text-[#A0A3C4]/70">
+                      {protocolInfo[protocol].name}
                     </span>
-                    <ExternalLink size={12} className="text-gray-400" />
+                    <a
+                      href={protocolInfo[protocol].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-400 transition-colors hover:text-white"
+                    >
+                      <ExternalLink size={12} />
+                    </a>
                   </div>
 
                   <ToggleButton
