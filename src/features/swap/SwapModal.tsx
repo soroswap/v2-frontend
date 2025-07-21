@@ -5,32 +5,40 @@ import { SwapStep } from "@/features/swap/hooks/useSwap";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
+import { SwapError } from "./hooks/useSwap";
 
 interface SwapModalProps {
   currentStep: SwapStep;
   onClose: () => void;
   transactionHash?: string;
+  error?: SwapError;
 }
 
 export const SwapModal = ({
   currentStep,
   onClose,
   transactionHash,
+  error,
 }: SwapModalProps) => {
+  console.log("error = ", error);
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {
       case SwapStep.WAITING_SIGNATURE:
         return "Waiting for Signature";
+      case SwapStep.CREATE_TRUSTLINE:
+        return "Creating Trustline";
       case SwapStep.SENDING_TRANSACTION:
         return "Sending Transaction";
       case SwapStep.SUCCESS:
         return "Swap Completed";
       case SwapStep.ERROR:
-        return "Swap Failed";
+        return error?.message || "Swap Failed";
       default:
         return "Processing";
     }
   };
+
+  console.log("currentStep = ", currentStep);
 
   const getStepContent: Record<Exclude<SwapStep, SwapStep.IDLE>, ReactNode> = {
     [SwapStep.WAITING_SIGNATURE]: (
@@ -41,6 +49,11 @@ export const SwapModal = ({
     [SwapStep.BUILDING_XDR]: (
       <div>
         <p>Building transaction...</p>
+      </div>
+    ),
+    [SwapStep.CREATE_TRUSTLINE]: (
+      <div>
+        <p>Creating trustline...</p>
       </div>
     ),
     [SwapStep.SENDING_TRANSACTION]: (

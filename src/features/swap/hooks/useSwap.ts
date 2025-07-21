@@ -1,18 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { STELLAR } from "@/shared/lib/environmentVars";
 import { kit } from "@/shared/lib/server/wallet";
-import { QuoteResponse } from "@soroswap/sdk";
+import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
-
-interface BuildXdrResponseData {
-  code: string;
-  data: string;
-}
 
 export enum SwapStep {
   IDLE = "IDLE",
   BUILDING_XDR = "BUILDING_XDR",
+  CREATE_TRUSTLINE = "CREATE_TRUSTLINE",
   WAITING_SIGNATURE = "WAITING_SIGNATURE",
   SENDING_TRANSACTION = "SENDING_TRANSACTION",
   SUCCESS = "SUCCESS",
@@ -53,6 +50,7 @@ export function useSwap(options?: UseSwapOptions) {
   const handleError = useCallback(
     (step: SwapStep, message: string, details?: any) => {
       const swapError: SwapError = { step, message, details };
+      console.log("swapError Handle Error= ", swapError);
       setError(swapError);
       updateStep(SwapStep.ERROR);
       setIsLoading(false);
@@ -65,7 +63,7 @@ export function useSwap(options?: UseSwapOptions) {
     async (
       quote: QuoteResponse,
       userAddress: string,
-    ): Promise<BuildXdrResponseData> => {
+    ): Promise<BuildQuoteResponse> => {
       const response = await fetch("/api/quote/build", {
         method: "POST",
         headers: {
@@ -77,7 +75,35 @@ export function useSwap(options?: UseSwapOptions) {
           to: userAddress,
         }),
       });
-      return response.json();
+      const data = await response.json();
+      console.log("response = ", data);
+      if (
+        data.errorCode === 13 ||
+        data.errorMessage === "TokenError.InsufficientTrustlineBalance"
+      ) {
+        console.log("data here", data);
+        updateStep(SwapStep.CREATE_TRUSTLINE);
+        const signedXdr = await signTransaction(
+          data.actionData.xdr,
+          userAddress,
+        );
+        console.log("signedXdr = ", signedXdr);
+        const sendResult = await sendTransaction(signedXdr);
+        console.log("sendResult = ", sendResult);
+        updateStep(SwapStep.SUCCESS);
+        setIsLoading(false);
+        const result: SwapResult = {
+          txHash: sendResult.data.txHash,
+          success: sendResult.data.status === "success" ? true : false,
+        };
+
+        options?.onSuccess?.(result);
+      }
+      if (data.errorMessage === "TokenError.InsufficientBalance") {
+        console.log("here2");
+        handleError(SwapStep.BUILDING_XDR, data.message, data);
+      }
+      return data;
     },
     [],
   );
@@ -121,11 +147,12 @@ export function useSwap(options?: UseSwapOptions) {
 
         // Step 1: Build XDR
         updateStep(SwapStep.BUILDING_XDR);
-        const xdr = await buildXdr(quote, userAddress);
+        const { xdr } = await buildXdr(quote, userAddress);
+        console.log("xdr = ", xdr);
 
         // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
-        const signedXdr = await signTransaction(xdr.data, userAddress);
+        const signedXdr = await signTransaction(xdr, userAddress);
 
         // Step 2: Send transaction
         updateStep(SwapStep.SENDING_TRANSACTION);

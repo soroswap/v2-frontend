@@ -29,6 +29,7 @@ export default function SwapPage() {
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
+  const [swapError, setSwapError] = useState<SwapError | null>(null);
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
     useState<boolean>(false);
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
@@ -55,11 +56,15 @@ export default function SwapPage() {
       setIsSwapModalOpen(true);
     },
     onError: (error: SwapError) => {
+      console.log("eRror PAGE! ", error);
       console.error("Swap failed:", error);
-      setSwapResult(null);
+      setSwapError(error);
     },
     onStepChange: (step: SwapStep) => {
-      if (step === SwapStep.WAITING_SIGNATURE) {
+      if (
+        step === SwapStep.WAITING_SIGNATURE ||
+        step === SwapStep.CREATE_TRUSTLINE
+      ) {
         setIsSwapModalOpen(true);
       }
     },
@@ -164,6 +169,7 @@ export default function SwapPage() {
               setSwapResult(null);
               resetSwap();
             }}
+            error={swapError || undefined}
             transactionHash={swapResult?.txHash}
           />
         )}
