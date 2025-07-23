@@ -93,7 +93,13 @@ export const SwapSettingsModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" className="px-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="sm"
+      className="px-4"
+      title="Settings"
+    >
       <div className="flex h-full flex-col gap-4">
         {/* Max Slippage */}
         <div className="flex h-full flex-col gap-2">
