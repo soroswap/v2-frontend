@@ -163,9 +163,7 @@ export const TokenSelector = ({
           <div className="relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <span className="text-lg font-medium text-white">
-                Select a token
-              </span>
+              <p className="text-lg font-medium text-white">Select a token</p>
               <button
                 onClick={() => setIsOpen(false)}
                 className="cursor-pointer rounded-full p-2 leading-none text-white/70 hover:bg-[#23243a]/80 hover:text-white"
@@ -196,7 +194,7 @@ export const TokenSelector = ({
                     key={token.contract}
                     onClick={() => handleSelectToken(token)}
                     className={cn(
-                      "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
+                      "flex min-h-14 w-full items-center gap-3 rounded-lg px-3 py-2 transition",
                       isDisabled
                         ? "cursor-not-allowed bg-[#23243a]/80 text-white/40"
                         : isOtherSelected
@@ -270,26 +268,6 @@ export const TokenSelector = ({
               </div>
               <h3 className="text-lg font-semibold text-white">Warning</h3>
             </div>
-
-            {/* <div className="flex items-center gap-3 rounded-lg border border-[#35374a] bg-[#23243a] p-3">
-              <TokenIcon
-                src={userCustomAsset?.icon ?? ""}
-                alt={userCustomAsset?.name ?? ""}
-                className="rounded-full bg-white"
-              />
-              <div className="flex flex-col gap-1">
-                <p className="text-sm font-bold text-white">
-                  {userCustomAsset.code}
-                </p>
-                <p className="flex items-center gap-1 font-mono text-xs text-white/50">
-                  {formatAddress(userCustomAsset.contract ?? "")}
-                  <CopyAndPasteButton
-                    textToCopy={userCustomAsset.contract ?? ""}
-                    className="p-0"
-                  />
-                </p>
-              </div>
-            </div> */}
 
             <p className="flex text-center text-sm text-gray-400">
               This token isn&apos;t traded on leading U.S. centralized exchanges

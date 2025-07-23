@@ -2,15 +2,10 @@ import useSWR from "swr";
 import { QuoteRequest, QuoteResponse } from "@soroswap/sdk";
 import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
 
-interface QuoteResponseData {
-  code: string;
-  data: QuoteResponse;
-}
-
 const fetcher = async (
   url: string,
   quoteRequest: QuoteRequest,
-): Promise<QuoteResponseData> => {
+): Promise<QuoteResponse> => {
   const response = await fetch(url, {
     method: "POST",
     headers: {
@@ -40,8 +35,8 @@ export function useQuote(quoteRequest: QuoteRequest | null) {
   );
 
   return {
-    quote: data?.data || null,
-    quoteError: data?.code || null,
+    quote: data,
+    quoteError: error,
     isLoading,
     isError: error,
     mutate,
