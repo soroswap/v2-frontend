@@ -36,7 +36,7 @@ export const SwapPanel = ({
       className={cn(
         "rounded-2xl border p-5",
         variant === "outline"
-          ? "border-[#cfffd966] bg-transparent"
+          ? "border-[#2e294a] bg-transparent"
           : "border-[#23243a] bg-[#10121A]",
       )}
     >
