@@ -1,26 +1,30 @@
 "use client";
 
 import { ReactNode } from "react";
-import { SwapStep } from "@/features/swap/hooks/useSwap";
+import { SwapStep, SwapModalData } from "@/features/swap/hooks/useSwap";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
 import { SwapError } from "./hooks/useSwap";
 
-interface SwapModalProps {
-  currentStep: SwapStep;
+interface SwapModalProps<T extends SwapStep = SwapStep> {
+  currentStep: T;
   onClose: () => void;
   transactionHash?: string;
   error?: SwapError;
+  modalData?: SwapModalData<T>;
 }
 
-export const SwapModal = ({
+export const SwapModal = <T extends SwapStep = SwapStep>({
   currentStep,
   onClose,
   transactionHash,
   error,
-}: SwapModalProps) => {
-  console.log("error = ", error);
+  modalData,
+}: SwapModalProps<T>) => {
+  console.log("currentStep = ", currentStep);
+  console.log("modalData = ", modalData);
+
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {
       case SwapStep.WAITING_SIGNATURE:
@@ -38,8 +42,6 @@ export const SwapModal = ({
     }
   };
 
-  console.log("currentStep = ", currentStep);
-
   const getStepContent: Record<Exclude<SwapStep, SwapStep.IDLE>, ReactNode> = {
     [SwapStep.WAITING_SIGNATURE]: (
       <div>
@@ -52,8 +54,18 @@ export const SwapModal = ({
       </div>
     ),
     [SwapStep.CREATE_TRUSTLINE]: (
-      <div>
-        <p>Creating trustline...</p>
+      <div className="space-y-3">
+        <div className="text-center">
+          <p className="font-medium text-white">
+            {modalData?.actionData.description}
+          </p>
+          {modalData?.actionData.assetCode && (
+            <p className="mt-1 text-sm text-gray-400">
+              Token: {modalData.actionData.assetCode}
+              {modalData.actionData.assetIssuer}
+            </p>
+          )}
+        </div>
       </div>
     ),
     [SwapStep.SENDING_TRANSACTION]: (

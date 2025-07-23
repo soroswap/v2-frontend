@@ -6,6 +6,7 @@ import {
   SwapError,
   SwapResult,
   SwapStep,
+  SwapModalData,
   useSwap,
 } from "@/features/swap/hooks/useSwap";
 import { useTokensList } from "@/shared/hooks/useTokensList";
@@ -96,7 +97,7 @@ export interface UseSwapControllerProps {
    */
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: (step: SwapStep) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
 }
 
 export function useSwapController({
@@ -192,6 +193,7 @@ export function useSwapController({
     executeSwap,
     currentStep,
     isLoading: isSwapLoading,
+    modalData,
     reset: resetSwap,
   } = useSwap({
     onSuccess,
@@ -274,6 +276,7 @@ export function useSwapController({
     // swap info
     currentStep,
     isSwapLoading,
+    modalData,
 
     // handlers
     handleAmountChange,

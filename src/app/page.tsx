@@ -44,6 +44,7 @@ export default function SwapPage() {
     isQuoteLoading,
     isSwapLoading,
     currentStep,
+    modalData,
     handleAmountChange,
     handleTokenSelect,
     handleSwitchTokens,
@@ -171,6 +172,7 @@ export default function SwapPage() {
             }}
             error={swapError || undefined}
             transactionHash={swapResult?.txHash}
+            modalData={modalData}
           />
         )}
 

@@ -28,21 +28,50 @@ export interface SwapResult {
   success: boolean;
 }
 
+// Tipos específicos para cada etapa
+export interface TrustlineData {
+  message: string;
+  action: string;
+  actionData: {
+    xdr: string;
+    assetCode: string;
+    assetIssuer: string;
+    description: string;
+  };
+  errorCode: 13;
+}
+
+export interface SwapModalDataMap {
+  [SwapStep.IDLE]: never;
+  [SwapStep.BUILDING_XDR]: never;
+  [SwapStep.CREATE_TRUSTLINE]: TrustlineData;
+  [SwapStep.WAITING_SIGNATURE]: never;
+  [SwapStep.SENDING_TRANSACTION]: never;
+  [SwapStep.SUCCESS]: never;
+  [SwapStep.ERROR]: never;
+}
+
+export type SwapModalData<T extends SwapStep = SwapStep> = SwapModalDataMap[T];
+
 export interface UseSwapOptions {
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: (step: SwapStep) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
 }
 
 export function useSwap(options?: UseSwapOptions) {
   const [currentStep, setCurrentStep] = useState<SwapStep>(SwapStep.IDLE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<SwapError | null>(null);
+  const [modalData, setModalData] = useState<SwapModalData | undefined>(
+    undefined,
+  );
 
   const updateStep = useCallback(
-    (step: SwapStep) => {
+    <T extends SwapStep>(step: T, data?: SwapModalData<T>) => {
       setCurrentStep(step);
-      options?.onStepChange?.(step);
+      setModalData(data || undefined);
+      options?.onStepChange?.(step, data);
     },
     [options],
   );
@@ -82,7 +111,16 @@ export function useSwap(options?: UseSwapOptions) {
         data.errorMessage === "TokenError.InsufficientTrustlineBalance"
       ) {
         console.log("data here", data);
-        updateStep(SwapStep.CREATE_TRUSTLINE);
+
+        // Create typed trustline data
+        const trustlineData: TrustlineData = {
+          action: data.action,
+          actionData: data.actionData,
+          errorCode: data.errorCode,
+          message: data.message,
+        };
+
+        updateStep(SwapStep.CREATE_TRUSTLINE, trustlineData);
         const signedXdr = await signTransaction(
           data.actionData.xdr,
           userAddress,
@@ -90,14 +128,19 @@ export function useSwap(options?: UseSwapOptions) {
         console.log("signedXdr = ", signedXdr);
         const sendResult = await sendTransaction(signedXdr);
         console.log("sendResult = ", sendResult);
-        updateStep(SwapStep.SUCCESS);
-        setIsLoading(false);
-        const result: SwapResult = {
-          txHash: sendResult.data.txHash,
-          success: sendResult.data.status === "success" ? true : false,
-        };
+        // updateStep(SwapStep.SUCCESS);
+        // setIsLoading(false);
+        // const result: SwapResult = {
+        //   txHash: sendResult.data.txHash,
+        //   success: sendResult.data.status === "success" ? true : false,
+        // };
 
-        options?.onSuccess?.(result);
+        // Trustline created successfully, now retry the build
+        console.log("Trustline created, retrying build...");
+        updateStep(SwapStep.BUILDING_XDR);
+
+        // Retry the buildXdr with the same quote
+        return await buildXdr(quote, userAddress);
       }
       if (data.errorMessage === "TokenError.InsufficientBalance") {
         console.log("here2");
@@ -110,6 +153,7 @@ export function useSwap(options?: UseSwapOptions) {
 
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
+      console.log("signTransaction", { xdr, userAddress });
       const { signedTxXdr } = await kit.signTransaction(xdr, {
         address: userAddress,
         networkPassphrase: STELLAR.WALLET_NETWORK,
@@ -190,6 +234,7 @@ export function useSwap(options?: UseSwapOptions) {
     setCurrentStep(SwapStep.IDLE);
     setIsLoading(false);
     setError(null);
+    setModalData(undefined);
   }, []);
 
   return {
@@ -197,6 +242,7 @@ export function useSwap(options?: UseSwapOptions) {
     currentStep,
     isLoading,
     error,
+    modalData,
     reset,
     // Helper getters
     isIdle: currentStep === SwapStep.IDLE,
