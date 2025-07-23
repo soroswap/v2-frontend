@@ -1,32 +1,63 @@
 import Image from "next/image";
-import { useState } from "react";
+import { cn } from "@/shared/lib/utils/cn";
 
 interface TokenIconProps {
-  src?: string | undefined;
-  alt: string;
-  size?: number; // sets both width & height; defaults to 24
+  src?: string;
+  alt?: string;
+  name?: string;
+  code?: string;
+  size?: number;
   className?: string;
 }
 
-// Displays a token icon with automatic fallback to /globe.svg when the remote image fails to load.
-// Avoids showing the alt text overlay when an icon URL is broken or missing.
 export const TokenIcon = ({
   src,
   alt,
-  size = 24,
-  className = "",
+  name,
+  code,
+  size = 28,
+  className,
 }: TokenIconProps) => {
-  const [hasError, setHasError] = useState(false);
-  const fallbackSrc = "/globe.svg";
+  const hasValidImage = src && src.trim() !== "" && src !== "undefined";
+
+  // Get initials from name or code
+  const getInitials = () => {
+    if (code) return code.slice(0, 3).toUpperCase();
+    if (name) {
+      const words = name.split(" ");
+      if (words.length >= 3) {
+        return (words[0][0] + words[1][0] + words[2][0]).toUpperCase();
+      }
+      return name.slice(0, 3).toUpperCase();
+    }
+    return "??";
+  };
+
+  if (hasValidImage) {
+    return (
+      <Image
+        src={src}
+        alt={alt || name || code || "Token"}
+        width={size}
+        height={size}
+        className={cn("rounded-full bg-white", className)}
+      />
+    );
+  }
 
   return (
-    <Image
-      src={hasError || !src ? fallbackSrc : src}
-      alt={alt}
-      width={size}
-      height={size}
-      onError={() => setHasError(true)}
-      className={className}
-    />
+    <div
+      className={cn(
+        "flex items-center justify-center rounded-full bg-[#8866DD] font-bold text-white",
+        className,
+      )}
+      style={{
+        width: size,
+        height: size,
+        fontSize: Math.max(size * 0.35, 10),
+      }}
+    >
+      {getInitials()}
+    </div>
   );
 };

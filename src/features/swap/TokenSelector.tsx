@@ -5,11 +5,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { AssetInfo } from "@soroswap/sdk";
 import { ChevronDown, TriangleAlert, XIcon } from "lucide-react";
-import Image from "next/image";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { findAsset } from "../pools/utils/findAsset";
-import { Modal } from "@/shared/components/Modal";
-import { TheButton } from "@/shared/components";
+import { Modal, TheButton, TokenIcon } from "@/shared/components";
 import { addUserToken } from "@/shared/lib/utils/addUserToken";
 
 export const TokenSelector = ({
@@ -138,12 +136,12 @@ export const TokenSelector = ({
       >
         {current ? (
           <>
-            <Image
-              src={current?.icon ?? ""}
+            <TokenIcon
+              src={current?.icon}
               alt={`${current?.name} logo`}
-              width={29.5}
-              height={29.5}
-              className="rounded-full bg-white"
+              name={current?.name}
+              code={current?.code}
+              size={29.5}
             />
             <span className="text-sm font-bold text-white">{current.code}</span>
           </>
@@ -203,12 +201,12 @@ export const TokenSelector = ({
                     )}
                     disabled={isDisabled}
                   >
-                    <Image
-                      src={token?.icon ?? ""}
+                    <TokenIcon
+                      src={token?.icon}
                       alt={token?.name ?? ""}
-                      width={28}
-                      height={28}
-                      className="rounded-full bg-white"
+                      name={token?.name}
+                      code={token?.code}
+                      size={28}
                     />
                     <div className="flex flex-col gap-1 text-left font-medium">
                       <p className="text-sm font-bold text-white">
@@ -235,12 +233,12 @@ export const TokenSelector = ({
                     "cursor-pointer border border-[#7055b5] bg-[#7055b5] text-white hover:bg-[#7055b5]/80",
                   )}
                 >
-                  <Image
-                    src={userCustomAsset?.icon ?? ""}
+                  <TokenIcon
+                    src={userCustomAsset?.icon}
                     alt={userCustomAsset?.name ?? ""}
-                    width={28}
-                    height={28}
-                    className="rounded-full bg-white"
+                    name={userCustomAsset?.name}
+                    code={userCustomAsset?.code}
+                    size={28}
                   />
                   <div className="flex flex-col gap-1 text-left font-medium">
                     <p className="text-sm font-bold text-white">
