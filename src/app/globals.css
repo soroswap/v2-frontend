@@ -1,27 +1,83 @@
 @import "react-tooltip/dist/react-tooltip.css";
 @import "tailwindcss";
-@plugin "daisyui";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  @theme {
+    /* Override tokens for dark schema if system preference triggers */
+    --color-bg-page: #0a0a0a;
+    --color-text-primary: #ededed;
+
+    /* Sync legacy variables */
+    --background: var(--color-bg-page);
+    --foreground: var(--color-text-primary);
+
+      /* --- Design System Color Tokens --- */
+  --color-brand: #8866DD;
+
+  --color-surface-page: #0f1016;
+  --color-surface: #181A25;
+  --color-surface-subtle: #10121A;
+  --color-surface-light: #ffffff;
+  --color-surface-alt: #232136;
+  --color-surface-skeleton-start: #23243A;
+  --color-surface-skeleton-mid: #2A2B42;
+  --color-surface-skeleton-end: #23243A;
+
+  --color-limiar-primary: #23243A;
+  --color-limiar-secondary: #35374A;
+
+  --color-text-primary: #ededed;
+  --color-text-secondary: #A0A3C4;
+  --color-text-inverse: #171717;
+  --color-accent-success: #CFFFD9;
+  --color-accent-warning: #F88F6D;
+
+  --color-icon-muted: #666666;
+
+
+  /* Legacy variables mapped to tokens for backward compatibility */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-text-primary);
   --font-inter: var(--font-inter);
   --font-darker-grotesque: var(--font-darker-grotesque);
-  --color-brand: #8866dd;
-  --color-surface: #181a25;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
   }
-}
+
+  .dark {
+    --color-bg-page: #0a0a0a;
+    --color-text-primary: #ededed;
+
+    /* Sync legacy variables */
+    --background: var(--color-bg-page);
+    --foreground: var(--color-text-primary);
+
+      /* --- Design System Color Tokens --- */
+  --color-brand: #8866DD;
+
+  --color-surface-page: #0f1016;
+  --color-surface: #181A25;
+  --color-surface-subtle: #10121A;
+  --color-surface-light: #ffffff;
+  --color-surface-alt: #232136;
+  --color-surface-skeleton-start: #23243A;
+  --color-surface-skeleton-mid: #2A2B42;
+  --color-surface-skeleton-end: #23243A;
+
+
+  --color-limiar-primary: #23243A;
+  --color-limiar-secondary: #35374A;
+
+  --color-text-primary: #ededed;
+  --color-text-secondary: #A0A3C4;
+  --color-text-inverse: #171717;
+  --color-accent-success: #CFFFD9;
+  --color-accent-warning: #F88F6D;
+
+  /* Legacy variables mapped to tokens for backward compatibility */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-text-primary);
+  --font-inter: var(--font-inter);
+  --font-darker-grotesque: var(--font-darker-grotesque);
+  }
 
 body {
   background: var(--background);
@@ -44,7 +100,7 @@ body {
 
 .skeleton {
   animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background: linear-gradient(90deg, #23243a 25%, #2a2b42 50%, #23243a 75%);
+  background: linear-gradient(90deg, var(--color-surface-skeleton-start) 25%, var(--color-surface-skeleton-mid) 50%, var(--color-surface-skeleton-end) 75%);
   background-size: 200% 100%;
   border-radius: 0.375rem;
 }

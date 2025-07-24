@@ -35,9 +35,9 @@ const headerVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-transparent text-[#A0A3C4]",
-        simple: "bg-transparent text-[#A0A3C4]",
-        compact: "py-2 text-[#A0A3C4]",
+        default: "bg-transparent text-secondary",
+        simple: "bg-transparent text-secondary",
+        compact: "py-2 text-secondary",
       },
     },
     defaultVariants: {

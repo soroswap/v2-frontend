@@ -11,8 +11,9 @@ export const TheButton = ({ children, ...props }: TheButtonProps) => {
   return (
     <button
       className={cn(
-        "btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80",
+        "bg-brand hover:bg-brand/80 disabled:bg-brand/50 h-14 w-full cursor-pointer items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-not-allowed",
       )}
+      disabled={props.disabled}
       {...props}
     >
       {children}

@@ -139,7 +139,7 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
           {!isLoading && (
             <button
               onClick={onClose}
-              className="w-full cursor-pointer rounded-2xl bg-[#8866DD] px-4 py-3 font-medium text-white transition-colors hover:bg-[#8866DD]/80"
+              className="bg-brand hover:bg-brand/80 w-full cursor-pointer rounded-2xl px-4 py-3 font-medium text-white transition-colors"
             >
               {currentStep === SwapStep.SUCCESS ? "Close" : "Try Again"}
             </button>

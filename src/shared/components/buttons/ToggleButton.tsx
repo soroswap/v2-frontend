@@ -19,7 +19,7 @@ export const ToggleButton = ({
       className={cn(
         className,
         "relative h-6 w-11 cursor-pointer rounded-full transition-colors",
-        isActive ? "bg-[#8866DD]" : "bg-[#23243a]",
+        isActive ? "bg-brand" : "bg-surface",
       )}
       {...props}
     >

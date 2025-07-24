@@ -50,7 +50,7 @@ export const Navbar = () => {
                 className={cn(
                   "rounded-full px-6 py-2 text-[20px] font-semibold transition-colors duration-200",
                   isActive
-                    ? "bg-[#8866DD] text-white shadow"
+                    ? "bg-brand text-white shadow"
                     : "bg-transparent text-[#E0E0E0] hover:bg-[#28243a]",
                 )}
                 target={link.external ? "_blank" : undefined}
@@ -65,7 +65,7 @@ export const Navbar = () => {
         <>
           <div className="absolute top-1/2 right-4 z-50 -translate-y-1/2 md:hidden">
             <button
-              className="btn btn-circle size-14 bg-[#232136]"
+              className="bg-surface-alt inline-flex size-14 items-center justify-center rounded-full"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
@@ -78,7 +78,7 @@ export const Navbar = () => {
               onClick={() => setIsMobileMenuOpen(false)}
             >
               <button
-                className="btn btn-circle absolute top-5 right-4 size-14 bg-[#232136]"
+                className="bg-surface-alt absolute top-5 right-4 flex size-14 cursor-pointer items-center justify-center rounded-full"
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsMobileMenuOpen(false);
@@ -91,7 +91,7 @@ export const Navbar = () => {
                 className="mt-8 flex w-full flex-col items-center gap-8"
                 onClick={(e) => e.stopPropagation()}
               >
-                <ThemeSwitch className="absolute top-5 right-22" />
+                <ThemeSwitch className="absolute top-7 right-22" />
                 {NAV_LINKS.map((link) => {
                   const isActive =
                     !link.external &&
@@ -103,7 +103,7 @@ export const Navbar = () => {
                       key={link.name}
                       className={cn(
                         "w-full text-center",
-                        isActive ? "bg-[#8866DD]" : "bg-[#0f1016]",
+                        isActive ? "bg-brand" : "bg-[#0f1016]",
                       )}
                     >
                       <Link

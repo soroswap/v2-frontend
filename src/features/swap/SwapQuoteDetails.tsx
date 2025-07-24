@@ -97,7 +97,7 @@ export const SwapQuoteDetails = ({
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between p-4 text-left transition-colors hover:bg-[#8866DD]/5"
+        className="hover:bg-brand/5 flex w-full items-center justify-between p-4 text-left transition-colors"
       >
         <span className="text-sm text-[#A0A3C4]">
           1 {sellToken.code} = {conversionRate.toFixed(6)} {buyToken.code}
@@ -166,7 +166,7 @@ export const SwapQuoteDetails = ({
               <span className="text-sm text-white">
                 {getExpectedOutput()} {buyToken.code}
               </span>
-              <div className="flex h-4 w-4 items-center justify-center rounded-full bg-[#8866DD]/20">
+              <div className="bg-brand/20 flex h-4 w-4 items-center justify-center rounded-full">
                 <span className="text-xs text-[#8866DD]">?</span>
               </div>
             </div>
