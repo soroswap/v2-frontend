@@ -34,7 +34,13 @@ export default function RootLayout({
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} bg-svg font-sans antialiased`}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="soroswap-theme"
+        >
           <UserProvider>
             <Navbar />
             {children}

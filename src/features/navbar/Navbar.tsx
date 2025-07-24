@@ -20,7 +20,12 @@ const NAV_LINKS = [
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const pathname = usePathname();
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
+
+  const logoSrc =
+    resolvedTheme === "dark"
+      ? "/SoroswapPurpleWhite.svg"
+      : "/SoroswapPurpleBlack.svg";
 
   return (
     <header className="bg-surface-page fixed top-0 left-0 z-50 h-25 w-full text-3xl">
@@ -28,23 +33,13 @@ export const Navbar = () => {
         {/* Logo */}
         <div className="flex max-h-[56px] min-h-[30px] max-w-[162px] min-w-[88px] items-center gap-3">
           <Link href="/">
-            {theme === "dark" ? (
-              <Image
-                src={`/SoroswapPurpleWhite.svg`}
-                alt="Soroswap"
-                width={162}
-                height={56}
-                className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain"
-              />
-            ) : (
-              <Image
-                src="/SoroswapPurpleBlack.svg"
-                alt="Soroswap"
-                width={162}
-                height={56}
-                className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain"
-              />
-            )}
+            <Image
+              src={logoSrc}
+              alt="Soroswap"
+              width={162}
+              height={56}
+              className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain"
+            />
           </Link>
         </div>
         {/* Nav Links */}
