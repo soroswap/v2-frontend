@@ -88,7 +88,7 @@ export default function SwapPage() {
     <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
       <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-xl text-white sm:text-2xl">Swap</p>
+          <p className="text-primary text-xl sm:text-2xl">Swap</p>
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
@@ -150,7 +150,7 @@ export default function SwapPage() {
                   sellToken.contract === buyToken.contract
                 }
                 onClick={onSwapClick}
-                className="bg-brand hover:bg-brand/80 relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:bg-[#2e303b] disabled:text-[#6d7179]"
+                className="bg-brand hover:bg-brand/80 text-primary relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:bg-[#2e303b] disabled:text-[#6d7179]"
               >
                 {!buyToken || !sellToken
                   ? "Select a token"

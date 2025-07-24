@@ -4,6 +4,7 @@ import { Inter, Darker_Grotesque } from "next/font/google";
 import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
 import "./globals.css";
+import { ThemeProvider } from "next-themes";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -29,14 +30,16 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} bg-svg font-sans antialiased`}
       >
-        <UserProvider>
-          <Navbar />
-          {children}
-        </UserProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <UserProvider>
+            <Navbar />
+            {children}
+          </UserProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

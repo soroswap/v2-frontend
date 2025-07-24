@@ -22,7 +22,7 @@ export const RotateArrowButton = ({
       )}
       {...props}
     >
-      <div className="flex items-center justify-center rounded-full border-4 border-[#181A25] bg-[#CFFFD9] p-2 transition-all duration-300 group-hover:bg-[#CFFFD9]/80">
+      <div className="flex items-center justify-center rounded-full border-[#181A25] bg-[#CFFFD9] p-2 transition-all duration-300 group-hover:bg-[#CFFFD9]/80">
         {isLoading ? (
           <div className="size-6 animate-spin rounded-full border-2 border-[#232136] border-t-transparent" />
         ) : (

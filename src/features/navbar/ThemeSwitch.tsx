@@ -1,50 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
+import { useTheme } from "next-themes";
 
 interface ThemeSwitchProps {
   className?: string;
 }
 
 export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
-  const [isDark, setIsDark] = useState<boolean>(false);
-
-  // Sync initial state with saved preference or system setting
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const stored = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia(
-      "(prefers-color-scheme: dark)",
-    ).matches;
-
-    const shouldUseDark = stored === "dark" || (!stored && prefersDark);
-
-    setIsDark(shouldUseDark);
-    document.documentElement.classList.toggle("dark", shouldUseDark);
-  }, []);
-
-  const toggleDark = () => {
-    setIsDark((prev) => {
-      const next = !prev;
-
-      // Apply/remove the `dark` class on <html>
-      document.documentElement.classList.toggle("dark", next);
-
-      // Persist user choice
-      localStorage.setItem("theme", next ? "dark" : "light");
-
-      return next;
-    });
-  };
+  const { setTheme, theme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
     <button
       type="button"
       aria-label="Toggle theme"
-      onClick={toggleDark}
+      onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
         "bg-surface-subtle hover:bg-surface-alt relative flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors duration-300",
         className,

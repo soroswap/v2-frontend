@@ -41,7 +41,7 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
     <div className="relative flex h-full w-full flex-col items-center justify-center">
       <button
         className={cn(
-          "bg-brand hover:bg-brand/80 relative flex h-14 cursor-pointer items-center rounded-2xl px-2 text-center text-[20px] font-bold",
+          "bg-brand hover:bg-brand/80 relative flex h-14 cursor-pointer items-center rounded-2xl px-2 text-center text-[20px] font-bold text-white",
           className,
         )}
         onClick={handleConnectWallet}
