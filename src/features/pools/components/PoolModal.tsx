@@ -61,7 +61,7 @@ export const PoolModal = ({
             href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-[#8866DD] transition-colors duration-200 hover:text-[#8866DD]/80"
+            className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
           >
             View on Stellar.Expert
           </a>
@@ -84,12 +84,12 @@ export const PoolModal = ({
   const isLoading = ![PoolStep.SUCCESS, PoolStep.ERROR].includes(currentStep);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="flex min-h-72 w-full max-w-md flex-col rounded-2xl border border-[#8866DD] bg-[#181A25] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-surface-page border-brand flex min-h-72 w-full max-w-md flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">
-              <div className="size-12 animate-spin rounded-full border-4 border-[#8866DD] border-t-transparent" />
+              <div className="border-brand size-12 animate-spin rounded-full border-4 border-t-transparent" />
             </div>
           )}
 
@@ -109,18 +109,18 @@ export const PoolModal = ({
             </div>
           )}
 
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-primary text-xl font-bold">
             {getStepTitle(currentStep)}
           </h2>
 
-          <div className="text-gray-400">
+          <div className="text-secondary">
             {getStepContent[currentStep as Exclude<PoolStep, PoolStep.IDLE>]}
           </div>
 
           {!isLoading && (
             <button
               onClick={onClose}
-              className="w-full cursor-pointer rounded-2xl bg-[#8866DD] px-4 py-3 font-medium text-white transition-colors hover:bg-[#8866DD]/80"
+              className="bg-brand hover:bg-brand/80 w-full cursor-pointer rounded-2xl px-4 py-3 font-medium text-white transition-colors"
             >
               {currentStep === PoolStep.SUCCESS ? "Close" : "Try Again"}
             </button>

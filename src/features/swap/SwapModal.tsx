@@ -56,11 +56,11 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
     [SwapStep.CREATE_TRUSTLINE]: (
       <div className="space-y-3">
         <div className="text-center">
-          <p className="font-medium text-white">
+          <p className="text-primary font-medium">
             {modalData?.actionData.description}
           </p>
           {modalData?.actionData.assetCode && (
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="text-secondary mt-1 text-sm">
               Token: {modalData.actionData.assetCode}
               {modalData.actionData.assetIssuer}
             </p>
@@ -80,7 +80,7 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
             href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block text-[#8866DD] transition-colors duration-200 hover:text-[#8866DD]/80"
+            className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
           >
             View on Stellar.Expert
           </a>
@@ -103,12 +103,12 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
   const isLoading = ![SwapStep.SUCCESS, SwapStep.ERROR].includes(currentStep);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="bg-surface flex min-h-72 w-full max-w-md flex-col rounded-2xl border border-[#8866DD] p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+      <div className="bg-surface-page border-brand flex min-h-72 w-full max-w-md flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">
-              <div className="size-12 animate-spin rounded-full border-4 border-[#8866DD] border-t-transparent" />
+              <div className="border-brand size-12 animate-spin rounded-full border-4 border-t-transparent" />
             </div>
           )}
 
@@ -128,11 +128,11 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
             </div>
           )}
 
-          <h2 className="text-xl font-bold text-white">
+          <h2 className="text-primary text-xl font-bold">
             {getStepTitle(currentStep)}
           </h2>
 
-          <div className="text-gray-400">
+          <div className="text-secondary">
             {getStepContent[currentStep as Exclude<SwapStep, SwapStep.IDLE>]}
           </div>
 

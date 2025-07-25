@@ -53,7 +53,7 @@ export const SwapSettingsModal = ({
       ? "text-red-400"
       : slippageLevel === "high"
         ? "text-yellow-400"
-        : "text-gray-400";
+        : "text-secondary";
 
   const handleSlippageModeChange = (mode: "auto" | "custom") => {
     setSwapSettings({
@@ -141,7 +141,7 @@ export const SwapSettingsModal = ({
                 "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 settings.slippageMode === "auto"
                   ? "bg-brand text-white"
-                  : "bg-[#23243a] text-gray-400 hover:bg-[#2a2b3f]",
+                  : "bg-surface text-secondary hover:bg-surface-hover",
               )}
             >
               Auto
@@ -152,7 +152,7 @@ export const SwapSettingsModal = ({
                 "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 settings.slippageMode === "custom"
                   ? "bg-brand text-white"
-                  : "bg-[#23243a] text-gray-400 hover:bg-[#2a2b3f]",
+                  : "bg-surface text-secondary hover:bg-surface-hover",
               )}
             >
               Custom
@@ -173,7 +173,7 @@ export const SwapSettingsModal = ({
                 }}
                 readOnly={settings.slippageMode === "auto"}
                 className={cn(
-                  "w-[70px] rounded-lg border border-transparent bg-[#23243a] p-2 text-center text-sm text-white outline-none",
+                  "bg-surface text-primary w-[70px] rounded-lg border border-transparent p-2 text-center text-sm outline-none",
                   settings.slippageMode === "auto" && "opacity-50",
                   slippageColor,
                 )}
@@ -181,7 +181,7 @@ export const SwapSettingsModal = ({
               />
               <span
                 className={cn(
-                  "pointer-events-none absolute inset-y-0 right-2 flex items-center text-sm text-gray-400",
+                  "text-secondary pointer-events-none absolute inset-y-0 right-2 flex items-center text-sm",
                   settings.slippageMode === "auto" && "opacity-50",
                   slippageColor,
                 )}
@@ -219,7 +219,7 @@ export const SwapSettingsModal = ({
             <ChevronDown
               size={24}
               className={cn(
-                "text-gray-400 transition-transform duration-500",
+                "text-secondary transition-transform duration-500",
                 isProtocolExpanded ? "rotate-180" : "rotate-0",
               )}
             />
