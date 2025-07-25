@@ -24,8 +24,8 @@ export const SoroSwapAllLiquidityPools = () => {
           return (
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="skeleton h-8 w-8 rounded-full" />
-                <div className="skeleton absolute top-0 left-3 h-8 w-8 rounded-full" />
+                <div className="skeleton size-8 rounded-full" />
+                <div className="skeleton absolute top-0 left-3 size-8 rounded-full" />
               </div>
               <div className="skeleton h-4 w-24" />
             </div>
@@ -46,7 +46,7 @@ export const SoroSwapAllLiquidityPools = () => {
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
-            <span className="font-semibold text-white">
+            <span className="text-primary font-semibold">
               {pool.tokenA}/{pool.tokenB}
             </span>
           </div>
@@ -57,13 +57,13 @@ export const SoroSwapAllLiquidityPools = () => {
       accessorKey: "tvl",
       header: ({ column }) => (
         <div className="flex items-center justify-end gap-2">
-          <span className="text-white">TVL</span>
+          <span className="text-primary">TVL</span>
           <ArrowUp
             className={cn(
-              "size-4 cursor-pointer text-white transition-transform duration-300",
+              "text-primary size-4 cursor-pointer transition-transform duration-300",
               column.getIsSorted() === "asc" && "text-brand rotate-0",
               column.getIsSorted() === "desc" && "text-brand rotate-180",
-              column.getIsSorted() === false && "text-white opacity-40",
+              column.getIsSorted() === false && "text-primary opacity-40",
             )}
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           />

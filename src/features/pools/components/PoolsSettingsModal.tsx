@@ -62,12 +62,12 @@ export const PoolsSettingsModal = ({
         <div className="flex h-full flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-medium text-[#A0A3C4]">
+              <span className="text-secondary text-lg font-medium">
                 Max slippage
               </span>
               <Info
                 size={14}
-                className="text-gray-400"
+                className="text-secondary"
                 data-tooltip-id="max-slippage-tooltip"
               />
               <Tooltip

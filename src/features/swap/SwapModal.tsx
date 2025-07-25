@@ -104,7 +104,7 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="flex min-h-72 w-full max-w-md flex-col rounded-2xl border border-[#8866DD] bg-[#181A25] p-6">
+      <div className="bg-surface flex min-h-72 w-full max-w-md flex-col rounded-2xl border border-[#8866DD] p-6">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">

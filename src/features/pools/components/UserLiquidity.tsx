@@ -36,8 +36,8 @@ export const UserLiquidity = () => {
           return (
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="skeleton h-8 w-8 rounded-full" />
-                <div className="skeleton absolute top-0 left-3 h-8 w-8 rounded-full" />
+                <div className="skeleton size-8 rounded-full" />
+                <div className="skeleton absolute top-0 left-3 size-8 rounded-full" />
               </div>
               <div className="skeleton h-4 w-24" />
             </div>
@@ -66,7 +66,7 @@ export const UserLiquidity = () => {
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
-            <span className="font-semibold text-white">
+            <span className="text-primary font-semibold">
               {displayTokenA}/{displayTokenB}
             </span>
           </div>
@@ -76,14 +76,14 @@ export const UserLiquidity = () => {
     {
       accessorKey: "userPosition",
       header: () => (
-        <span className="flex justify-end font-semibold text-white">
+        <span className="text-primary flex justify-end font-semibold">
           Position
         </span>
       ),
       cell: ({ row }) => {
         const pool = row.original;
         return (
-          <span className="flex justify-end font-semibold text-white">
+          <span className="text-primary flex justify-end font-semibold">
             {pool.userPosition ? (
               pool.userPosition.toString()
             ) : (
@@ -96,12 +96,12 @@ export const UserLiquidity = () => {
     {
       accessorKey: "tvl",
       header: () => (
-        <span className="flex justify-end font-semibold text-white">TVL</span>
+        <span className="text-primary flex justify-end font-semibold">TVL</span>
       ),
       cell: () => {
         // const pool = row.original;
         return (
-          <span className="flex justify-end font-semibold text-white">
+          <span className="text-primary flex justify-end font-semibold">
             <div className="skeleton h-4 w-12" />
           </span> //TODO: Calculate TVL correctly
         );
@@ -111,12 +111,14 @@ export const UserLiquidity = () => {
 
   return (
     <section className="mb-10">
-      <h2 className="mb-4 text-lg font-semibold text-white">Your liquidity</h2>
+      <h2 className="text-primary mb-4 text-lg font-semibold">
+        Your liquidity
+      </h2>
       <div>
         {/* Wallet not connected */}
         {!address && (
-          <div className="flex flex-col items-center gap-4 rounded-2xl border border-[#23243a] bg-[#10121A]/70 p-6 text-center">
-            <p className="text-sm text-[#A0A3C4]">
+          <div className="border-surface-hover bg-surface-alt flex flex-col items-center gap-4 rounded-2xl border p-6 text-center">
+            <p className="text-secondary text-sm">
               Connect to a wallet to view your liquidity.
             </p>
             <ConnectWallet className="w-full max-w-xs items-center justify-center" />
@@ -133,7 +135,7 @@ export const UserLiquidity = () => {
         {address &&
           !positionsLoading &&
           (!userPositions || userPositions.length === 0) && (
-            <p className="text-sm text-[#A0A3C4]">
+            <p className="text-secondary text-sm">
               You don&apos;t have liquidity positions yet.
             </p>
           )}

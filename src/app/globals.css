@@ -7,32 +7,36 @@
 @theme {
     /* --- Light Theme (Default) --- */
     --color-bg-page: #ffffff;
-    --color-text-primary: #171717;
+
 
     /* Sync legacy variables */
     --background: var(--color-bg-page);
     --foreground: var(--color-text-primary);
 
     /* --- Design System Color Tokens (Light) --- */
-    --color-brand: #8866DD;
+    --color-primary: #171717;
+    --color-secondary: #5f6368;
 
+    --color-brand: #8866DD;
     --color-surface-page: #ffffff;
     --color-surface: #f8f9fa;
+    --color-surface-hover: #f1f3f4;
+
     --color-surface-subtle: #f1f3f4;
     --color-surface-light: #ffffff;
     --color-surface-alt: #e8eaed;
+
     --color-surface-skeleton-start: #e8eaed;
     --color-surface-skeleton-mid: #f1f3f4;
     --color-surface-skeleton-end: #e8eaed;
 
-    --color-limiar-primary: #e8eaed;
-    --color-limiar-secondary: #dadce0;
+    /* --color-limiar-primary: #e8eaed;
+    --color-limiar-secondary: #dadce0; */
 
-    --color-primary: #171717;
-    --color-secondary: #5f6368;
-    --color-inverse: #ffffff;
+
+    /* --color-inverse: #ffffff;
     --color-accent-success: #137333;
-    --color-accent-warning: #ea4335;
+    --color-accent-warning: #ea4335; */
 
     --color-icon-muted: #9aa0a6;
 
@@ -45,33 +49,38 @@
 
   .dark {
     --color-bg-page: #0a0a0a;
-    --color-primary: #ededed;
 
     /* Sync legacy variables */
     --background: var(--color-bg-page);
     --foreground: var(--color-primary);
 
-      /* --- Design System Color Tokens --- */
-  --color-brand: #8866DD;
+    /* --- Design System Color Tokens --- */
+    --color-primary: #ededed;
+    --color-secondary: #A0A3C4;
+  
+    --color-brand: #8866DD;
+    --color-surface-page: #0f1016;
+    --color-surface: #181A25;
+    --color-surface-hover: #232136;
 
-  --color-surface-page: #0f1016;
-  --color-surface: #181A25;
-  --color-surface-subtle: #10121A;
-  --color-surface-light: #ffffff;
-  --color-surface-alt: #232136;
+    --color-surface-subtle: #10121A;
+    --color-surface-light: #ffffff;
+    --color-surface-alt: #232136;
+    
   --color-surface-skeleton-start: #23243A;
   --color-surface-skeleton-mid: #2A2B42;
   --color-surface-skeleton-end: #23243A;
 
 
-  --color-limiar-primary: #23243A;
-  --color-limiar-secondary: #35374A;
+  /* --color-limiar-primary: #23243A;
+  --color-limiar-secondary: #35374A; */
 
-  --color-primary: #ededed;
-  --color-secondary: #A0A3C4;
-  --color-inverse: #171717;
-  --color-accent-success: #CFFFD9;
-  --color-accent-warning: #F88F6D;
+
+  /* --color-inverse: #171717; */
+  /* --color-accent-success: #CFFFD9;
+  --color-accent-warning: #F88F6D; */
+
+  --color-icon-muted: #A0A3C4;
 
   /* Legacy variables mapped to tokens for backward compatibility */
   --background: var(--color-bg-page);

@@ -9,15 +9,15 @@ import { xlmTokenList } from "@/shared/lib/constants/tokenList";
 export default function PoolsPage() {
   return (
     <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center px-4 md:px-1">
-      <div className="flex w-full max-w-7xl flex-col rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+      <div className="bg-surface flex w-full max-w-7xl flex-col rounded-2xl border border-[#8866DD] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <span className="text-xl text-white sm:text-2xl">Pools</span>
+          <span className="text-primary text-xl sm:text-2xl">Pools</span>
 
           {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
             href={`/pools/add-liquidity/${xlmTokenList[0].assets[0].contract}/`}
-            className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
+            className="bg-brand/20 hover:bg-brand/30 text-brand inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium"
           >
             <span className="text-lg leading-none">
               <PlusIcon />

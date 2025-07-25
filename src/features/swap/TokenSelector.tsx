@@ -130,7 +130,7 @@ export const TokenSelector = ({
       <button
         onClick={() => setIsOpen(true)}
         className={cn(
-          "flex h-[43.5px] min-w-fit cursor-pointer items-center gap-2 rounded-full border border-[#35374a] bg-[#23243a] px-1.5 py-1.5 text-xs font-bold whitespace-nowrap text-white hover:bg-[#23243a]/80 focus:outline-none sm:text-sm",
+          "border-surface-alt bg-surface-alt text-primary hover:bg-surface-hover flex h-[43.5px] min-w-fit cursor-pointer items-center gap-2 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap focus:outline-none sm:text-sm",
           current ? "sm:px-1.5" : "sm:px-4",
         )}
       >
@@ -143,12 +143,14 @@ export const TokenSelector = ({
               code={current?.code}
               size={29.5}
             />
-            <span className="text-sm font-bold text-white">{current.code}</span>
+            <span className="text-primary text-sm font-bold">
+              {current.code}
+            </span>
           </>
         ) : (
-          <span className="text-sm font-bold text-white">{placeholder}</span>
+          <span className="text-primary text-sm font-bold">{placeholder}</span>
         )}
-        <ChevronDown className="size-4" />
+        <ChevronDown className="text-primary size-4" />
       </button>
       {isOpen && (
         <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
@@ -158,13 +160,13 @@ export const TokenSelector = ({
             onClick={() => setIsOpen(false)}
           />
           {/* Sheet */}
-          <div className="relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border border-[#35374a] bg-[#181A25] p-4 sm:max-w-sm">
+          <div className="border-surface-alt bg-surface relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border p-4 sm:max-w-sm">
             {/* Header */}
             <div className="flex items-center justify-between">
-              <p className="text-lg font-medium text-white">Select a token</p>
+              <p className="text-primary text-lg font-medium">Select a token</p>
               <button
                 onClick={() => setIsOpen(false)}
-                className="cursor-pointer rounded-full p-2 leading-none text-white/70 hover:bg-[#23243a]/80 hover:text-white"
+                className="text-secondary hover:bg-surface-alt hover:text-primary cursor-pointer rounded-full p-2 leading-none"
               >
                 <XIcon className="size-4" />
               </button>
@@ -175,7 +177,7 @@ export const TokenSelector = ({
                 type="text"
                 autoFocus
                 placeholder="Search name or paste address"
-                className="w-full rounded-lg border border-[#35374a] bg-[#23243a] px-3 py-2 text-sm text-white placeholder:text-white/70 focus:outline-none"
+                className="border-surface-alt bg-surface-alt text-primary placeholder:text-secondary w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                 value={searchValue}
                 onChange={(e) => {
                   handleSearch(e.target.value);
@@ -194,10 +196,10 @@ export const TokenSelector = ({
                     className={cn(
                       "flex min-h-14 w-full items-center gap-3 rounded-lg px-3 py-2 transition",
                       isDisabled
-                        ? "cursor-not-allowed bg-[#23243a]/80 text-white/40"
+                        ? "bg-surface-alt/80 text-secondary cursor-not-allowed"
                         : isOtherSelected
-                          ? "cursor-pointer border border-[#8866DD]/20 bg-[#23243a]/40 text-white"
-                          : "cursor-pointer text-white hover:bg-[#23243a]",
+                          ? "border-brand/20 bg-surface-alt/40 text-primary cursor-pointer border"
+                          : "text-primary hover:bg-surface-alt cursor-pointer",
                     )}
                     disabled={isDisabled}
                   >
@@ -209,18 +211,18 @@ export const TokenSelector = ({
                       size={28}
                     />
                     <div className="flex flex-col gap-1 text-left font-medium">
-                      <p className="text-sm font-bold text-white">
+                      <p className="text-primary text-sm font-bold">
                         {token.code}
                       </p>
-                      <p className="text-xs text-white/70">{token.domain}</p>
+                      <p className="text-secondary text-xs">{token.domain}</p>
                     </div>
                   </button>
                 );
               })}
 
               {isSearchingAsset && (
-                <div className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-white/70">
-                  <div className="size-4 animate-spin rounded-full border-2 border-white/20 border-t-white/70" />
+                <div className="text-secondary flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2">
+                  <div className="border-secondary/20 border-t-secondary/70 size-4 animate-spin rounded-full border-2" />
                   <span className="text-sm">Searching for asset...</span>
                 </div>
               )}
@@ -230,7 +232,7 @@ export const TokenSelector = ({
                   onClick={() => handleSelectToken(userCustomAsset)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-3 py-2 transition",
-                    "cursor-pointer border border-[#7055b5] bg-[#7055b5] text-white hover:bg-[#7055b5]/80",
+                    "border-brand bg-brand text-primary hover:bg-brand/80 cursor-pointer",
                   )}
                 >
                   <TokenIcon
@@ -241,10 +243,10 @@ export const TokenSelector = ({
                     size={28}
                   />
                   <div className="flex flex-col gap-1 text-left font-medium">
-                    <p className="text-sm font-bold text-white">
+                    <p className="text-primary text-sm font-bold">
                       {userCustomAsset.code}
                     </p>
-                    <p className="text-xs text-white/70">
+                    <p className="text-secondary text-xs">
                       {userCustomAsset.domain || "Custom Token"}
                     </p>
                   </div>
@@ -264,10 +266,10 @@ export const TokenSelector = ({
               <div>
                 <TriangleAlert className="size-16 text-red-400" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Warning</h3>
+              <h3 className="text-primary text-lg font-semibold">Warning</h3>
             </div>
 
-            <p className="flex text-center text-sm text-gray-400">
+            <p className="text-secondary flex text-center text-sm">
               This token isn&apos;t traded on leading U.S. centralized exchanges
               or frequently swapped on Soroswap. Always conduct your own
               research before trading.
@@ -276,7 +278,7 @@ export const TokenSelector = ({
             <div className="flex gap-2">
               <TheButton
                 onClick={handleConfirmAddToken}
-                className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
+                className="bg-brand hover:bg-brand/80 text-primary relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold"
               >
                 I understand
               </TheButton>

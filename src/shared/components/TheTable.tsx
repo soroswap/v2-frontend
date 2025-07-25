@@ -20,7 +20,7 @@ import { cn } from "@/shared/lib/utils/cn";
 const tableVariants = cva("w-full text-left", {
   variants: {
     variant: {
-      default: "text-white",
+      default: "text-primary",
       simple: "text-white border-collapse",
       compact: "text-white text-sm",
     },
@@ -49,7 +49,7 @@ const headerVariants = cva(
 const rowVariants = cva("border-b border-[#23243a] transition-colors", {
   variants: {
     variant: {
-      default: "hover:bg-[#10121A]",
+      default: "hover:bg-surface-hover",
       simple: "hover:bg-[#10121A]/70",
       compact: "hover:bg-[#10121A] text-sm",
     },

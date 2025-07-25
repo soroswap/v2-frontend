@@ -180,7 +180,7 @@ export default function RemoveLiquidityPage() {
   if (positionsLoading) {
     return (
       <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-        <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+        <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
           <div className="skeleton h-64 w-full" />
         </div>
       </main>
@@ -189,16 +189,16 @@ export default function RemoveLiquidityPage() {
 
   return (
     <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-      <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+      <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <Link href="/pools">
-            <ArrowLeft />
+            <ArrowLeft className="text-primary" />
           </Link>
-          <p className="text-xl text-white sm:text-2xl">Remove Liquidity</p>
+          <p className="text-primary text-xl sm:text-2xl">Remove Liquidity</p>
           <button
             onClick={() => setIsSettingsModalOpen(true)}
-            className="cursor-pointer rounded-full p-1 hover:bg-[#8866DD]/20"
+            className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
           >
             <Image
               src="/settingsIcon.svg"
@@ -212,10 +212,10 @@ export default function RemoveLiquidityPage() {
         {/* Liquidity Percentage Slider */}
         <div className="mb-6">
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-lg font-semibold text-white">
+            <p className="text-primary text-lg font-semibold">
               Liquidity Percentage
             </p>
-            <p className="text-lg font-semibold text-white">
+            <p className="text-primary text-lg font-semibold">
               {liquidityPercentage}%
             </p>
           </div>
@@ -228,9 +228,9 @@ export default function RemoveLiquidityPage() {
               max="100"
               value={liquidityPercentage}
               onChange={(e) => setLiquidityPercentage(Number(e.target.value))}
-              className="slider h-2 w-full appearance-none rounded-lg bg-[#23243A] outline-none"
+              className="slider bg-surface-alt h-2 w-full appearance-none rounded-lg outline-none"
               style={{
-                background: `linear-gradient(to right, #8866DD 0%, #8866DD ${liquidityPercentage}%, #23243A ${liquidityPercentage}%, #23243A 100%)`,
+                background: `linear-gradient(to right, var(--color-brand) 0%, var(--color-brand) ${liquidityPercentage}%, var(--color-surface-alt) ${liquidityPercentage}%, var(--color-surface-alt) 100%)`,
               }}
             />
           </div>
@@ -243,8 +243,8 @@ export default function RemoveLiquidityPage() {
                 onClick={() => handlePercentageChange(percentage)}
                 className={`cursor-pointer rounded-lg px-3 py-1 text-sm font-medium transition-colors ${
                   liquidityPercentage === percentage
-                    ? "bg-[#8866DD] text-white"
-                    : "bg-[#23243A] text-[#A0A3C4] hover:bg-[#8866DD]/20"
+                    ? "bg-brand text-primary"
+                    : "bg-surface-alt text-secondary hover:bg-brand/20"
                 }`}
               >
                 {percentage}%
@@ -255,8 +255,8 @@ export default function RemoveLiquidityPage() {
 
         {/* Receive Section */}
         <div className="mb-6">
-          <h3 className="mb-3 text-lg font-semibold text-white">Receive</h3>
-          <div className="rounded-lg border border-[#23243A] bg-[#10121A]/70 p-4">
+          <h3 className="text-primary mb-3 text-lg font-semibold">Receive</h3>
+          <div className="bg-surface-subtle border-surface-alt rounded-lg border p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <TokenIcon
@@ -264,7 +264,7 @@ export default function RemoveLiquidityPage() {
                   alt={tokenA?.code || "Token A"}
                   className="size-8 rounded-full"
                 />
-                <span className="font-medium text-white">
+                <span className="text-primary font-medium">
                   {tokenA?.code || ""} {amountA}
                 </span>
               </div>
@@ -276,7 +276,7 @@ export default function RemoveLiquidityPage() {
                   alt={tokenB?.code || "Token B"}
                   className="size-8 rounded-full"
                 />
-                <span className="font-medium text-white">
+                <span className="text-primary font-medium">
                   {tokenB?.code || ""} {amountB}
                 </span>
               </div>
@@ -286,7 +286,7 @@ export default function RemoveLiquidityPage() {
 
         {/* Slippage Tolerance */}
         <div className="mb-6">
-          <span className="text-sm text-[#A0A3C4]">Slippage Tolerance 1%</span>
+          <span className="text-secondary text-sm">Slippage Tolerance 1%</span>
         </div>
 
         {/* Remove Button */}
@@ -295,7 +295,7 @@ export default function RemoveLiquidityPage() {
             <TheButton
               disabled={liquidityPercentage === 0 || isSwapLoading}
               onClick={handleRemoveLiquidityClick}
-              className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
+              className="bg-brand hover:bg-brand/80 text-primary disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
             >
               {isSwapLoading ? "Removing..." : "Remove"}
             </TheButton>

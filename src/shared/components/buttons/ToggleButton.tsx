@@ -18,14 +18,14 @@ export const ToggleButton = ({
       onClick={onClick}
       className={cn(
         className,
-        "relative h-6 w-11 cursor-pointer rounded-full transition-colors",
+        "border-brand relative h-6 w-11 cursor-pointer rounded-full border transition-colors",
         isActive ? "bg-brand" : "bg-surface",
       )}
       {...props}
     >
       <span
         className={cn(
-          "absolute top-1 left-0 size-4 rounded-full bg-white transition-transform",
+          "absolute top-1 left-0 size-4 rounded-full bg-black transition-transform dark:bg-white",
           isActive ? "translate-x-5" : "translate-x-1",
         )}
       />

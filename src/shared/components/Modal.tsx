@@ -73,7 +73,7 @@ export const Modal = ({
       <div
         ref={modalRef}
         className={cn(
-          "flex w-full flex-col gap-4 rounded-2xl border border-[#8866DD] bg-[#181A25] p-6 shadow-xl",
+          "bg-surface-page border-brand flex w-full flex-col gap-4 rounded-2xl border p-6 shadow-xl",
           sizeClasses[size],
           className,
         )}
@@ -88,12 +88,12 @@ export const Modal = ({
             )}
           >
             {title && (
-              <h2 className="text-xl font-semibold text-white">{title}</h2>
+              <h2 className="text-primary text-xl font-semibold">{title}</h2>
             )}
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-brand/20 hover:text-white"
+                className="hover:bg-brand/20 hover:text-primary cursor-pointer rounded-full p-1 text-gray-400 transition-colors"
                 aria-label="Close modal"
               >
                 <X size={20} />
@@ -102,7 +102,7 @@ export const Modal = ({
           </div>
         )}
 
-        <div className="text-white">{children}</div>
+        <div>{children}</div>
       </div>
     </div>
   );

@@ -105,15 +105,15 @@ export default function PoolsAddLiquidityPage() {
 
   return (
     <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-      <div className="w- flex max-w-[480px] flex-col gap-2 rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+      <div className="border-brand bg-surface flex w-full max-w-[480px] flex-col gap-2 rounded-2xl border p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
           <Link href="/pools">
-            <ArrowLeft />
+            <ArrowLeft className="text-primary" />
           </Link>
-          <p className="text-xl text-white sm:text-2xl">Add Liquidity</p>
+          <p className="text-primary text-xl sm:text-2xl">Add Liquidity</p>
           <button
             onClick={() => setIsSettingsModalOpen(true)}
-            className="cursor-pointer rounded-full p-1 hover:bg-[#8866DD]/20"
+            className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
           >
             <Image
               src="/settingsIcon.svg"
@@ -123,12 +123,12 @@ export default function PoolsAddLiquidityPage() {
             />
           </button>
         </div>
-        <div className="flex flex-col gap-2 rounded-md bg-[#181a25]/80 p-2">
-          <p className="text-sm text-white">
+        <div className="bg-surface-subtle flex flex-col gap-2 rounded-md p-2">
+          <p className="text-primary text-sm">
             <strong>Tip:</strong> When you add liquidity, you will receive LP
             tokens representing your position.
           </p>
-          <p className="text-sm text-white">
+          <p className="text-primary text-sm">
             These tokens automatically earn fees proportional to your share of
             the pool. Can be redeemed at any time.
           </p>
@@ -151,7 +151,7 @@ export default function PoolsAddLiquidityPage() {
             />
 
             <div className="flex items-center justify-center">
-              <PlusIcon size={24} />
+              <PlusIcon size={24} className="text-primary" />
             </div>
           </div>
 
@@ -179,7 +179,7 @@ export default function PoolsAddLiquidityPage() {
                   !TOKEN_A || !TOKEN_B || TOKEN_A.contract === TOKEN_B.contract
                 }
                 onClick={onAddLiquidityPool}
-                className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
+                className="bg-brand hover:bg-brand/80 text-primary disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
               >
                 {!TOKEN_A || !TOKEN_B
                   ? "Select a token"

@@ -105,12 +105,12 @@ export const SwapSettingsModal = ({
         <div className="flex h-full flex-col gap-2">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-medium text-[#A0A3C4]">
+              <span className="text-secondary text-lg font-medium">
                 Max slippage
               </span>
               <Info
                 size={14}
-                className="text-gray-400"
+                className="text-secondary"
                 data-tooltip-id="max-slippage-tooltip"
               />
               <Tooltip id="max-slippage-tooltip">
@@ -199,12 +199,12 @@ export const SwapSettingsModal = ({
             className="flex w-full items-center justify-between"
           >
             <div className="flex items-center gap-2">
-              <span className="text-lg font-medium text-[#A0A3C4]">
+              <span className="text-secondary text-lg font-medium">
                 Protocols
               </span>
               <Info
                 size={14}
-                className="text-gray-400"
+                className="text-secondary"
                 data-tooltip-id="protocols-tooltip"
               />
               <Tooltip id="protocols-tooltip">
@@ -233,14 +233,14 @@ export const SwapSettingsModal = ({
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-[#A0A3C4]/70">
+                    <span className="text-secondary text-sm">
                       {protocolInfo[protocol].name}
                     </span>
                     <a
                       href={protocolInfo[protocol].url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-400 transition-colors hover:text-white"
+                      className="text-secondary hover:text-primary transition-colors"
                     >
                       <ExternalLink size={12} />
                     </a>
