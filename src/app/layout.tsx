@@ -1,9 +1,9 @@
+import "./globals.css";
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
 import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
-import "./globals.css";
 import { ThemeProvider } from "next-themes";
 
 const interSans = Inter({
