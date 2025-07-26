@@ -62,8 +62,9 @@ export default function RemoveLiquidityPage() {
     usePoolsController({
       initialTokenAAddress: tokenAAddress,
       initialTokenBAddress: tokenBAddress,
-      onSuccess: () => {
-        console.log("Remove liquidity success");
+      onSuccess: (result: PoolResult) => {
+        console.log("Remove liquidity success", result);
+        setRemoveLiquidityResult(result);
         setIsPoolModalOpen(true);
       },
       onError: (error: PoolError) => {
@@ -184,7 +185,61 @@ export default function RemoveLiquidityPage() {
     return (
       <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
         <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
-          <div className="skeleton h-64 w-full" />
+          {/* Header Skeleton */}
+          <div className="mb-4 flex items-center justify-between">
+            <div className="skeleton size-6 rounded-full" />
+            <div className="skeleton h-8 w-40 rounded-lg" />
+            <div className="skeleton size-6 rounded-full" />
+          </div>
+
+          {/* Liquidity Percentage Slider Skeleton */}
+          <div className="mb-6">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="skeleton h-6 w-32 rounded-lg" />
+              <div className="skeleton h-6 w-12 rounded-lg" />
+            </div>
+
+            {/* Slider Skeleton */}
+            <div className="relative mb-4">
+              <div className="skeleton h-2 w-full rounded-lg" />
+            </div>
+
+            {/* Quick select buttons Skeleton */}
+            <div className="flex justify-between">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="skeleton h-8 w-12 rounded-lg" />
+              ))}
+            </div>
+          </div>
+
+          {/* Receive Section Skeleton */}
+          <div className="mb-6">
+            <div className="skeleton mb-3 h-6 w-16 rounded-lg" />
+            <div className="bg-surface-subtle border-surface-alt rounded-lg border p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="skeleton size-8 rounded-full" />
+                  <div className="skeleton h-5 w-24 rounded-lg" />
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="skeleton size-8 rounded-full" />
+                  <div className="skeleton h-5 w-24 rounded-lg" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Slippage Tolerance Skeleton */}
+          <div className="mb-6">
+            <div className="skeleton h-4 w-32 rounded-lg" />
+          </div>
+
+          {/* Button Skeleton */}
+          <div className="flex flex-col gap-2">
+            <div className="skeleton h-14 w-full rounded-2xl" />
+          </div>
         </div>
       </main>
     );

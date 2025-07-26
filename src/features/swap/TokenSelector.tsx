@@ -276,10 +276,7 @@ export const TokenSelector = ({
             </p>
 
             <div className="flex gap-2">
-              <TheButton
-                onClick={handleConfirmAddToken}
-                className="bg-brand hover:bg-brand/80 text-primary relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold"
-              >
+              <TheButton onClick={handleConfirmAddToken} className="text-white">
                 I understand
               </TheButton>
             </div>
