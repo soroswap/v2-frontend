@@ -43,7 +43,7 @@ export const Navbar = () => {
           </Link>
         </div>
         {/* Nav Links */}
-        <div className="bg-surface ml-8 hidden items-center gap-2 rounded-full px-2 py-1 md:flex">
+        <div className="bg-surface hidden items-center gap-2 rounded-full px-2 py-1 sm:flex sm:justify-center md:flex">
           {NAV_LINKS.map((link) => {
             const isActive =
               !link.external &&
@@ -55,7 +55,7 @@ export const Navbar = () => {
                 key={link.name}
                 href={link.href}
                 className={cn(
-                  "rounded-full px-6 py-2 text-[20px] font-semibold transition-colors duration-200",
+                  "rounded-full px-6 py-2 text-xl font-semibold transition-colors duration-200",
                   isActive
                     ? "bg-brand text-white shadow"
                     : "hover:bg-brand/20 text-primary bg-transparent",
@@ -131,7 +131,7 @@ export const Navbar = () => {
                   );
                 })}
               </ul>
-              <ConnectWallet className="mt-10 flex w-[90%] justify-center" />
+              <ConnectWallet className="flex w-[90%] justify-center" />
             </div>
           )}
         </>
