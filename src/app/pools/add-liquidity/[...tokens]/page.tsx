@@ -1,9 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import Image from "next/image";
 import { useState, useCallback, MouseEvent, useEffect } from "react";
-import { TheButton, ConnectWallet } from "@/shared/components/buttons";
+import {
+  TheButton,
+  ConnectWallet,
+  SettingsButton,
+} from "@/shared/components/buttons";
 import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
 import { PoolsSettingsModal } from "@/features/pools/components/PoolsSettingsModal";
@@ -111,17 +114,7 @@ export default function PoolsAddLiquidityPage() {
             <ArrowLeft className="text-primary" />
           </Link>
           <p className="text-primary text-xl sm:text-2xl">Add Liquidity</p>
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
-          >
-            <Image
-              src="/settingsIcon.svg"
-              alt="Settings"
-              width={38}
-              height={38}
-            />
-          </button>
+          <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
         <div className="bg-surface-subtle flex flex-col gap-2 rounded-md p-2">
           <p className="text-primary text-sm">

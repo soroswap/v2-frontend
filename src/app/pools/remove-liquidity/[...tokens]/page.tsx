@@ -1,9 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState, useCallback, MouseEvent, useEffect } from "react";
-import { TheButton, ConnectWallet } from "@/shared/components/buttons";
+import {
+  TheButton,
+  ConnectWallet,
+  SettingsButton,
+} from "@/shared/components/buttons";
 import { useUserContext } from "@/contexts";
 import { PoolsSettingsModal } from "@/features/pools/components/PoolsSettingsModal";
 import { ArrowLeft } from "lucide-react";
@@ -196,17 +199,7 @@ export default function RemoveLiquidityPage() {
             <ArrowLeft className="text-primary" />
           </Link>
           <p className="text-primary text-xl sm:text-2xl">Remove Liquidity</p>
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
-          >
-            <Image
-              src="/settingsIcon.svg"
-              alt="Settings"
-              width={38}
-              height={38}
-            />
-          </button>
+          <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
 
         {/* Liquidity Percentage Slider */}

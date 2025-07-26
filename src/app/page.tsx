@@ -1,12 +1,12 @@
 "use client";
 
-import Image from "next/image";
 import { cn } from "@/shared/lib/utils/cn";
 import { useState, useCallback, MouseEvent } from "react";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
+  SettingsButton,
 } from "@/shared/components/buttons";
 import { SwapPanel, SwapModal, SwapSettingsModal } from "@/features/swap";
 import { useUserContext } from "@/contexts";
@@ -89,17 +89,7 @@ export default function SwapPage() {
       <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
           <p className="text-primary text-xl sm:text-2xl">Swap</p>
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="hover:bg-brand/20 cursor-pointer rounded-full p-1"
-          >
-            <Image
-              src="/settingsIcon.svg"
-              alt="Settings"
-              width={38}
-              height={38}
-            />
-          </button>
+          <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
 
         <div className="flex flex-col gap-2">
