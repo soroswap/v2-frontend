@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
-import { PoolStep } from "../hooks/usePool";
+import { PoolStep } from "@/features/pools/hooks/usePool";
 
 type LiquidityOperation = "add" | "remove";
 

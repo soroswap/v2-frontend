@@ -34,8 +34,8 @@ export const CopyAndPasteButton = ({
       onClick={handleCopy}
       disabled={disabled || !textToCopy}
       className={cn(
-        "flex cursor-pointer items-center justify-center rounded-lg p-2 transition-all duration-200",
-        "bg-[#23243a] hover:bg-[#2a2b42] active:scale-95",
+        "group flex cursor-pointer items-center justify-center rounded-lg p-2 transition-all duration-200",
+        "bg-surface-page hover:bg-surface-alt active:scale-95",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className,
       )}
@@ -44,7 +44,7 @@ export const CopyAndPasteButton = ({
       {isCopied ? (
         <Check className="size-4 text-green-500" />
       ) : (
-        <Copy className="size-4 text-gray-400 transition-colors hover:text-white" />
+        <Copy className="group-hover:text-primary text-secondary size-4 transition-colors" />
       )}
     </button>
   );
