@@ -24,6 +24,8 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
 }: SwapModalProps<T>) => {
   console.log("currentStep = ", currentStep);
   console.log("modalData = ", modalData);
+  console.log("SwapModal error = ", error);
+  console.log("transactionHash = ", transactionHash);
 
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {

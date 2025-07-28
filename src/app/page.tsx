@@ -160,7 +160,7 @@ export default function SwapPage() {
               resetSwap();
             }}
             error={swapError || undefined}
-            transactionHash={swapResult?.txHash}
+            transactionHash={swapResult?.txHash || swapResult?.hash}
             modalData={modalData}
           />
         )}
