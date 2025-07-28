@@ -3,13 +3,25 @@
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
 interface ThemeSwitchProps {
   className?: string;
 }
 
 export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
-  const { setTheme, theme } = useTheme();
+  const [mounted, setMounted] = useState<boolean>(false);
+  const { theme, setTheme } = useTheme();
+
+  // useEffect only runs on the client, so now we can safely show the UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
   const isDark = theme === "dark";
 
   return (
