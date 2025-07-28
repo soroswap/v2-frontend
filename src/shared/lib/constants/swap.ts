@@ -9,5 +9,6 @@ export const DEFAULT_SWAP_SETTINGS: SwapSettings = {
     SupportedProtocols.AQUA,
     SupportedProtocols.SOROSWAP,
     SupportedProtocols.PHOENIX,
+    SupportedProtocols.SDEX,
   ],
 };
