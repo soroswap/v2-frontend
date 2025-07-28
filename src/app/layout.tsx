@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${interSans.variable} ${darkerGrotesque.variable} bg-svg font-sans antialiased`}
+        className={`${interSans.variable} ${darkerGrotesque.variable} bg-main font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"

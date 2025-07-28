@@ -115,11 +115,15 @@ body {
   border-radius: 0.375rem;
 }
 
-.bg-svg {
-  background-image: url('/bg.svg');
+.bg-main {
+  background-image: url('/bg-white.svg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.dark .bg-main {
+  background-image: url('/bg.svg');
 }
 
 /* Hide number input spinners for all browsers */
