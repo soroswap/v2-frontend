@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemeSwitch } from "@/features/navbar";
 import { ConnectWallet } from "@/shared/components/buttons";
 import { usePathname } from "next/navigation";
@@ -19,11 +19,16 @@ const NAV_LINKS = [
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+  const [mounted, setMounted] = useState<boolean>(false);
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const logoSrc =
-    resolvedTheme === "dark"
+    mounted && resolvedTheme === "dark"
       ? "/SoroswapPurpleWhite.svg"
       : "/SoroswapPurpleBlack.svg";
 
