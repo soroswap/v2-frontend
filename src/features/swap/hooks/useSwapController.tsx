@@ -147,7 +147,7 @@ export function useSwapController({
       protocols: swapSettings.protocols,
       parts: 10,
       slippageBps: slippageBps(swapSettings.customSlippage),
-      assetList: [SupportedAssetLists.SOROSWAP],
+      assetList: [SupportedAssetLists.SOROSWAP], // TODO: when user add an custom asset , So we  don't have the assset from the soroswap we need to disable this
       maxHops: 2,
     };
 
