@@ -7,6 +7,8 @@ import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 interface SendTransactionResponse {
   status: string;
   txHash: string;
+  hash?: string;
+  successful?: boolean;
   latestLedger: number;
   latestLedgerCloseTime: string;
   oldestLedger: number;
