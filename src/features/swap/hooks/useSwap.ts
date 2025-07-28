@@ -118,6 +118,7 @@ export function useSwap(options?: UseSwapOptions) {
 
           // Prevent infinite recursion
           if (retryCount > 2) {
+            //TODO: Handle better this.
             handleError(
               SwapStep.CREATE_TRUSTLINE,
               "Failed to create trustline after multiple attempts",
