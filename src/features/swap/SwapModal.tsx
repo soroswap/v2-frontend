@@ -54,18 +54,20 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
       </div>
     ),
     [SwapStep.CREATE_TRUSTLINE]: (
-      <div className="space-y-3">
-        <div className="text-center">
-          <p className="text-primary font-medium">
-            {modalData?.actionData.description}
-          </p>
-          {modalData?.actionData.assetCode && (
-            <p className="text-secondary mt-1 text-sm">
-              Token: {modalData.actionData.assetCode}
+      <div className="flex flex-col items-center space-y-3 text-center">
+        <p className="text-primary leading-relaxed font-medium">
+          {modalData?.actionData.description}
+        </p>
+        {modalData?.actionData.assetCode && (
+          <div className="text-secondary text-sm">
+            <span className="font-medium">Token:</span>
+            <br />
+            <span className="font-mono break-all">
+              {modalData.actionData.assetCode}
               {modalData.actionData.assetIssuer}
-            </p>
-          )}
-        </div>
+            </span>
+          </div>
+        )}
       </div>
     ),
     [SwapStep.SENDING_TRANSACTION]: (
@@ -128,11 +130,11 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
             </div>
           )}
 
-          <h2 className="text-primary text-xl font-bold">
+          <h2 className="text-primary flex text-xl font-bold">
             {getStepTitle(currentStep)}
           </h2>
 
-          <div className="text-secondary">
+          <div className="text-secondary flex w-fit flex-col items-center">
             {getStepContent[currentStep as Exclude<SwapStep, SwapStep.IDLE>]}
           </div>
 
