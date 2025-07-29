@@ -8,7 +8,7 @@ import { xlmTokenList } from "@/shared/lib/constants/tokenList";
 
 export default function PoolsPage() {
   return (
-    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center px-4 md:px-1">
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center px-4 py-10 md:px-1">
       <div className="bg-surface flex w-full max-w-7xl flex-col rounded-2xl border border-[#8866DD] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
