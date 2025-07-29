@@ -87,7 +87,7 @@ export const UserPoolModal = ({
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>LP Balance</span>
-            <span>-</span>
+            <span>{rowData.userPosition}</span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
