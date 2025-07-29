@@ -133,7 +133,7 @@ export function usePools() {
         status: "Active",
       } as Pool;
     });
-  }, [remotePools, tokenMap, priceMap]);
+  }, [remotePools, tokenMap, priceMap, pools]);
 
   return {
     pools: enrichedPools,
