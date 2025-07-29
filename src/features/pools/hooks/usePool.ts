@@ -2,8 +2,6 @@
 
 import { useUserContext } from "@/contexts";
 import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
-import { STELLAR } from "@/shared/lib/environmentVars";
-import { kit } from "@/shared/lib/server/wallet";
 import {
   AddLiquidityRequest,
   LiquidityResponse,
@@ -53,7 +51,7 @@ export function usePool(options?: UsePoolOptions) {
   const [currentStep, setCurrentStep] = useState<PoolStep>(PoolStep.IDLE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<PoolError | null>(null);
-  const { address: userAddress } = useUserContext();
+  const { address: userAddress, signTransaction: signTransactionFromContext } = useUserContext();
 
   /* -------------------------------------------------------------- */
   /* Helpers                                                         */
@@ -135,13 +133,9 @@ export function usePool(options?: UsePoolOptions) {
   /* 2) Sign transaction with connected wallet */
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
-      const { signedTxXdr } = await kit.signTransaction(xdr, {
-        address: userAddress,
-        networkPassphrase: STELLAR.WALLET_NETWORK,
-      });
-      return signedTxXdr;
+      return await signTransactionFromContext(xdr, userAddress);
     },
-    [],
+    [signTransactionFromContext],
   );
 
   /* 3) Broadcast to Soroban/Stellar network */

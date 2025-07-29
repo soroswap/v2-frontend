@@ -1,10 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { STELLAR } from "@/shared/lib/environmentVars";
-import { kit } from "@/shared/lib/server/wallet";
 import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
+import { useUserContext } from "@/contexts";
 
 export enum SwapStep {
   IDLE = "IDLE",
@@ -68,6 +67,7 @@ export function useSwap(options?: UseSwapOptions) {
   const [modalData, setModalData] = useState<SwapModalData | undefined>(
     undefined,
   );
+  const { signTransaction: signTransactionFromContext } = useUserContext();
 
   const updateStep = useCallback(
     <T extends SwapStep>(step: T, data?: SwapModalData<T>) => {
@@ -189,14 +189,9 @@ export function useSwap(options?: UseSwapOptions) {
   const signTransaction = useCallback(
     async (xdr: string, userAddress: string) => {
       console.log("signTransaction", { xdr, userAddress });
-      const { signedTxXdr } = await kit.signTransaction(xdr, {
-        address: userAddress,
-        networkPassphrase: STELLAR.WALLET_NETWORK,
-      });
-
-      return signedTxXdr;
+      return await signTransactionFromContext(xdr, userAddress);
     },
-    [],
+    [signTransactionFromContext],
   );
 
   const sendTransaction = useCallback(

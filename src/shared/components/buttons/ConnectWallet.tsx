@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 
-import { ISupportedWallet } from "@creit.tech/stellar-wallets-kit";
 import { cn } from "@/shared/lib/utils/cn";
 import { formatAddress } from "@/shared/lib/utils/formatAddress";
 import { useUserContext } from "@/contexts";
-import { kit } from "@/shared/lib/server/wallet";
 import { LogOut } from "lucide-react";
 
 interface ConnectWalletProps {
@@ -14,7 +12,7 @@ interface ConnectWalletProps {
 }
 
 export const ConnectWallet = ({ className }: ConnectWalletProps) => {
-  const { address: userAddress, setAddress } = useUserContext();
+  const { address: userAddress, connectWallet, disconnect } = useUserContext();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
 
   const handleConnectWallet = async () => {
@@ -22,18 +20,11 @@ export const ConnectWallet = ({ className }: ConnectWalletProps) => {
       setIsDropdownOpen(!isDropdownOpen);
       return;
     }
-    await kit.openModal({
-      onWalletSelected: async (option: ISupportedWallet) => {
-        kit.setWallet(option.id);
-        const { address } = await kit.getAddress();
-        setAddress(address);
-      },
-    });
+    await connectWallet();
   };
 
   const handleDisconnect = () => {
-    kit.disconnect();
-    setAddress(null);
+    disconnect();
     setIsDropdownOpen(false);
   };
 
