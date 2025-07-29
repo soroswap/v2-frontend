@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
-import { network } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import { network } from "@/shared/lib/environmentVars";
 
 /*This is the GET method for the quote API. It is used to verify the route is working.*/
 export async function GET() {
@@ -38,23 +38,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-
     const quoteRequest = await soroswapClient.quote(body);
 
-    return NextResponse.json({
-      code: "QUOTE_SUCCESS",
-      data: quoteRequest,
-    });
+    return NextResponse.json(quoteRequest);
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API QUOTE ERROR]", error);
 
-    return NextResponse.json(
-      {
-        code: "QUOTE_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    return NextResponse.json(error);
   }
 }

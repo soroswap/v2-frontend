@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
-import { network, SOROSWAP } from "@/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 
 //TODO: Check the response from sendTransaction
 interface SendTransactionResponse {
   status: string;
   txHash: string;
+  hash?: string;
+  successful?: boolean;
   latestLedger: number;
   latestLedgerCloseTime: string;
   oldestLedger: number;
@@ -20,6 +22,11 @@ interface SendTransactionResponse {
   resultMetaXdr: any;
   returnValue: any;
   diagnosticEventsXdr: any;
+}
+
+export interface SendTransactionResponseData {
+  code: string;
+  data: SendTransactionResponse;
 }
 
 export async function POST(request: NextRequest) {
@@ -49,7 +56,7 @@ export async function POST(request: NextRequest) {
   try {
     const xdr: string = await request.json();
 
-    const sendTransactionResponse: SendTransactionResponse =
+    const sendTransactionResponse: SendTransactionResponseData =
       await soroswapClient.send(xdr, false, SOROSWAP.NETWORK);
 
     return NextResponse.json({

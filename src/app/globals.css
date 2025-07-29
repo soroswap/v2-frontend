@@ -1,24 +1,93 @@
+@import "react-tooltip/dist/react-tooltip.css";
 @import "tailwindcss";
-@plugin "daisyui";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Configure dark mode for Tailwind v4 */
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+@theme {
+    /* --- Light Theme (Default) --- */
+    --color-bg-page: #ffffff;
+
+
+    /* Sync legacy variables */
+    --background: var(--color-bg-page);
+    --foreground: var(--color-text-primary);
+
+    /* --- Design System Color Tokens (Light) --- */
+    --color-primary: #171717;
+    --color-secondary: #5f6368;
+
+    --color-brand: #8866DD;
+    --color-surface-page: #ffffff;
+    --color-surface: #f8f9fa;
+    --color-surface-hover: #f1f3f4;
+
+    --color-surface-subtle: #f1f3f4;
+    --color-surface-light: #ffffff;
+    --color-surface-alt: #e8eaed;
+
+    --color-surface-skeleton-start: #e8eaed;
+    --color-surface-skeleton-mid: #f1f3f4;
+    --color-surface-skeleton-end: #e8eaed;
+
+    /* --color-limiar-primary: #e8eaed;
+    --color-limiar-secondary: #dadce0; */
+
+
+    /* --color-inverse: #ffffff;
+    --color-accent-success: #137333;
+    --color-accent-warning: #ea4335; */
+
+    --color-icon-muted: #9aa0a6;
+
+    /* Legacy variables mapped to tokens for backward compatibility */
+    --background: var(--color-bg-page);
+    --foreground: var(--color-text-primary);
+    --font-inter: var(--font-inter);
+    --font-darker-grotesque: var(--font-darker-grotesque);
+  }
+
+  .dark {
+    --color-bg-page: #0a0a0a;
+
+    /* Sync legacy variables */
+    --background: var(--color-bg-page);
+    --foreground: var(--color-primary);
+
+    /* --- Design System Color Tokens --- */
+    --color-primary: #ededed;
+    --color-secondary: #A0A3C4;
+  
+    --color-brand: #8866DD;
+    --color-surface-page: #0f1016;
+    --color-surface: #181A25;
+    --color-surface-hover: #232136;
+
+    --color-surface-subtle: #10121A;
+    --color-surface-light: #ffffff;
+    --color-surface-alt: #232136;
+    
+  --color-surface-skeleton-start: #23243A;
+  --color-surface-skeleton-mid: #2A2B42;
+  --color-surface-skeleton-end: #23243A;
+
+
+  /* --color-limiar-primary: #23243A;
+  --color-limiar-secondary: #35374A; */
+
+
+  /* --color-inverse: #171717; */
+  /* --color-accent-success: #CFFFD9;
+  --color-accent-warning: #F88F6D; */
+
+  --color-icon-muted: #A0A3C4;
+
+  /* Legacy variables mapped to tokens for backward compatibility */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-primary);
   --font-inter: var(--font-inter);
   --font-darker-grotesque: var(--font-darker-grotesque);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
   }
-}
 
 body {
   background: var(--background);
@@ -41,16 +110,20 @@ body {
 
 .skeleton {
   animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background: linear-gradient(90deg, #23243a 25%, #2a2b42 50%, #23243a 75%);
+  background: linear-gradient(90deg, var(--color-surface-skeleton-start) 25%, var(--color-surface-skeleton-mid) 50%, var(--color-surface-skeleton-end) 75%);
   background-size: 200% 100%;
   border-radius: 0.375rem;
 }
 
-.bg-svg {
-  background-image: url('/bg.svg');
+.bg-main {
+  background-image: url('/bg-white.svg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.dark .bg-main {
+  background-image: url('/bg.svg');
 }
 
 /* Hide number input spinners for all browsers */

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import Link from "next/link";
@@ -67,16 +68,16 @@ export default function PoolsPage() {
   }, [pools]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-2 pt-28 md:pt-0">
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
       <div className="relative w-full max-w-3xl rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
           <span className="text-xl text-white sm:text-2xl">Pools</span>
 
-          {/* “Add Liquidity” CTA – collapses to short label on very small screens */}
+          {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
             href="/add-liquidity"
-            className="inline-flex items-center gap-2 rounded-full bg-[#8866DD]/20 px-3 py-1.5 text-sm font-medium text-[#8866DD] hover:bg-[#8866DD]/30"
+            className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
           >
             <span className="text-lg leading-none">＋</span>
             <span className="xs:inline hidden">Add&nbsp;Liquidity</span>
@@ -84,7 +85,7 @@ export default function PoolsPage() {
           </Link>
         </div>
 
-        {/* Top‑level metrics */}
+        {/* Top-level metrics */}
         <div className="mb-8 grid gap-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
             <span className="text-sm text-[#A0A3C4]">Total TVL</span>

@@ -1,0 +1,214 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+"use client";
+
+import { useState, useCallback, MouseEvent, useEffect } from "react";
+import {
+  TheButton,
+  ConnectWallet,
+  SettingsButton,
+} from "@/shared/components/buttons";
+import { SwapPanel } from "@/features/swap";
+import { useUserContext } from "@/contexts";
+import { PoolsSettingsModal } from "@/features/pools/components/PoolsSettingsModal";
+import { ArrowLeft, PlusIcon } from "lucide-react";
+import Link from "next/link";
+import { usePoolsController } from "@/features/pools/hooks/usePoolsController";
+import {
+  PoolError,
+  PoolResult,
+  PoolStep,
+} from "@/features/pools/hooks/usePool";
+import { PoolModal } from "@/features/pools/components/PoolModal";
+import { useParams, useRouter } from "next/navigation";
+
+const getSwapButtonText = (step: PoolStep): string => {
+  switch (step) {
+    case PoolStep.ADD_LIQUIDITY:
+      return "Adding liquidity...";
+    case PoolStep.WAITING_SIGNATURE:
+      return "Waiting for signature...";
+    case PoolStep.SENDING_TRANSACTION:
+      return "Sending transaction...";
+    default:
+      return "Processing...";
+  }
+};
+
+export default function PoolsAddLiquidityPage() {
+  const { address: userAddress } = useUserContext();
+  const params = useParams();
+  const router = useRouter();
+
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
+  const [addLiquidityResult, setAddLiquidityResult] =
+    useState<PoolResult | null>(null);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
+
+  // Extract token addresses from URL parameters
+  const tokenAddresses = params?.tokens as string[] | undefined;
+  const tokenAAddress = tokenAddresses?.[0];
+  const tokenBAddress = tokenAddresses?.[1];
+
+  const {
+    typedValue,
+    independentField,
+    TOKEN_A,
+    TOKEN_B,
+    derived_TOKEN_A_Amount,
+    derived_TOKEN_B_Amount,
+    isQuoteLoading,
+    isSwapLoading,
+    currentStep,
+    handleAmountChange,
+    handleTokenSelect,
+    handleAddLiquidity,
+    resetSwap,
+  } = usePoolsController({
+    initialTokenAAddress: tokenAAddress,
+    initialTokenBAddress: tokenBAddress,
+    onSuccess: (result: PoolResult) => {
+      setAddLiquidityResult(result);
+      setIsSwapModalOpen(true);
+    },
+    onError: (error: PoolError) => {
+      console.error("Pool failed:", error);
+      setAddLiquidityResult(null);
+    },
+    onStepChange: (step: PoolStep) => {
+      if (step === PoolStep.WAITING_SIGNATURE) {
+        setIsSwapModalOpen(true);
+      }
+    },
+  });
+
+  // Update URL when tokens change
+  useEffect(() => {
+    if (TOKEN_A?.contract || TOKEN_B?.contract) {
+      const newTokenA = TOKEN_A?.contract;
+      const newTokenB = TOKEN_B?.contract;
+
+      if (newTokenA && newTokenB) {
+        const newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
+        router.replace(newUrl);
+      } else if (newTokenA) {
+        const newUrl = `/pools/add-liquidity/${newTokenA}`;
+        router.replace(newUrl);
+      }
+    }
+  }, [TOKEN_A?.contract, TOKEN_B?.contract]);
+
+  const onAddLiquidityPool = useCallback(
+    (e: MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault();
+      handleAddLiquidity();
+    },
+    [handleAddLiquidity],
+  );
+
+  return (
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
+      <div className="border-brand bg-surface flex w-full max-w-[480px] flex-col gap-2 rounded-2xl border p-4 shadow-xl sm:p-8">
+        <div className="mb-4 flex items-center justify-between">
+          <Link href="/pools">
+            <ArrowLeft className="text-primary" />
+          </Link>
+          <p className="text-primary text-xl sm:text-2xl">Add Liquidity</p>
+          <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
+        </div>
+        <div className="bg-surface-subtle flex flex-col gap-2 rounded-md p-2">
+          <p className="text-primary text-sm">
+            <strong>Tip:</strong> When you add liquidity, you will receive LP
+            tokens representing your position.
+          </p>
+          <p className="text-primary text-sm">
+            These tokens automatically earn fees proportional to your share of
+            the pool. Can be redeemed at any time.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
+            <SwapPanel
+              label=""
+              amount={
+                independentField === "TOKEN_A"
+                  ? typedValue
+                  : derived_TOKEN_A_Amount
+              }
+              setAmount={handleAmountChange("TOKEN_A")}
+              currentToken={TOKEN_A}
+              oppositeToken={TOKEN_B}
+              onSelectToken={handleTokenSelect("TOKEN_A")}
+              isLoading={isQuoteLoading}
+            />
+
+            <div className="flex items-center justify-center">
+              <PlusIcon size={24} className="text-primary" />
+            </div>
+          </div>
+
+          <SwapPanel
+            label=""
+            amount={
+              independentField === "TOKEN_B"
+                ? typedValue
+                : derived_TOKEN_B_Amount
+            }
+            setAmount={handleAmountChange("TOKEN_B")}
+            currentToken={TOKEN_B}
+            oppositeToken={TOKEN_A}
+            onSelectToken={handleTokenSelect("TOKEN_B")}
+            isLoading={isQuoteLoading}
+            variant="outline"
+          />
+
+          <div className="flex flex-col gap-2">
+            {!userAddress ? (
+              <ConnectWallet className="flex w-full justify-center" />
+            ) : (
+              <TheButton
+                disabled={
+                  !TOKEN_A || !TOKEN_B || TOKEN_A.contract === TOKEN_B.contract
+                }
+                onClick={onAddLiquidityPool}
+                className="bg-brand hover:bg-brand/80 text-primary disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
+              >
+                {!TOKEN_A || !TOKEN_B
+                  ? "Select a token"
+                  : isSwapLoading
+                    ? getSwapButtonText(currentStep)
+                    : "Add liquidity"}
+              </TheButton>
+            )}
+          </div>
+        </div>
+
+        {isSwapModalOpen && (
+          <PoolModal
+            currentStep={currentStep}
+            onClose={() => {
+              setIsSwapModalOpen(false);
+              setAddLiquidityResult(null);
+              resetSwap();
+            }}
+            transactionHash={addLiquidityResult?.txHash}
+            operationType="add"
+          />
+        )}
+
+        {isSettingsModalOpen && (
+          <PoolsSettingsModal
+            isOpen={isSettingsModalOpen}
+            onClose={() => setIsSettingsModalOpen(false)}
+          />
+        )}
+      </div>
+    </main>
+  );
+}
+
+//TODO In Remove Liquidity:
+// 1. lp - balance = user- position
+// 2. xlm / eurc reserveA / reserve B
+// 3. Total LP should be after the calculation don't need now.

@@ -1,18 +1,17 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import Image from "next/image";
-import { cn } from "@/lib/utils/cn";
+import { cn } from "@/shared/lib/utils/cn";
 import { useState, useCallback, MouseEvent } from "react";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
-} from "@/components/shared/components/buttons";
-import { SwapPanel, SwapModal, SwapSettingsModal } from "@/components/swap";
+  SettingsButton,
+} from "@/shared/components/buttons";
+import { SwapPanel, SwapModal, SwapSettingsModal } from "@/features/swap";
 import { useUserContext } from "@/contexts";
-import { SwapStep, SwapResult } from "@/hooks/useSwap";
-import { useSwapController } from "@/hooks/useSwapController";
+import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
+import { useSwapController } from "@/features/swap/hooks/useSwapController";
 
 const getSwapButtonText = (step: SwapStep): string => {
   switch (step) {
@@ -28,10 +27,12 @@ const getSwapButtonText = (step: SwapStep): string => {
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
 
-  const [isSwapModalOpen, setIsSwapModalOpen] = useState(false);
+  const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [isTokenSwitched, setIsTokenSwitched] = useState(false);
+  const [swapError, setSwapError] = useState<SwapError | null>(null);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] =
+    useState<boolean>(false);
+  const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
 
   const {
     typedValue,
@@ -43,6 +44,7 @@ export default function SwapPage() {
     isQuoteLoading,
     isSwapLoading,
     currentStep,
+    modalData,
     handleAmountChange,
     handleTokenSelect,
     handleSwitchTokens,
@@ -50,23 +52,27 @@ export default function SwapPage() {
     resetSwap,
   } = useSwapController({
     userAddress: userAddress || undefined,
-    onSuccess: (result) => {
+    onSuccess: (result: SwapResult) => {
       setSwapResult(result);
       setIsSwapModalOpen(true);
     },
-    onError: (error) => {
+    onError: (error: SwapError) => {
+      console.log("eRror PAGE! ", error);
       console.error("Swap failed:", error);
-      setSwapResult(null);
+      setSwapError(error);
     },
-    onStepChange: (step) => {
-      if (step === SwapStep.WAITING_SIGNATURE) {
+    onStepChange: (step: SwapStep) => {
+      if (
+        step === SwapStep.WAITING_SIGNATURE ||
+        step === SwapStep.CREATE_TRUSTLINE
+      ) {
         setIsSwapModalOpen(true);
       }
     },
   });
 
   const onSwitchTokens = useCallback(() => {
-    setIsTokenSwitched((prev) => !prev);
+    setIsTokenSwitched((prev: boolean) => !prev);
     handleSwitchTokens();
   }, [handleSwitchTokens]);
 
@@ -79,21 +85,11 @@ export default function SwapPage() {
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-2">
-      <div className="w-full max-w-[480px] rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
+    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
+      <div className="border-brand bg-surface w-full max-w-[480px] rounded-2xl border p-4 shadow-xl sm:p-8">
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-xl text-white sm:text-2xl">Swap</p>
-          <button
-            onClick={() => setIsSettingsModalOpen(true)}
-            className="cursor-pointer rounded-full p-1 hover:bg-[#8866DD]/20"
-          >
-            <Image
-              src="/settingsIcon.svg"
-              alt="Settings"
-              width={38}
-              height={38}
-            />
-          </button>
+          <p className="text-primary text-xl sm:text-2xl">Swap</p>
+          <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
 
         <div className="flex flex-col gap-2">
@@ -144,7 +140,6 @@ export default function SwapPage() {
                   sellToken.contract === buyToken.contract
                 }
                 onClick={onSwapClick}
-                className="btn relative h-14 w-full rounded-2xl bg-[#8866DD] p-4 text-[20px] font-bold hover:bg-[#8866DD]/80"
               >
                 {!buyToken || !sellToken
                   ? "Select a token"
@@ -164,7 +159,9 @@ export default function SwapPage() {
               setSwapResult(null);
               resetSwap();
             }}
-            transactionHash={swapResult?.txHash}
+            error={swapError || undefined}
+            transactionHash={swapResult?.txHash || swapResult?.hash}
+            modalData={modalData}
           />
         )}
 

@@ -1,0 +1,45 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Your rule content
+
+- Follow the style rules pointed by the .prettier file
+- Always check if the globals.css has the colors you're using
+  - If they are, use the variable of the tailwind in globals.css;
+  - If not, create a variable and use it, avoid use Hex colors and [var(--color-X)] directly into file.
+- If you are dealing with complex problems and making mistakes frequently, use sequential thinking mcp;
+- Follow the architecture of the project:
+
+├───app
+│ ├───api
+│ │ ├───pools
+│ │ │ └───user
+│ │ ├───price
+│ │ ├───quote
+│ │ │ └───build
+│ │ └───send
+│ ├───earn
+│ └───pools
+├───contexts
+│ └───store
+├───features
+│ ├───navbar
+│ ├───pools
+│ │ ├───components
+│ │ └───hooks
+│ └───swap
+│ ├───hooks
+│ └───types
+└───shared
+├───components
+│ └───buttons
+├───hooks
+└───lib
+├───constants
+├───server
+└───utils
+
+## Always use Prettier as the default formatter, not the built-in TypeScript formatter. The VSCode settings are configured to:

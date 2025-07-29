@@ -1,9 +1,10 @@
+import "./globals.css";
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
-import { Navbar } from "@/components/navbar";
 import { UserProvider } from "@/contexts";
-import "./globals.css";
+import { Navbar } from "@/features/navbar";
+import { ThemeProvider } from "next-themes";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -29,16 +30,22 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${interSans.variable} ${darkerGrotesque.variable} font-sans antialiased`}
+        className={`${interSans.variable} ${darkerGrotesque.variable} bg-main font-sans antialiased`}
       >
-        <div className="bg-svg min-h-screen">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="soroswap-theme"
+        >
           <UserProvider>
             <Navbar />
             {children}
           </UserProvider>
-        </div>
+        </ThemeProvider>
       </body>
     </html>
   );

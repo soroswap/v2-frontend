@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// import { QuoteResponse } from "@/components/shared/types";
-import { network, SOROSWAP } from "@/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/lib/server";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { BuildQuoteRequest } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -31,23 +30,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: BuildQuoteRequest = await request.json();
-
     const buildXdrResponse = await soroswapClient.build(body, SOROSWAP.NETWORK);
-
-    return NextResponse.json({
-      code: "BUILD_XDR_SUCCESS",
-      data: buildXdrResponse.xdr,
-    });
+    return NextResponse.json(buildXdrResponse);
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
-
-    return NextResponse.json(
-      {
-        code: "BUILD_XDR_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    console.error("[API ERROR]", error);
+    return NextResponse.json(error);
   }
 }

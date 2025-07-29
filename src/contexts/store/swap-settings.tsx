@@ -1,5 +1,5 @@
-import { SwapSettings } from "@/components/shared/types";
-import { DEFAULT_SWAP_SETTINGS } from "@/lib/constants/swap";
+import { SwapSettings } from "@/features/swap/types";
+import { DEFAULT_SWAP_SETTINGS } from "@/shared/lib/constants/swap";
 import { create } from "zustand";
 
 interface SwapSettingsStore {
