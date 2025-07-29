@@ -63,13 +63,10 @@ export function usePools() {
       Object.keys(tokenMap).length > 0
     ) {
       return remotePools.map((pool) => {
-        const tokenAData = tokenMap[pool.tokenA];
-        const tokenBData = tokenMap[pool.tokenB];
-
         return {
           ...pool,
-          tokenA: tokenAData?.code || pool.tokenA.slice(0, 4),
-          tokenB: tokenBData?.code || pool.tokenB.slice(0, 4),
+          tokenA: pool.tokenA,
+          tokenB: pool.tokenB,
           tvl: "—", // TODO: compute when prices available
           apr: "—", // TODO
           status: "Active",
@@ -112,9 +109,6 @@ export function usePools() {
     }
 
     return remotePools.map((pool) => {
-      const tokenAData = tokenMap[pool.tokenA];
-      const tokenBData = tokenMap[pool.tokenB];
-
       const tvlBigInt = calculateTvl({
         tokenAContract: pool.tokenA,
         tokenBContract: pool.tokenB,
@@ -126,8 +120,8 @@ export function usePools() {
 
       return {
         ...pool,
-        tokenA: tokenAData?.code || pool.tokenA.slice(0, 4),
-        tokenB: tokenBData?.code || pool.tokenB.slice(0, 4),
+        tokenA: pool.tokenA,
+        tokenB: pool.tokenB,
         tvl: tvlBigInt,
         apr: "—",
         status: "Active",
