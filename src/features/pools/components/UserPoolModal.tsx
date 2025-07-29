@@ -113,10 +113,10 @@ export const UserPoolModal = ({
           </div>
         </div>
 
-        <div className="text-primary flex w-full gap-1">
+        <div className="flex w-full gap-1">
           <div className="flex w-full">
             <Link
-              className="btn text-md border-brand bg-brand hover:bg-brand/80 relative h-14 w-full rounded-2xl p-4 font-bold"
+              className="btn text-md border-brand bg-brand hover:bg-brand/80 relative h-14 w-full rounded-2xl p-4 text-center font-bold text-[#ededed]"
               href={`/pools/add-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
             >
               Add Liquidity
@@ -125,7 +125,7 @@ export const UserPoolModal = ({
           <div className="flex w-full">
             <Link
               href={`/pools/remove-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
-              className="btn text-md border-brand bg-brand/10 hover:bg-brand/80 relative h-14 w-full rounded-2xl p-4 font-bold"
+              className="btn text-md border-brand bg-brand/10 hover:bg-brand/80 text-primary relative h-14 w-full rounded-2xl p-4 text-center font-bold"
             >
               Remove Liquidity
             </Link>
