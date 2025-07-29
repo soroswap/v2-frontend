@@ -15,7 +15,7 @@ interface Pool {
 
 export default function PoolsPage() {
   // --- MOCK DATA ------------------------------------------------------------
-  const pools: Pool[] = [
+  const pools: Pool[] = useMemo(() => [
     {
       id: "xlm-usdc",
       token0: {
@@ -58,7 +58,7 @@ export default function PoolsPage() {
       apr: "7.9%",
       status: "Active",
     },
-  ];
+  ], []);
   // -------------------------------------------------------------------------
 
   const avgApr = useMemo(() => {
