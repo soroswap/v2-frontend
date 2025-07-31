@@ -3,10 +3,15 @@
 import { createContext, ReactNode, useContext, useState, useEffect, useRef } from "react";
 import {
   StellarWalletsKit,
-  ALBEDO_ID,
   allowAllModules,
   ISupportedWallet,
+  FREIGHTER_ID,
 } from "@creit.tech/stellar-wallets-kit";
+import {
+  WALLET_CONNECT_ID,
+  WalletConnectAllowedMethods,
+  WalletConnectModule,
+} from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
 import { STELLAR } from "@/shared/lib/environmentVars";
 
 interface UserContextProps {
@@ -32,8 +37,20 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       try {
         const walletKit = new StellarWalletsKit({
           network: STELLAR.WALLET_NETWORK,
-          selectedWalletId: ALBEDO_ID,
-          modules: allowAllModules(),
+          selectedWalletId: WALLET_CONNECT_ID,
+          modules: [
+            // ...allowAllModules(),
+            new WalletConnectModule({
+              url: 'http://localhost:3000',
+              projectId: '4ee1d28f1fe3c70aa8ebc4677e623e1d',
+              method: WalletConnectAllowedMethods.SIGN,
+              description: `Soroswap`,
+              name: 'Soroswap',
+              icons: ['/walletconnect.svg'],
+              network: STELLAR.WALLET_NETWORK,
+            }),
+          ],
+          
         });
         kitRef.current = walletKit;
         setKit(walletKit);
@@ -63,6 +80,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
   };
 
   const signTransaction = async (xdr: string, userAddress: string): Promise<string> => {
+    console.log("🚀 | signTransaction | userAddress:", userAddress)
     if (!kit) throw new Error("Wallet kit not initialized");
     
     const { signedTxXdr } = await kit.signTransaction(xdr, {
