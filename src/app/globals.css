@@ -14,7 +14,7 @@
     --foreground: var(--color-text-primary);
 
     /* --- Design System Color Tokens (Light) --- */
-    --color-primary: #171717;
+    --color-primary: #0a0a0a;
     --color-secondary: #5f6368;
 
     --color-brand: #8866DD;
@@ -37,6 +37,8 @@
     /* --color-inverse: #ffffff;
     --color-accent-success: #137333;
     --color-accent-warning: #ea4335; */
+
+    --color-accent-warning: #ea4335; 
 
     --color-icon-muted: #9aa0a6;
 
@@ -77,8 +79,8 @@
 
 
   /* --color-inverse: #171717; */
-  /* --color-accent-success: #CFFFD9;
-  --color-accent-warning: #F88F6D; */
+  /* --color-accent-success: #CFFFD9; */
+  --color-accent-warning: #F88F6D;
 
   --color-icon-muted: #A0A3C4;
 

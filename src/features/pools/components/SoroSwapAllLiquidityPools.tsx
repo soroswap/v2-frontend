@@ -6,10 +6,12 @@ import { Pool } from "@soroswap/sdk";
 import { ArrowUp } from "lucide-react";
 import { cn } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
+import { useRouter } from "next/navigation";
 
 export const SoroSwapAllLiquidityPools = () => {
   const { pools, isLoading } = usePools();
-  const { tokenCodeMap } = useTokensList();
+  const { tokenMap } = useTokensList();
+  const router = useRouter();
 
   // Define table columns
   const columns: ColumnDef<Pool, unknown>[] = [
@@ -19,6 +21,9 @@ export const SoroSwapAllLiquidityPools = () => {
       accessorFn: (row) => `${row.tokenA}/${row.tokenB}`,
       cell: ({ row }) => {
         const pool = row.original;
+
+        const tokenAData = tokenMap[pool.tokenA];
+        const tokenBData = tokenMap[pool.tokenB];
 
         if (!pool.tokenA || !pool.tokenB) {
           return (
@@ -36,18 +41,18 @@ export const SoroSwapAllLiquidityPools = () => {
           <div className="flex items-center gap-4">
             <div className="relative">
               <TokenIcon
-                src={tokenCodeMap[pool.tokenA.toUpperCase()]?.icon}
+                src={tokenAData?.icon}
                 alt={pool.tokenA}
                 className="rounded-full border border-white bg-white"
               />
               <TokenIcon
-                src={tokenCodeMap[pool.tokenB.toUpperCase()]?.icon}
+                src={tokenBData?.icon}
                 alt={pool.tokenB}
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
             <span className="text-primary font-semibold">
-              {pool.tokenA}/{pool.tokenB}
+              {tokenAData?.code}/{tokenBData?.code}
             </span>
           </div>
         );
@@ -89,6 +94,10 @@ export const SoroSwapAllLiquidityPools = () => {
         columns={columns}
         isLoading={isLoading}
         variant="default"
+        onRowClick={(row) => {
+          router.push(`/pools/add-liquidity/${row.tokenA}/${row.tokenB}`);
+        }}
+        enableRowSelection={true}
       />
     </section>
   );

@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState, useEffect, useRef } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   StellarWalletsKit,
   ALBEDO_ID,
@@ -45,7 +52,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const connectWallet = async () => {
     if (!kit) return;
-    
+
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
@@ -62,26 +69,31 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   };
 
-  const signTransaction = async (xdr: string, userAddress: string): Promise<string> => {
+  const signTransaction = async (
+    xdr: string,
+    userAddress: string,
+  ): Promise<string> => {
     if (!kit) throw new Error("Wallet kit not initialized");
-    
+
     const { signedTxXdr } = await kit.signTransaction(xdr, {
       address: userAddress,
       networkPassphrase: STELLAR.WALLET_NETWORK,
     });
-    
+
     return signedTxXdr;
   };
 
   return (
-    <UserContext.Provider value={{ 
-      setAddress, 
-      address, 
-      kit, 
-      connectWallet, 
-      disconnect, 
-      signTransaction 
-    }}>
+    <UserContext.Provider
+      value={{
+        setAddress,
+        address,
+        kit,
+        connectWallet,
+        disconnect,
+        signTransaction,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );
