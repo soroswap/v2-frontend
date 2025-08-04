@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Search, Plus, ExternalLink } from "lucide-react";
-import { ConnectWallet } from "@/shared/components/buttons";
+import { ChevronDown, Search, Plus } from "lucide-react";
+import { PortfolioCard } from "@/features/earn/components/PortfolioCard";
+import { VaultCard } from "@/features/earn/components/VaultCard";
 
 interface Vault {
   id: string;
@@ -64,73 +65,17 @@ export default function EarnPage() {
 
   return (
     <main className="bg-surface-page mt-[100px] min-h-[calc(100vh-100px)]">
-      {/* Header */}
-      <header className="border-surface-alt flex items-center justify-between border-b px-6 py-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-brand flex h-8 w-8 items-center justify-center rounded-full">
-            <span className="text-sm font-bold text-white">D</span>
-          </div>
-          <h1 className="text-primary text-2xl font-bold">DeFindex</h1>
-        </div>
-
-        <nav className="text-secondary hidden items-center gap-6 md:flex">
-          <a href="#" className="hover:text-primary transition-colors">
-            Defindex Vaults
-          </a>
-          <a href="#" className="hover:text-primary transition-colors">
-            Portfolio
-          </a>
-          <a
-            href="#"
-            className="hover:text-primary flex items-center gap-1 transition-colors"
-          >
-            Defindex Home
-            <ExternalLink className="h-4 w-4" />
-          </a>
-        </nav>
-
-        <ConnectWallet />
-      </header>
-
       <div className="space-y-6 p-6">
         {/* Top Section - Portfolio and Create Vault */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Portfolio Card */}
-          <div className="bg-surface border-surface-alt rounded-xl border p-6 lg:col-span-1">
-            <h2 className="text-primary mb-4 text-xl font-bold">Portfolio</h2>
-            <div className="space-y-4">
-              <div>
-                <p className="text-secondary text-sm">Deposits</p>
-                <p className="text-primary text-lg font-semibold">$0.00</p>
-              </div>
-              <div>
-                <p className="text-secondary text-sm">Earnings</p>
-                <p className="text-primary text-lg font-semibold">$0.00</p>
-              </div>
-              <div>
-                <p className="text-secondary text-sm">Realized APY</p>
-                <p className="text-primary text-lg font-semibold">$0.00</p>
-              </div>
-            </div>
-            <button className="bg-brand hover:bg-brand/90 mt-6 w-full rounded-lg px-4 py-2 font-medium text-white transition-colors">
-              Portfolio Dashboard
-            </button>
+          <div className="lg:col-span-2">
+            <PortfolioCard />
           </div>
 
-          {/* Create Vault Card */}
-          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-pink-500 via-purple-500 to-orange-500 p-6 lg:col-span-2">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-orange-500/20"></div>
-            <div className="relative z-10">
-              <h2 className="mb-2 text-xl font-bold text-white">
-                Create a Vault
-              </h2>
-              <p className="mb-6 text-white/80">
-                Take control of your finances by creating a new vault.
-              </p>
-              <button className="rounded-lg bg-white px-6 py-3 font-semibold text-purple-600 transition-colors hover:bg-white/90">
-                Create Vault
-              </button>
-            </div>
+          {/* Vault Card */}
+          <div className="lg:col-span-1">
+            <VaultCard />
           </div>
         </div>
 
