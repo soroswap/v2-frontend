@@ -1,18 +1,17 @@
 "use client";
 
-import { createContext, ReactNode, useContext, useState, useEffect, useRef } from "react";
+import { STELLAR } from "@/shared/lib/environmentVars";
 import {
-  StellarWalletsKit,
   allowAllModules,
   ISupportedWallet,
-  FREIGHTER_ID,
+  StellarWalletsKit
 } from "@creit.tech/stellar-wallets-kit";
 import {
   WALLET_CONNECT_ID,
   WalletConnectAllowedMethods,
   WalletConnectModule,
 } from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
-import { STELLAR } from "@/shared/lib/environmentVars";
+import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
 
 interface UserContextProps {
   address: string | null;
@@ -39,7 +38,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
           network: STELLAR.WALLET_NETWORK,
           selectedWalletId: WALLET_CONNECT_ID,
           modules: [
-            // ...allowAllModules(),
+            ...allowAllModules(),
             new WalletConnectModule({
               url: 'http://localhost:3000',
               projectId: '4ee1d28f1fe3c70aa8ebc4677e623e1d',
