@@ -140,6 +140,7 @@ export default function SwapPage() {
                   sellToken.contract === buyToken.contract
                 }
                 onClick={onSwapClick}
+                className="text-[#ededed]"
               >
                 {!buyToken || !sellToken
                   ? "Select a token"
