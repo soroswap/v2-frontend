@@ -1,167 +1,258 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import Link from "next/link";
-import { useMemo } from "react";
+import { useState } from "react";
+import { ChevronDown, Search, Plus, ExternalLink } from "lucide-react";
+import { ConnectWallet } from "@/shared/components/buttons";
 
-interface Pool {
+interface Vault {
   id: string;
-  token0: { symbol: string; logo: string };
-  token1: { symbol: string; logo: string };
-  tvl: string; // e.g. "$4.78M"
-  apr: string; // e.g. "11.2%"
-  status: "Active" | "Inactive";
+  name: string;
+  description: string;
+  estApy: string;
+  histApy: string;
+  riskLevel: number;
+  available: string;
+  holding: string;
+  tvl: string;
+  icon: string;
 }
 
-export default function PoolsPage() {
-  // --- MOCK DATA ------------------------------------------------------------
-  const pools: Pool[] = useMemo(() => [
-    {
-      id: "xlm-usdc",
-      token0: {
-        symbol: "XLM",
-        logo: "https://ipfs.io/ipfs/QmXEkrYLhmVJCGJ9AhxQypF3eS4aUUQX3PTef31gmEfyJo/",
-      },
-      token1: {
-        symbol: "USDC",
-        logo: "https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy",
-      },
-      tvl: "$4.78M",
-      apr: "11.2%",
-      status: "Active",
-    },
-    {
-      id: "xlm-btc",
-      token0: {
-        symbol: "XLM",
-        logo: "https://ipfs.io/ipfs/QmXEkrYLhmVJCGJ9AhxQypF3eS4aUUQX3PTef31gmEfyJo/",
-      },
-      token1: {
-        symbol: "WBTC",
-        logo: "https://ipfs.io/ipfs/bafkreihbyszxadmibtyidcdi7ume4fosyb3yjcqwcazfkfjez722wdiw6u",
-      },
-      tvl: "$1.21M",
-      apr: "8.4%",
-      status: "Inactive",
-    },
-    {
-      id: "usdc-usdt",
-      token0: {
-        symbol: "USDC",
-        logo: "https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy",
-      },
-      token1: {
-        symbol: "USDT",
-        logo: "https://ipfs.io/ipfs/bafkreiby2lmnaavh3md6ontok7s6sarhn24ypp2dgjveynbhliqpfjjtkq",
-      },
-      tvl: "$3.05M",
-      apr: "7.9%",
-      status: "Active",
-    },
-  ], []);
-  // -------------------------------------------------------------------------
+const mockVaults: Vault[] = [
+  {
+    id: "1",
+    name: "Sky Rewards USDS Compo",
+    description: "USDS Stablecoin",
+    estApy: "0%",
+    histApy: "0%",
+    riskLevel: 20,
+    available: "0,00",
+    holding: "0,00",
+    tvl: "$17,44 mi",
+    icon: "S",
+  },
+  {
+    id: "2",
+    name: "Sky Rewards USDS Compo",
+    description: "USDS Stablecoin",
+    estApy: "0%",
+    histApy: "0%",
+    riskLevel: 20,
+    available: "0,00",
+    holding: "0,00",
+    tvl: "$17,44 mi",
+    icon: "S",
+  },
+  {
+    id: "3",
+    name: "Sky Rewards USDS Compo",
+    description: "USDS Stablecoin",
+    estApy: "0%",
+    histApy: "0%",
+    riskLevel: 20,
+    available: "0,00",
+    holding: "0,00",
+    tvl: "$17,44 mi",
+    icon: "S",
+  },
+];
 
-  const avgApr = useMemo(() => {
-    const active = pools.filter((p) => p.status === "Active");
-    const totalApr = active.reduce((sum, p) => sum + parseFloat(p.apr), 0);
-    return active.length ? `${(totalApr / active.length).toFixed(1)}%` : "—";
-  }, [pools]);
+export default function EarnPage() {
+  const [selectedBlockchain, setSelectedBlockchain] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedType, setSelectedType] = useState("Any");
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <main className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center p-2">
-      <div className="relative w-full max-w-3xl rounded-2xl border border-[#8866DD] bg-[#181A25] p-4 shadow-xl sm:p-8">
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <span className="text-xl text-white sm:text-2xl">Pools</span>
+    <main className="bg-surface-page mt-[100px] min-h-[calc(100vh-100px)]">
+      {/* Header */}
+      <header className="border-surface-alt flex items-center justify-between border-b px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="bg-brand flex h-8 w-8 items-center justify-center rounded-full">
+            <span className="text-sm font-bold text-white">D</span>
+          </div>
+          <h1 className="text-primary text-2xl font-bold">DeFindex</h1>
+        </div>
 
-          {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
-          <Link
-            href="/add-liquidity"
-            className="bg-brand/20 hover:bg-brand/30 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium text-[#8866DD]"
+        <nav className="text-secondary hidden items-center gap-6 md:flex">
+          <a href="#" className="hover:text-primary transition-colors">
+            Defindex Vaults
+          </a>
+          <a href="#" className="hover:text-primary transition-colors">
+            Portfolio
+          </a>
+          <a
+            href="#"
+            className="hover:text-primary flex items-center gap-1 transition-colors"
           >
-            <span className="text-lg leading-none">＋</span>
-            <span className="xs:inline hidden">Add&nbsp;Liquidity</span>
-            <span className="xs:hidden">Add</span>
-          </Link>
-        </div>
+            Defindex Home
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </nav>
 
-        {/* Top-level metrics */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-            <span className="text-sm text-[#A0A3C4]">Total TVL</span>
-            <div className="text-xl font-bold text-white sm:text-2xl">6.2M</div>
-          </div>
-          <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-            <span className="text-sm text-[#A0A3C4]">Active Pools</span>
-            <div className="text-xl font-bold text-white sm:text-2xl">
-              {pools.filter((p) => p.status === "Active").length}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-[#23243a] bg-[#10121A] p-4">
-            <span className="text-sm text-[#A0A3C4]">Avg. APR (active)</span>
-            <div className="text-xl font-bold text-white sm:text-2xl">
-              {avgApr}
-            </div>
-          </div>
-        </div>
+        <ConnectWallet />
+      </header>
 
-        {/* Pool list */}
-        <div className="space-y-4">
-          {pools.map((pool, index) => (
-            <div
-              key={pool.id}
-              className="flex items-center justify-between rounded-2xl border border-[#23243a] bg-[#10121A]/70 p-3 transition hover:bg-[#10121A] sm:p-4"
-            >
-              {/* Pair section */}
-              <div className="flex items-center gap-5">
-                <div className="relative">
-                  <img
-                    src={pool.token0.logo}
-                    alt={pool.token0.symbol}
-                    width={32}
-                    height={32}
-                    className="rounded-full border border-white bg-white"
-                  />
-                  <img
-                    src={pool.token1.logo}
-                    alt={pool.token1.symbol}
-                    width={32}
-                    height={32}
-                    className="absolute top-0 left-4 rounded-full border border-white bg-white"
-                  />
-                </div>
-                <span className="font-semibold text-white">
-                  {pool.token0.symbol}/{pool.token1.symbol}
-                </span>
+      <div className="space-y-6 p-6">
+        {/* Top Section - Portfolio and Create Vault */}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {/* Portfolio Card */}
+          <div className="bg-surface border-surface-alt rounded-xl border p-6 lg:col-span-1">
+            <h2 className="text-primary mb-4 text-xl font-bold">Portfolio</h2>
+            <div className="space-y-4">
+              <div>
+                <p className="text-secondary text-sm">Deposits</p>
+                <p className="text-primary text-lg font-semibold">$0.00</p>
               </div>
+              <div>
+                <p className="text-secondary text-sm">Earnings</p>
+                <p className="text-primary text-lg font-semibold">$0.00</p>
+              </div>
+              <div>
+                <p className="text-secondary text-sm">Realized APY</p>
+                <p className="text-primary text-lg font-semibold">$0.00</p>
+              </div>
+            </div>
+            <button className="bg-brand hover:bg-brand/90 mt-6 w-full rounded-lg px-4 py-2 font-medium text-white transition-colors">
+              Portfolio Dashboard
+            </button>
+          </div>
 
-              {/* Stats & actions */}
-              <div className="flex flex-col items-start gap-3 text-sm sm:flex-row sm:items-center sm:gap-6">
-                {index === 0 && (
-                  <div className="text-left sm:text-right">
-                    <span className="text-xs text-[#A0A3C4]">
-                      YOUR POSITION
+          {/* Create Vault Card */}
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-pink-500 via-purple-500 to-orange-500 p-6 lg:col-span-2">
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-orange-500/20"></div>
+            <div className="relative z-10">
+              <h2 className="mb-2 text-xl font-bold text-white">
+                Create a Vault
+              </h2>
+              <p className="mb-6 text-white/80">
+                Take control of your finances by creating a new vault.
+              </p>
+              <button className="rounded-lg bg-white px-6 py-3 font-semibold text-purple-600 transition-colors hover:bg-white/90">
+                Create Vault
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Filters Section */}
+        <div className="bg-surface border-surface-alt rounded-xl border p-6">
+          <h2 className="text-primary mb-4 text-xl font-bold">Filters</h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+            {/* Blockchain Filter */}
+            <div className="relative">
+              <select
+                value={selectedBlockchain}
+                onChange={(e) => setSelectedBlockchain(e.target.value)}
+                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
+              >
+                <option value="All">All</option>
+                <option value="Ethereum">Ethereum</option>
+                <option value="Polygon">Polygon</option>
+                <option value="Arbitrum">Arbitrum</option>
+              </select>
+              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+            </div>
+
+            {/* Category Filter */}
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
+              >
+                <option value="All">All</option>
+                <option value="DeFi">DeFi</option>
+                <option value="Stablecoins">Stablecoins</option>
+                <option value="Yield">Yield</option>
+              </select>
+              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+            </div>
+
+            {/* Type Filter */}
+            <div className="relative">
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
+              >
+                <option value="Any">Any</option>
+                <option value="Single">Single</option>
+                <option value="Multi">Multi</option>
+              </select>
+              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+            </div>
+
+            {/* Search */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="search by Token/pair/address"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-surface-alt text-primary w-full rounded-lg px-4 py-2 pr-10"
+              />
+              <Search className="text-secondary absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
+            </div>
+          </div>
+        </div>
+
+        {/* Vaults Section */}
+        <div className="bg-surface border-surface-alt overflow-hidden rounded-xl border">
+          <div className="border-surface-alt flex items-center justify-between border-b p-6">
+            <h2 className="text-primary text-xl font-bold">Vaults</h2>
+            <button className="bg-surface-alt text-primary hover:bg-surface-hover flex items-center gap-2 rounded-lg px-4 py-2 transition-colors">
+              <Plus className="h-4 w-4" />
+              Vault
+            </button>
+          </div>
+
+          {/* Table Header */}
+          <div className="bg-surface-subtle text-secondary grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
+            <div>Vault</div>
+            <div>Est APY</div>
+            <div>Hist APY</div>
+            <div>Risk Level</div>
+            <div>Available</div>
+            <div>Holding</div>
+            <div>TVL</div>
+          </div>
+
+          {/* Vaults List */}
+          <div className="max-h-96 overflow-y-auto">
+            {mockVaults.map((vault) => (
+              <div
+                key={vault.id}
+                className="border-surface-alt hover:bg-surface-hover grid grid-cols-7 gap-4 border-b px-6 py-4 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500">
+                    <span className="text-sm font-bold text-white">
+                      {vault.icon}
                     </span>
-                    <div className="font-medium break-all text-white">
-                      10,000&nbsp;XLM/USDC
-                    </div>
                   </div>
-                )}
-                <div className="text-right">
-                  <span className="text-xs text-[#A0A3C4]">TVL</span>
-                  <div className="text-base font-medium text-white sm:text-lg">
-                    {pool.tvl}
+                  <div>
+                    <p className="text-primary font-medium">{vault.name}</p>
+                    <p className="text-secondary text-sm">
+                      {vault.description}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-[#A0A3C4]">APR</span>
-                  <div className="text-base font-medium text-white sm:text-lg">
-                    {pool.apr}
+                <div className="text-primary">{vault.estApy}</div>
+                <div className="text-primary">{vault.histApy}</div>
+                <div className="flex items-center">
+                  <div className="bg-surface-alt h-2 w-full rounded-full">
+                    <div
+                      className="bg-brand h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${vault.riskLevel}%` }}
+                    ></div>
                   </div>
                 </div>
+                <div className="text-primary">{vault.available}</div>
+                <div className="text-primary">{vault.holding}</div>
+                <div className="text-primary font-medium">{vault.tvl}</div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </main>
