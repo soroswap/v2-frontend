@@ -79,68 +79,6 @@ export default function EarnPage() {
           </div>
         </div>
 
-        {/* Filters Section */}
-        <div className="bg-surface border-surface-alt rounded-xl border p-6">
-          <h2 className="text-primary mb-4 text-xl font-bold">Filters</h2>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-            {/* Blockchain Filter */}
-            <div className="relative">
-              <select
-                value={selectedBlockchain}
-                onChange={(e) => setSelectedBlockchain(e.target.value)}
-                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
-              >
-                <option value="All">All</option>
-                <option value="Ethereum">Ethereum</option>
-                <option value="Polygon">Polygon</option>
-                <option value="Arbitrum">Arbitrum</option>
-              </select>
-              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
-            </div>
-
-            {/* Category Filter */}
-            <div className="relative">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
-              >
-                <option value="All">All</option>
-                <option value="DeFi">DeFi</option>
-                <option value="Stablecoins">Stablecoins</option>
-                <option value="Yield">Yield</option>
-              </select>
-              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
-            </div>
-
-            {/* Type Filter */}
-            <div className="relative">
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="bg-surface-alt text-primary w-full cursor-pointer appearance-none rounded-lg px-4 py-2"
-              >
-                <option value="Any">Any</option>
-                <option value="Single">Single</option>
-                <option value="Multi">Multi</option>
-              </select>
-              <ChevronDown className="text-secondary pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="search by Token/pair/address"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-surface-alt text-primary w-full rounded-lg px-4 py-2 pr-10"
-              />
-              <Search className="text-secondary absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform" />
-            </div>
-          </div>
-        </div>
-
         {/* Vaults Section */}
         <div className="bg-surface border-surface-alt overflow-hidden rounded-xl border">
           <div className="border-surface-alt flex items-center justify-between border-b p-6">
