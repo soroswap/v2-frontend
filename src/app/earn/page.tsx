@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PortfolioCard } from "@/features/earn/components/PortfolioCard";
 import { VaultCard } from "@/features/earn/components/VaultCard";
+import { VaultTable } from "@/features/earn/components/VaultTable";
+import { useVaultInfo } from "@/features/earn/hooks/useVaultInfo";
 
 interface Vault {
   id: string;
@@ -63,6 +65,15 @@ export default function EarnPage() {
   const [selectedType, setSelectedType] = useState("Any");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const vaultmock = [
+    "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
+    "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
+    "CDRSZ4OGRVUU5ONTI6C6UNF5QFJ3OGGQCNTC5UXXTZQFVRTILJFSVG5D",
+  ];
+  const { vaultInfo, isLoading } = useVaultInfo({
+    vaultId: vaultmock[0],
+  });
+
   return (
     <main className="mt-[100px] flex size-full min-h-[calc(100vh-100px)] flex-col">
       <div className="flex size-full flex-col space-y-6">
@@ -91,53 +102,11 @@ export default function EarnPage() {
             </button>
           </div>
 
-          {/* Table Header */}
-          <div className="bg-surface-subtle text-secondary grid grid-cols-7 gap-4 px-6 py-4 text-sm font-medium">
-            <div>Vault</div>
-            <div>Est APY</div>
-            <div>Hist APY</div>
-            <div>Risk Level</div>
-            <div>Available</div>
-            <div>Holding</div>
-            <div>TVL</div>
-          </div>
-
-          {/* Vaults List */}
-          <div className="max-h-96 overflow-y-auto">
-            {mockVaults.map((vault) => (
-              <div
-                key={vault.id}
-                className="border-surface-alt hover:bg-surface-hover grid grid-cols-7 gap-4 border-b px-6 py-4 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500">
-                    <span className="text-sm font-bold text-white">
-                      {vault.icon}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-primary font-medium">{vault.name}</p>
-                    <p className="text-secondary text-sm">
-                      {vault.description}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-primary">{vault.estApy}</div>
-                <div className="text-primary">{vault.histApy}</div>
-                <div className="flex items-center">
-                  <div className="bg-surface-alt h-2 w-full rounded-full">
-                    <div
-                      className="bg-brand h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${vault.riskLevel}%` }}
-                    ></div>
-                  </div>
-                </div>
-                <div className="text-primary">{vault.available}</div>
-                <div className="text-primary">{vault.holding}</div>
-                <div className="text-primary font-medium">{vault.tvl}</div>
-              </div>
-            ))}
-          </div>
+          <VaultTable
+            mockData={mockVaults}
+            vaultInfo={vaultInfo || undefined}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </main>
