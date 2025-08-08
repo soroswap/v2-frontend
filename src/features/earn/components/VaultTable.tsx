@@ -34,8 +34,16 @@ const createColumns = (): ColumnDef<VaultInfoResponse>[] => [
   {
     accessorKey: "riskLevel",
     header: "Risk Level",
-    cell: () => {
-      return <div className="text-primary">Low</div>;
+    cell: ({ row }) => {
+      const vault = row.original;
+      return (
+        <div className="text-primary">
+          <div
+            className="h-2 rounded-full bg-green-500"
+            style={{ width: `${25}%` }}
+          />
+        </div>
+      );
     },
   },
   {
