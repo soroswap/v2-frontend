@@ -3,11 +3,13 @@ import { network } from "@/shared/lib/environmentVars";
 import { VaultInfoResponse } from "@defindex/sdk";
 
 interface UseEarnProps {
-  vaultId: string | null;
+  vaultId?: string | null;
+  vaultIds?: string[];
 }
 
 interface UseEarnReturn {
   vaultInfo: VaultInfoResponse | null;
+  vaultInfos: VaultInfoResponse[];
   isLoading: boolean;
   isError: boolean;
 }
@@ -24,11 +26,21 @@ const fetchVaultInfo = async (vaultId: string): Promise<VaultInfoResponse> => {
   return data as VaultInfoResponse;
 };
 
-export const useVaultInfo = ({ vaultId }: UseEarnProps): UseEarnReturn => {
+const fetchMultipleVaultInfos = async (
+  vaultIds: string[],
+): Promise<VaultInfoResponse[]> => {
+  const promises = vaultIds.map((vaultId) => fetchVaultInfo(vaultId));
+  return Promise.all(promises);
+};
+
+export const useVaultInfo = ({
+  vaultId,
+  vaultIds,
+}: UseEarnProps): UseEarnReturn => {
   const {
-    data: vaultInfo,
-    error,
-    isLoading,
+    data: singleVaultInfo,
+    error: singleError,
+    isLoading: singleLoading,
   } = useSWR(
     vaultId ? ["vault-info", vaultId] : null,
     () => fetchVaultInfo(vaultId!),
@@ -39,9 +51,26 @@ export const useVaultInfo = ({ vaultId }: UseEarnProps): UseEarnReturn => {
     },
   );
 
+  const {
+    data: multipleVaultInfos,
+    error: multipleError,
+    isLoading: multipleLoading,
+  } = useSWR(
+    vaultIds && vaultIds.length > 0
+      ? ["vault-infos", vaultIds.join(",")]
+      : null,
+    () => fetchMultipleVaultInfos(vaultIds!),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5 min
+    },
+  );
+
   return {
-    vaultInfo: vaultInfo || null,
-    isLoading,
-    isError: Boolean(error),
+    vaultInfo: singleVaultInfo || null,
+    vaultInfos: multipleVaultInfos || [],
+    isLoading: singleLoading || multipleLoading,
+    isError: Boolean(singleError || multipleError),
   };
 };
