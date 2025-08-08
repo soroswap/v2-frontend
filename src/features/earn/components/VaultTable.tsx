@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { TheTable } from "@/shared/components/TheTable";
 import { VaultInfoResponse } from "@defindex/sdk";
 import { useVaultInfo } from "@/features/earn/hooks";
+import { useRouter } from "next/navigation";
 
 const createColumns = (): ColumnDef<VaultInfoResponse>[] => [
   {
@@ -62,6 +63,7 @@ const createColumns = (): ColumnDef<VaultInfoResponse>[] => [
 ];
 
 export function VaultTable() {
+  const router = useRouter();
   const vaultmock = [
     "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
     "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
@@ -82,6 +84,9 @@ export function VaultTable() {
         isLoading={isLoading}
         emptyLabel="No vaults available"
         className="w-full"
+        onRowClick={(row) => {
+          router.push(`/earn/${vaultmock[0]}`);
+        }}
       />
     </div>
   );
