@@ -5,7 +5,7 @@ export const VaultCard = () => {
     <div className="bg-surface border-surface-alt relative overflow-hidden rounded-xl border p-6">
       {/* Background Image */}
       <div
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 opacity-0"
         style={{
           backgroundImage: "url(/earn/vault.svg)",
           backgroundSize: "cover",

@@ -7,6 +7,7 @@ import { CopyAndPasteButton } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { useVaultBalance, useVaultInfo } from "../hooks";
 import { useUserContext } from "@/contexts/UserContext";
+import { useTokensList } from "@/shared/hooks";
 
 export const VaultCardDetails = ({
   vaultAddress,
@@ -14,11 +15,12 @@ export const VaultCardDetails = ({
   vaultAddress: string;
 }) => {
   const router = useRouter();
+  const { tokenMap } = useTokensList();
   const { address: userAddress } = useUserContext();
   const { vaultInfo, isLoading: isVaultInfoLoading } = useVaultInfo({
     vaultId: vaultAddress,
   });
-  const { vaultBalance, isLoading: isVaultBalanceLoading } = useVaultBalance({
+  const { vaultBalance } = useVaultBalance({
     vaultId: vaultAddress,
     userAddress,
   });
@@ -40,61 +42,40 @@ export const VaultCardDetails = ({
   }
 
   return (
-    <div className="bg-surface border-surface-alt rounded-2xl border p-8 shadow-lg">
-      <div className="mb-8 flex items-center gap-4">
+    <div className="bg-surface border-surface-alt flex flex-col gap-4 rounded-2xl border p-8 shadow-lg">
+      <div className="flex items-center gap-4">
         <button
           onClick={() => router.back()}
-          className="hover:bg-surface-hover flex items-center justify-center rounded-lg p-2 transition-colors"
+          className="hover:bg-surface-hover flex cursor-pointer items-center justify-center rounded-lg p-2 transition-colors"
           aria-label="Go back"
         >
           <ArrowLeft className="text-primary size-6" />
         </button>
-        <span className="text-secondary text-sm font-medium">Back</span>
+        <p className="text-secondary text-sm font-medium">Back</p>
       </div>
-      {/* Vault header */}
-      <div className="mb-8 flex items-center gap-4">
+      <div className="flex items-center gap-4">
         <TokenIcon
+          src={tokenMap[vaultInfo.assets[0].address]?.icon}
           name={vaultInfo.name}
-          code={vaultInfo.symbol}
+          code={vaultInfo.assets[0].symbol}
           size={64}
           className="bg-orange-500"
         />
         <div>
-          <h1 className="text-primary text-2xl font-bold">
-            {vaultInfo.name || "Sky Rewards USDS Compounder"}
-          </h1>
-          <div className="mt-2 flex items-center gap-2">
-            <div className="flex size-6 items-center justify-center rounded-full bg-blue-500 text-xs font-bold text-white">
-              C
-            </div>
-            <div className="flex size-6 items-center justify-center rounded-full bg-green-500 text-xs font-bold text-white">
-              C
-            </div>
-            <div className="flex size-6 items-center justify-center rounded-full bg-blue-400 text-xs font-bold text-white">
-              C
-            </div>
-          </div>
+          <h3 className="text-primary text-2xl font-bold">{vaultInfo.name}</h3>
         </div>
       </div>
 
       {/* Metrics grid */}
-      <div className="mb-8 grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-6">
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {/* Est APY */}
-        <div className="flex flex-col">
-          <span className="text-secondary mb-2 text-sm font-medium">
-            Est APY
-          </span>
-          <span className="text-primary text-2xl font-bold">
-            {/* ${vaultInfo.estApy} */}
-            ESTAPY
-          </span>
+        <div className="flex flex-col gap-4">
+          <p className="text-primary text-lg font-bold">EST APY</p>
         </div>
         {/* Risk Level */}
         <div className="flex flex-col">
-          <span className="text-secondary mb-2 text-sm font-medium">
-            Risk Level
-          </span>
-          <div className="mt-2">
+          <p className="text-secondary text-sm font-medium">Risk Level</p>
+          <div>
             <div className="bg-surface-alt h-2 w-full rounded-full">
               <div
                 className="h-2 rounded-full bg-green-500"
@@ -108,7 +89,7 @@ export const VaultCardDetails = ({
           <span className="text-secondary mb-2 text-sm font-medium">
             Holdings
           </span>
-          <span className="text-primary text-2xl font-bold">
+          <span className="text-primary text-lg font-bold">
             {vaultBalance?.underlyingBalance[0] || "Connect wallet"}
           </span>
         </div>
@@ -117,7 +98,7 @@ export const VaultCardDetails = ({
           <span className="text-secondary mb-2 text-sm font-medium">
             Deposits
           </span>
-          <span className="text-primary text-2xl font-bold">
+          <span className="text-primary text-lg font-bold">
             {formatCurrency(vaultInfo.totalManagedFunds?.[0]?.total_amount)}
           </span>
         </div>
