@@ -10,6 +10,14 @@ export async function POST(request: NextRequest) {
     const caller = request.headers.get("caller");
     const slippageBps = request.headers.get("slippageBps");
 
+    console.log({
+      vaultId,
+      network,
+      amount,
+      caller,
+      slippageBps,
+    });
+
     if (!slippageBps) {
       return NextResponse.json(
         { error: "slippageBps header is required" },

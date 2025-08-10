@@ -69,6 +69,7 @@ Environment validation is handled in `src/shared/lib/environmentVars.ts` with Zo
 - Avoid direct `var(--color-X)` usage in files - use Tailwind variables instead
 - Create CSS variables in `globals.css` when needed
 - Always check `globals.css` for existing color variables before creating new ones
+- Always use Semantic HTML
 
 ## Key Concepts
 

@@ -4,6 +4,8 @@ import { ReactNode, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { TheButton } from "@/shared/components";
 import { Tab } from "@/features/earn/components/Tab";
+import { useUserContext } from "@/contexts";
+import { network } from "@/shared/lib/environmentVars";
 
 type activeTab = "deposit" | "withdraw";
 
@@ -14,12 +16,18 @@ export const VaultManagePanel = ({
 }) => {
   const [activeTab, setActiveTab] = useState<activeTab>("deposit");
   const [amount, setAmount] = useState("0");
+  const { address } = useUserContext();
 
   const handleDeposit = async () => {
     const response = await fetch("/api/earn/deposit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        amount: amount,
+        caller: address ?? "",
+        slippageBps: "100",
+        vaultId: vaultAddress,
+        network: network,
       },
     });
   };
@@ -31,7 +39,7 @@ export const VaultManagePanel = ({
   const renderTab: Record<activeTab, ReactNode> = {
     deposit: (
       <>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+        <div className="flex w-full items-center gap-6">
           {/* From wallet */}
           <div className="flex flex-col gap-2">
             <label className="text-secondary text-sm font-medium">
@@ -59,12 +67,6 @@ export const VaultManagePanel = ({
                 className="bg-surface-alt border-surface-alt text-primary hide-number-spin flex-1 rounded-lg border p-3 text-2xl font-bold outline-none"
                 placeholder="0"
               />
-              <button
-                onClick={handleMaxAmount}
-                className="rounded-lg border border-green-500 bg-transparent px-4 py-2 text-sm font-medium text-green-500 transition-colors hover:bg-green-500/10"
-              >
-                Max
-              </button>
             </div>
             <span className="text-secondary text-xs">
               ${parseFloat(amount) * 1 || "0.00"}
@@ -91,35 +93,16 @@ export const VaultManagePanel = ({
             </div>
             <span className="text-secondary text-xs">6.40%</span>
           </div>
-        </div>
-        {/* You will receive */}
-        <div className="mt-6 flex flex-col gap-2">
-          <label className="text-secondary text-sm font-medium">
-            You will receive
-          </label>
-          <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
-            <input
-              type="text"
-              value={amount}
-              readOnly
-              className="text-primary hide-number-spin w-full bg-transparent text-2xl font-bold outline-none"
-              placeholder="0"
-            />
+          {/* Deposit Button */}
+          <div className="flex w-full justify-end">
+            <TheButton
+              onClick={handleDeposit}
+              disabled={!amount || parseFloat(amount) <= 0}
+              className="w-auto px-8"
+            >
+              Deposit
+            </TheButton>
           </div>
-          <span className="text-secondary text-xs">
-            ${parseFloat(amount) * 1 || "0.00"}
-          </span>
-        </div>
-
-        {/* Deposit Button */}
-        <div className="mt-8 flex justify-end">
-          <TheButton
-            onClick={handleDeposit}
-            disabled={!amount || parseFloat(amount) <= 0}
-            className="w-auto px-8"
-          >
-            Deposit
-          </TheButton>
         </div>
       </>
     ),
