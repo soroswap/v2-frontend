@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import {
   PortfolioCard,
   VaultCard,
@@ -23,11 +23,20 @@ export default function EarnPage() {
         </div>
 
         <div className="bg-surface-page border-surface-alt flex-1 rounded-lg border p-6">
-          <div className="border-surface-alt flex items-center justify-between border-b p-6">
+          <div className="border-surface-alt flex items-center justify-between border-b py-6 sm:p-6">
             <h2 className="text-primary text-xl font-bold">Vaults</h2>
-            <button className="bg-surface-alt text-primary hover:bg-surface-hover flex items-center gap-2 rounded-lg px-4 py-2 transition-colors">
-              <Plus className="size-4" />
-              Vault
+            <button
+              className="bg-surface-alt text-primary hover:bg-surface-hover/70 flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 transition-colors"
+              onClick={() => {
+                window.open(
+                  "https://app.defindex.io",
+                  "_blank",
+                  "noopener,noreferrer",
+                );
+              }}
+            >
+              Create Vault
+              <PlusIcon className="size-4" />
             </button>
           </div>
 
