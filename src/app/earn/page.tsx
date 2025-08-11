@@ -12,12 +12,11 @@ export default function EarnPage() {
     <main className="mt-[100px] flex h-[calc(100vh-100px)] flex-col">
       <div className="flex h-full flex-col space-y-6">
         <div className="p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-9">
               <PortfolioCard />
             </div>
-
-            <div>
+            <div className="lg:col-span-3">
               <VaultCard />
             </div>
           </div>

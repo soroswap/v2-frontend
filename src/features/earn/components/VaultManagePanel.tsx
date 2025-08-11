@@ -32,10 +32,6 @@ export const VaultManagePanel = ({
     });
   };
 
-  const handleMaxAmount = () => {
-    setAmount("1000");
-  };
-
   const renderTab: Record<activeTab, ReactNode> = {
     deposit: (
       <>

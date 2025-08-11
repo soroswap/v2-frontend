@@ -1,33 +1,44 @@
-import Link from "next/link";
+"use client";
+
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { TheButton } from "@/shared/components";
 
 export const VaultCard = () => {
+  const router = useRouter();
   return (
-    <div className="bg-surface border-surface-alt relative overflow-hidden rounded-xl border p-6">
+    <div className="bg-surface border-surface-alt relative overflow-hidden rounded-xl border p-4">
       {/* Background Image */}
-      <div
-        className="absolute inset-0 opacity-0"
-        style={{
-          backgroundImage: "url(/earn/vault.svg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
-      />
+      <div className="absolute inset-0 opacity-20">
+        <Image
+          src="/earn/vault.svg"
+          alt="Vault background"
+          fill
+          className="object-cover"
+        />
+      </div>
 
       {/* Content */}
-      <div className="relative z-10">
-        <h2 className="text-primary mb-2 text-xl font-bold">
+      <div className="flex flex-col gap-2">
+        <h2 className="text-primary flex text-xl font-bold">
           Create your Vault
         </h2>
-        <p className="text-secondary mb-6 text-sm">
+        <p className="text-secondary text-sm">
           Take control of your finances by creating your own Vault
         </p>
-        <Link
-          href="https://app.defindex.io"
-          className="bg-brand hover:bg-brand/90 w-full rounded-lg px-6 py-3 font-semibold text-white transition-colors"
+
+        <TheButton
+          className="w-full"
+          onClick={() => {
+            window.open(
+              "https://app.defindex.io",
+              "_blank",
+              "noopener,noreferrer",
+            );
+          }}
         >
           Create Vault
-        </Link>
+        </TheButton>
       </div>
     </div>
   );
