@@ -73,17 +73,16 @@ export const VaultManagePanel = ({
           </div>
 
           {/* Amount */}
-          <div className="flex flex-col gap-2 lg:flex-1">
+          <div className="flex h-full w-full flex-col gap-2 lg:flex-1">
             <label className="text-secondary text-sm font-medium">Amount</label>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2">
               <input
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary flex-1 rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
                 placeholder="0"
                 min="0"
-                step="any"
+                className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
               />
             </div>
             <span className="text-secondary text-xs">
