@@ -73,46 +73,50 @@ export const VaultCardDetails = ({
           <p className="text-primary text-lg font-bold">EST APY</p>
         </div>
         {/* Risk Level */}
-        <div className="flex flex-col">
-          <p className="text-secondary text-sm font-medium">Risk Level</p>
-          <div>
-            <div className="bg-surface-alt h-2 w-full rounded-full">
-              <div
-                className="h-2 rounded-full bg-green-500"
-                style={{ width: `${25}%` }}
-              />
-            </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-secondary flex h-full text-sm font-medium">
+            Risk Level
+          </p>
+          <div className="flex h-full items-center">
+            <div
+              className="flex h-2 rounded-full bg-green-500"
+              style={{ width: `${25}%` }}
+            />
           </div>
         </div>
         {/* Holdings */}
-        <div className="flex flex-col">
-          <span className="text-secondary mb-2 text-sm font-medium">
-            Holdings
-          </span>
-          <span className="text-primary text-lg font-bold">
+        <div className="flex flex-col gap-2">
+          <p className="text-secondary text-sm font-medium">Holdings</p>
+          <p className="border-surface-page bg-surface-alt text-primary w-fit rounded-lg border text-sm sm:px-3 sm:py-1">
             {vaultBalance?.underlyingBalance[0] || "Connect wallet"}
-          </span>
+          </p>
         </div>
         {/* Deposits */}
         <div className="flex flex-col">
-          <span className="text-secondary mb-2 text-sm font-medium">
-            Deposits
-          </span>
-          <span className="text-primary text-lg font-bold">
+          <p className="text-secondary text-sm font-medium">Deposits</p>
+          <p className="text-primary text-lg font-bold">
             {formatCurrency(vaultInfo.totalManagedFunds?.[0]?.total_amount)}
-          </span>
+          </p>
         </div>
       </div>
 
       {/* Vault contract address */}
-      <div className="bg-surface-subtle flex items-center justify-between rounded-lg p-4">
+      <div className="sm:bg-surface-subtle flex items-center justify-between rounded-lg p-0 sm:p-4">
         <div className="flex items-center gap-3">
-          <span className="text-secondary text-sm font-medium">
+          <p className="text-secondary hidden text-sm font-medium sm:flex">
             Vault Contract Address
-          </span>
-          <span className="text-primary font-mono text-sm">{vaultAddress}</span>
+          </p>
+          <p className="text-primary hidden font-mono text-sm sm:flex">
+            {vaultAddress}
+          </p>
+          <p className="text-primary flex font-mono text-sm sm:hidden">
+            {vaultAddress.slice(0, 19)}...{vaultAddress.slice(-8)}
+          </p>
         </div>
-        <CopyAndPasteButton textToCopy={vaultAddress} />
+        <CopyAndPasteButton
+          textToCopy={vaultAddress}
+          className="sm:bg-surface-subtle bg-transparent"
+        />
       </div>
     </div>
   );
