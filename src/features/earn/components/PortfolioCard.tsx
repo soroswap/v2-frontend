@@ -22,7 +22,9 @@ export const PortfolioCard = () => {
           </div>
         </div>
         <div>
-          <TheButton className="text-nowrap">Portfolio Dashboard</TheButton>
+          <TheButton className="text-nowrap text-white">
+            Portfolio Dashboard
+          </TheButton>
         </div>
       </div>
     </div>

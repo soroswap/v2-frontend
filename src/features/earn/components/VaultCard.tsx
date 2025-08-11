@@ -1,14 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { TheButton } from "@/shared/components";
 
 export const VaultCard = () => {
-  const router = useRouter();
   return (
     <div className="bg-surface border-surface-alt relative overflow-hidden rounded-xl border p-4">
-      {/* Background Image */}
       <div className="absolute inset-0 opacity-20">
         <Image
           src="/earn/vault.svg"
@@ -18,7 +15,6 @@ export const VaultCard = () => {
         />
       </div>
 
-      {/* Content */}
       <div className="flex flex-col gap-2">
         <h2 className="text-primary flex text-xl font-bold">
           Create your Vault
@@ -28,7 +24,7 @@ export const VaultCard = () => {
         </p>
 
         <TheButton
-          className="w-full"
+          className="w-full text-white"
           onClick={() => {
             window.open(
               "https://app.defindex.io",
