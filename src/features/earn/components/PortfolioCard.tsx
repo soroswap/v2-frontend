@@ -26,7 +26,7 @@ export const PortfolioCard = () => {
             className="text-nowrap text-white"
             onClick={() => {
               window.open(
-                "https://app.defindex.io/",
+                "https://www.defindex.io",
                 "noreferrer, noopener",
                 "_blank",
               );
