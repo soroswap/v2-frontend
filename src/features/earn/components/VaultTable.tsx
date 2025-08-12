@@ -125,7 +125,7 @@ export const VaultTable = () => {
 
         if (!vaultBalance) {
           return (
-            <div className="border-surface-page bg-surface-alt text-primary skeleton w-fit rounded-lg border p-2" />
+            <div className="border-surface-page bg-surface-alt text-primary skeleton w-[50%] rounded-lg border p-2" />
           );
         }
 
@@ -165,16 +165,18 @@ export const VaultTable = () => {
     <div className="max-h-96 overflow-y-auto">
       {/* Desktop Table */}
       <div className="hidden md:block">
-        <TheTable
-          columns={columns}
-          data={vaultTableData}
-          isLoading={isLoading}
-          emptyLabel="No vaults available"
-          className="w-full"
-          onRowClick={(vault) => {
-            router.push(`/earn/${vault.vaultAddress}`);
-          }}
-        />
+        <div className="[&_tbody_tr]:!h-[84px] [&_tbody_tr]:!min-h-[84px] [&_tbody_tr_td]:!h-[84px]">
+          <TheTable
+            columns={columns}
+            data={vaultTableData}
+            isLoading={isLoading}
+            emptyLabel="No vaults available"
+            className="w-full"
+            onRowClick={(vault) => {
+              router.push(`/earn/${vault.vaultAddress}`);
+            }}
+          />
+        </div>
       </div>
 
       {/* Mobile Cards */}
