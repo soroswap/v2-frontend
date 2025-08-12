@@ -22,7 +22,16 @@ export const PortfolioCard = () => {
           </div>
         </div>
         <div>
-          <TheButton className="text-nowrap text-white">
+          <TheButton
+            className="text-nowrap text-white"
+            onClick={() => {
+              window.open(
+                "https://app.defindex.io/",
+                "noreferrer, noopener",
+                "_blank",
+              );
+            }}
+          >
             Portfolio Dashboard
           </TheButton>
         </div>

@@ -16,7 +16,7 @@ const VaultPageSkeleton = () => (
           <div className="skeleton h-10 w-10 rounded-lg" />
           <div className="skeleton h-4 w-12" />
         </div>
-        
+
         {/* Header skeleton */}
         <div className="flex items-center gap-4">
           <div className="skeleton size-16 rounded-full" />
@@ -106,6 +106,7 @@ export default function VaultPageDetails() {
         <div className="mx-auto w-full max-w-6xl">
           <VaultCardDetails vaultAddress={vaultAddress} />
           <VaultManagePanel vaultAddress={vaultAddress} />
+          // TODO: Create a about showing the FeebPG, Assets and roles
         </div>
       </div>
     </Suspense>

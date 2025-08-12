@@ -3,12 +3,14 @@ import { network } from "@/shared/lib/environmentVars";
 import { VaultBalanceResponse } from "@defindex/sdk";
 
 interface UseVaultBalanceProps {
-  vaultId: string | null;
+  vaultId?: string | null;
   userAddress: string | null;
+  vaultIds?: string[];
 }
 
 interface UseVaultBalanceReturn {
   vaultBalance: VaultBalanceResponse | null;
+  vaultBalances: VaultBalance | null;
   isLoading: boolean;
   isError: boolean;
 }
@@ -29,12 +31,37 @@ const fetchVaultBalance = async (
   return data as VaultBalanceResponse;
 };
 
+interface VaultBalance {
+  [key: string]: VaultBalanceResponse;
+}
+
+
+const fetchMultipleVaultBalances = async (
+  vaultIds: string[],
+  userAddress: string,
+): Promise<VaultBalance> => {
+  const promises = vaultIds.map(async (vaultId) => {
+    const balance = await fetchVaultBalance(vaultId, userAddress);
+    return { vaultId, balance };
+  });
+
+  const results = await Promise.all(promises);
+
+  const finalObject = results.reduce((acc, item) => {
+    acc[item.vaultId] = item.balance;
+    return acc;
+  }, {} as VaultBalance);
+
+  return finalObject; // ✅ Retorna o objeto final
+};
+
 export const useVaultBalance = ({
   vaultId,
   userAddress,
+  vaultIds,
 }: UseVaultBalanceProps): UseVaultBalanceReturn => {
   const {
-    data: vaultBalance,
+    data: singleVaultBalance,
     error,
     isLoading,
   } = useSWR(
@@ -47,9 +74,28 @@ export const useVaultBalance = ({
     },
   );
 
+  const {
+    data: multipleVaultBalances,
+    error: multipleError,
+    isLoading: multipleLoading,
+  } = useSWR(
+    vaultIds && vaultIds.length > 0 && userAddress
+      ? ["vault-balances", vaultIds.join(","), userAddress]
+      : null,
+    () => fetchMultipleVaultBalances(vaultIds!, userAddress!),
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 300000, // 5 min
+    },
+  );
+
+  console.log("multipleVaultBalances", multipleVaultBalances);
+
   return {
-    vaultBalance: vaultBalance || null,
-    isLoading,
-    isError: Boolean(error),
+    vaultBalance: singleVaultBalance || null,
+    vaultBalances: multipleVaultBalances || null,
+    isLoading: isLoading || multipleLoading,
+    isError: Boolean(error) || Boolean(multipleError),
   };
 };

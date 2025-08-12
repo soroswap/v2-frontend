@@ -7,22 +7,54 @@ import { useVaultInfo } from "@/features/earn/hooks";
 import { useRouter } from "next/navigation";
 import { TokenIcon } from "@/shared/components/TokenIcon";
 import { useTokensList } from "@/shared/hooks";
+import { useVaultBalance } from "@/features/earn/hooks/useVaultBalance";
+import { useUserContext } from "@/contexts";
+import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
+
+type VaultTableData = VaultInfoResponse & {
+  vaultAddress: string;
+  riskLevel: string;
+};
 
 export const VaultTable = () => {
+  const { address } = useUserContext();
   const router = useRouter();
-  const vaultmock = [
-    "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
-    "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
-    "CDRSZ4OGRVUU5ONTI6C6UNF5QFJ3OGGQCNTC5UXXTZQFVRTILJFSVG5D",
+
+  const vaultmock: { vaultAddress: string; riskLevel: string }[] = [
+    {
+      vaultAddress: "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
+      riskLevel: "low",
+    },
+    {
+      vaultAddress: "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
+      riskLevel: "medium",
+    },
+    {
+      vaultAddress: "CDRSZ4OGRVUU5ONTI6C6UNF5QFJ3OGGQCNTC5UXXTZQFVRTILJFSVG5D",
+      riskLevel: "high",
+    },
   ];
 
   const { vaultInfos, isLoading } = useVaultInfo({
-    vaultIds: vaultmock,
+    vaultIds: vaultmock.map((item) => item.vaultAddress),
   });
+
+  const { vaultBalances } = useVaultBalance({
+    vaultIds: vaultmock.map((item) => item.vaultAddress),
+    userAddress: address,
+  });
+
+  const vaultTableData: VaultTableData[] = vaultInfos.map(
+    (vaultInfo, index) => ({
+      ...vaultInfo,
+      vaultAddress: vaultmock[index]?.vaultAddress || "",
+      riskLevel: vaultmock[index]?.riskLevel || "low",
+    }),
+  );
 
   const tokenMap = useTokensList();
 
-  const columns: ColumnDef<VaultInfoResponse>[] = [
+  const columns: ColumnDef<VaultTableData>[] = [
     {
       accessorKey: "vault",
       header: "Vault",
@@ -47,13 +79,15 @@ export const VaultTable = () => {
       accessorKey: "estApy",
       header: "Est APY",
       cell: ({ row }) => {
-        return <div className="text-primary">APY %</div>;
+        const vault = row.original;
+        return <div className="text-primary">{vault.apy.toFixed(2)} %</div>;
       },
     },
     {
       accessorKey: "riskLevel",
       header: "Risk Level",
       cell: ({ row }) => {
+        // TODO: Separe the risk level 100 % em 3 partes, low - medium - high , com base no vaultmock aqui.
         return (
           <div className="text-primary">
             <div
@@ -69,16 +103,23 @@ export const VaultTable = () => {
       header: "Holdings",
       cell: ({ row }) => {
         const vault = row.original;
+        const vaultBalance = vaultBalances?.[vault.vaultAddress];
 
-        if (!vault.address) {
+        if (!address) {
+          return <div className="text-primary">Connect wallet</div>;
+        }
+
+        if (!vaultBalance) {
           return (
-            <div className="border-surface-page bg-surface-alt text-primary w-fit rounded-lg border p-2">
-              Connect wallet
-            </div>
+            <div className="border-surface-page bg-surface-alt text-primary skeleton w-fit rounded-lg border p-2" />
           );
         }
 
-        return <div className="text-primary">{vault.address}</div>;
+        return (
+          <div className="text-primary">
+            {vaultBalance.underlyingBalance[0]} {vault.assets[0].symbol}
+          </div>
+        );
       },
     },
     {
@@ -86,8 +127,10 @@ export const VaultTable = () => {
       header: "TVL",
       cell: ({ row }) => {
         const vault = row.original;
-        const tvl = vault.totalManagedFunds?.[0]?.total_amount || "0";
-        return <div className="text-primary font-medium">{tvl}</div>;
+        const tvl = vault.totalManagedFunds?.[0]?.total_amount;
+        return (
+          <div className="text-primary font-medium">{formatCurrency(tvl)}</div>
+        );
       },
     },
   ];
@@ -98,12 +141,12 @@ export const VaultTable = () => {
       <div className="hidden md:block">
         <TheTable
           columns={columns}
-          data={vaultInfos}
+          data={vaultTableData}
           isLoading={isLoading}
           emptyLabel="No vaults available"
           className="w-full"
           onRowClick={(vault) => {
-            router.push(`/earn/${vaultmock[0]}`);
+            router.push(`/earn/${vault.vaultAddress}`);
           }}
         />
       </div>
@@ -112,17 +155,17 @@ export const VaultTable = () => {
       <div className="space-y-4 md:hidden">
         {isLoading ? (
           <div className="py-8 text-center">Loading...</div>
-        ) : vaultInfos.length === 0 ? (
+        ) : vaultTableData.length === 0 ? (
           <div className="py-8 text-center">No vaults available</div>
         ) : (
-          vaultInfos.map((vault, index) => {
-            const tvl = vault.totalManagedFunds?.[0]?.total_amount || "0";
+          vaultTableData.map((vault) => {
+            const tvl = vault.totalManagedFunds?.[0]?.total_amount;
 
             return (
               <div
-                key={vault.address || index}
+                key={vault.vaultAddress}
                 className="bg-surface border-surface-alt hover:bg-surface-alt/50 cursor-pointer rounded-xl border p-4 transition-colors"
-                onClick={() => router.push(`/earn/${vaultmock[0]}`)}
+                onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
               >
                 {/* Header with icon and title */}
                 <div className="mb-4 flex flex-col items-center gap-3">
@@ -144,7 +187,7 @@ export const VaultTable = () => {
                   {/* Est APY */}
                   <div className="text-center">
                     <p className="text-secondary mb-1 text-sm">Est APY</p>
-                    <p className="text-primary font-medium">APY %</p>
+                    <p className="text-primary font-medium">{vault.apy} %</p>
                   </div>
 
                   {/* Risk Level */}
@@ -169,12 +212,15 @@ export const VaultTable = () => {
                 <div className="border-surface-alt mt-4 border-t pt-4">
                   <div className="text-center">
                     <p className="text-secondary mb-1 text-sm">Holdings</p>
-                    {!vault.address ? (
+                    {!address ? (
                       <div className="border-surface-page bg-surface-alt text-primary mx-auto w-fit rounded-lg border px-3 py-1 text-sm">
                         Connect wallet
                       </div>
                     ) : (
-                      <p className="text-primary text-sm">{vault.address}</p>
+                      <p className="text-primary text-sm">
+                        {vaultBalances?.[vault.vaultAddress]?.dfTokens || 0}{" "}
+                        {vault.assets[0].symbol}
+                      </p>
                     )}
                   </div>
                 </div>
