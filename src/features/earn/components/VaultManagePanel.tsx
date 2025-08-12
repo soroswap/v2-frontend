@@ -7,6 +7,7 @@ import { Tab } from "@/features/earn/components/Tab";
 import { useUserContext } from "@/contexts";
 import { network } from "@/shared/lib/environmentVars";
 import { useVaultInfo } from "../hooks";
+import { parseUnits } from "@/shared/lib/utils";
 
 type activeTab = "deposit" | "withdraw";
 
@@ -27,7 +28,10 @@ export const VaultManagePanel = ({
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        amount: amount,
+        amount: parseUnits({
+          value: amount,
+          decimals: 7,
+        }).toString(),
         caller: address ?? "",
         slippageBps: "100",
         vaultId: vaultAddress,
@@ -69,7 +73,9 @@ export const VaultManagePanel = ({
                 </span>
               </div>
             </div>
-            <span className="text-secondary text-xs">You have 0.00 USDS</span>
+            <span className="text-secondary text-xs">
+              You have - {vaultInfo?.assets[0].symbol}
+            </span>
           </div>
 
           {/* Amount */}
@@ -105,10 +111,12 @@ export const VaultManagePanel = ({
                 <div className="flex size-8 items-center justify-center rounded-full bg-gray-500 text-xs font-bold text-white">
                   a
                 </div>
-                <span className="text-primary text-sm font-medium">ysUSDS</span>
+                <span className="text-primary text-sm font-medium">
+                  {vaultInfo?.assets[0].symbol}
+                </span>
               </div>
             </div>
-            <span className="text-secondary text-xs">6.40%</span>
+            <span className="text-secondary text-xs">-%</span>
           </div>
         </div>
 
@@ -116,10 +124,10 @@ export const VaultManagePanel = ({
         <div className="pt-4">
           <TheButton
             onClick={handleDeposit}
-            disabled={!amount || parseFloat(amount) <= 0}
+            disabled={!address || !amount || parseFloat(amount) <= 0}
             className="w-full lg:w-auto lg:px-8"
           >
-            Deposit
+            {!address ? "Connect Wallet" : "Deposit"}
           </TheButton>
         </div>
       </section>
