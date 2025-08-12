@@ -7,6 +7,7 @@ import {
   VaultCard,
   VaultTable,
 } from "@/features/earn/components";
+import { TheButton } from "@/shared/components";
 
 const EarnPageSkeleton = () => (
   <main className="mt-[100px] flex h-[calc(100vh-100px)] flex-col">
@@ -91,8 +92,8 @@ export default function EarnPage() {
           <div className="bg-surface-page border-surface-alt flex-1 rounded-lg border p-6">
             <div className="border-surface-alt flex items-center justify-between border-b py-6 sm:p-6">
               <h2 className="text-primary text-xl font-bold">Vaults</h2>
-              <button
-                className="bg-surface-alt text-primary hover:bg-surface-hover/70 flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 transition-colors"
+              <TheButton
+                className="border-brand text-brand hover:bg-brand/20 w-fit gap-2 border bg-transparent"
                 onClick={() => {
                   window.open(
                     "https://app.defindex.io",
@@ -102,8 +103,8 @@ export default function EarnPage() {
                 }}
               >
                 Create Vault
-                <PlusIcon className="size-4" />
-              </button>
+                <PlusIcon className="size-6" />
+              </TheButton>
             </div>
 
             <VaultTable />

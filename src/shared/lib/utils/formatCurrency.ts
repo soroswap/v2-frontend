@@ -2,59 +2,31 @@ export const formatCurrency = (
   amount: string | number = 0,
   symbol = "USDS",
 ) => {
-  // Convert to string and remove commas for parsing
-  const cleanValue = String(amount).replace(/,/g, "");
-  const num = typeof amount === "string" ? parseFloat(cleanValue) : amount;
-
   // Handle edge cases
+  if (amount === 0 || amount === "0") return `$0.00 ${symbol}`;
+
+  // Convert to number (amount should already be formatted)
+  const num = typeof amount === "string" ? parseFloat(amount) : amount;
+
   if (isNaN(num)) return `$0.00 ${symbol}`;
-  if (num === 0) return `$0.00 ${symbol}`;
 
-  // Trillions (T)
-  if (num >= 1_000_000_000_000) {
-    const trillions = num / 1_000_000_000_000;
-    const formattedTrillions = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(trillions);
-    return `$${formattedTrillions}T ${symbol}`;
+  // Format based on magnitude with cleaner logic
+  if (num >= 1e12) {
+    return `$${(num / 1e12).toFixed(2)}T ${symbol}`;
   }
 
-  // Billions (B)
-  if (num >= 1_000_000_000) {
-    const billions = num / 1_000_000_000;
-    const formattedBillions = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(billions);
-    return `$${formattedBillions}B ${symbol}`;
+  if (num >= 1e9) {
+    return `$${(num / 1e9).toFixed(2)}B ${symbol}`;
   }
 
-  // Millions (M)
-  if (num >= 1_000_000) {
-    const millions = num / 1_000_000;
-    const formattedMillions = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(millions);
-    return `$${formattedMillions}M ${symbol}`;
+  if (num >= 1e6) {
+    return `$${(num / 1e6).toFixed(2)}M ${symbol}`;
   }
 
-  // Thousands (K)
-  if (num >= 1_000) {
-    const thousands = num / 1_000;
-    const formattedThousands = new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(thousands);
-    return `$${formattedThousands}K ${symbol}`;
+  if (num >= 1e3) {
+    return `$${(num / 1e3).toFixed(2)}K ${symbol}`;
   }
 
-  // Small numbers (less than 1K)
-  const formattedNum = new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(num);
-
-  return `$${formattedNum} ${symbol}`;
+  // Small numbers
+  return `$${num.toFixed(2)} ${symbol}`;
 };

@@ -10,6 +10,8 @@ import { useTokensList } from "@/shared/hooks";
 import { useVaultBalance } from "@/features/earn/hooks/useVaultBalance";
 import { useUserContext } from "@/contexts";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
+import { TheButton } from "@/shared/components";
+import { formatUnits } from "@/shared/lib/utils";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
@@ -19,6 +21,7 @@ type VaultTableData = VaultInfoResponse & {
 export const VaultTable = () => {
   const { address } = useUserContext();
   const router = useRouter();
+  const { connectWallet } = useUserContext();
 
   const vaultmock: { vaultAddress: string; riskLevel: string }[] = [
     {
@@ -106,7 +109,18 @@ export const VaultTable = () => {
         const vaultBalance = vaultBalances?.[vault.vaultAddress];
 
         if (!address) {
-          return <div className="text-primary">Connect wallet</div>;
+          return (
+            <div className="text-primary z-40 w-32">
+              <TheButton
+                onClick={(e) => {
+                  e.preventDefault(), e.stopPropagation(), connectWallet();
+                }}
+                className="h-8 w-24 p-3 text-xs font-medium"
+              >
+                Connect
+              </TheButton>
+            </div>
+          );
         }
 
         if (!vaultBalance) {
@@ -128,8 +142,20 @@ export const VaultTable = () => {
       cell: ({ row }) => {
         const vault = row.original;
         const tvl = vault.totalManagedFunds?.[0]?.total_amount;
+
+        // Validate tvl before converting to BigInt
+        if (!tvl || tvl === "0" || tvl === 0) {
+          return (
+            <div className="text-primary font-medium">
+              {formatCurrency("0")}
+            </div>
+          );
+        }
+
         return (
-          <div className="text-primary font-medium">{formatCurrency(tvl)}</div>
+          <div className="text-primary font-medium">
+            {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }))}
+          </div>
         );
       },
     },
@@ -164,19 +190,21 @@ export const VaultTable = () => {
             return (
               <div
                 key={vault.vaultAddress}
-                className="bg-surface border-surface-alt hover:bg-surface-alt/50 cursor-pointer rounded-xl border p-4 transition-colors"
+                className="bg-surface border-surface-alt hover:bg-surface-alt/50 flex cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-colors"
                 onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
               >
                 {/* Header with icon and title */}
-                <div className="mb-4 flex flex-col items-center gap-3">
+                <div className="flex flex-col items-center gap-3">
                   <TokenIcon
                     src={tokenMap.tokenMap[vault.assets[0].address]?.icon}
                     name={vault.name}
                     code={vault.assets[0].symbol}
                   />
-                  <div className="flex flex-col">
-                    <p className="text-primary font-medium">{vault.name}</p>
-                    <p className="text-primary text-xs font-medium">
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-primary flex font-medium">
+                      {vault.name}
+                    </p>
+                    <p className="text-primary flex text-xs font-medium">
                       {vault.symbol}
                     </p>
                   </div>
@@ -185,15 +213,17 @@ export const VaultTable = () => {
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-3 gap-4">
                   {/* Est APY */}
-                  <div className="text-center">
-                    <p className="text-secondary mb-1 text-sm">Est APY</p>
-                    <p className="text-primary font-medium">{vault.apy} %</p>
+                  <div className="flex flex-col text-center">
+                    <p className="text-secondary text-md">Est APY</p>
+                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium">
+                      {vault.apy.toFixed(2)} %
+                    </p>
                   </div>
 
                   {/* Risk Level */}
-                  <div className="text-center">
-                    <p className="text-secondary mb-1 text-sm">Risk Level</p>
-                    <div className="flex justify-center">
+                  <div className="flex flex-col text-center">
+                    <p className="text-secondary text-md">Risk Level</p>
+                    <div className="flex h-full items-center justify-center">
                       <div
                         className="h-2 w-12 rounded-full bg-green-500"
                         style={{ width: `${25}%` }}
@@ -202,19 +232,32 @@ export const VaultTable = () => {
                   </div>
 
                   {/* TVL */}
-                  <div className="text-center">
-                    <p className="text-secondary mb-1 text-sm">TVL</p>
-                    <p className="text-primary font-medium">{tvl}</p>
+                  <div className="flex flex-col text-center">
+                    <p className="text-secondary text-md">TVL</p>
+                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium text-nowrap">
+                      {formatCurrency(
+                        formatUnits({ value: BigInt(tvl), decimals: 7 }),
+                      )}
+                    </p>
                   </div>
                 </div>
 
                 {/* Holdings Row */}
-                <div className="border-surface-alt mt-4 border-t pt-4">
-                  <div className="text-center">
-                    <p className="text-secondary mb-1 text-sm">Holdings</p>
+                <div className="border-surface-alt border-t">
+                  <div className="flex flex-col gap-3 text-center">
+                    <p className="text-secondary text-md">Holdings</p>
                     {!address ? (
-                      <div className="border-surface-page bg-surface-alt text-primary mx-auto w-fit rounded-lg border px-3 py-1 text-sm">
-                        Connect wallet
+                      <div className="text-primary mx-auto w-fit">
+                        <TheButton
+                          onClick={(e) => {
+                            e.preventDefault(),
+                              e.stopPropagation(),
+                              connectWallet();
+                          }}
+                          className="h-8 w-32 p-3 text-xs font-medium text-white"
+                        >
+                          Connect Wallet
+                        </TheButton>
                       </div>
                     ) : (
                       <p className="text-primary text-sm">
