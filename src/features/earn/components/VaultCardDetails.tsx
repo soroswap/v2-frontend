@@ -8,6 +8,7 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { useVaultBalance, useVaultInfo } from "../hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
+import { formatNumber } from "@/shared/lib/utils/formatNumber";
 
 export const VaultCardDetails = ({
   vaultAddress,
@@ -96,7 +97,9 @@ export const VaultCardDetails = ({
         <div className="flex flex-col">
           <p className="text-secondary text-sm font-medium">Deposits</p>
           <p className="text-primary text-lg font-bold">
-            {formatCurrency(vaultInfo.totalManagedFunds?.[0]?.total_amount)}
+            {formatCurrency(
+              formatNumber(vaultInfo.totalManagedFunds?.[0]?.total_amount),
+            )}
           </p>
         </div>
       </div>

@@ -19,7 +19,10 @@ const EarnPageSkeleton = () => (
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div className="flex w-full gap-4">
                   {[...Array(3)].map((_, i) => (
-                    <div key={i} className="flex w-full flex-col gap-2 sm:w-fit">
+                    <div
+                      key={i}
+                      className="flex w-full flex-col gap-2 sm:w-fit"
+                    >
                       <div className="skeleton h-4 w-16" />
                       <div className="skeleton h-6 w-20" />
                     </div>
