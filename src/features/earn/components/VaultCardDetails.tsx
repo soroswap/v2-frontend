@@ -71,6 +71,7 @@ export const VaultCardDetails = ({
         {/* Est APY */}
         <div className="flex flex-col gap-4">
           <p className="text-primary text-lg font-bold">EST APY</p>
+          <p className="text-primary text-lg">{vaultInfo.apy.toFixed(2)}%</p>
         </div>
         {/* Risk Level */}
         <div className="flex flex-col gap-2">
