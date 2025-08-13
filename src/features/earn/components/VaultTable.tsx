@@ -212,10 +212,7 @@ export const VaultTable = () => {
                   <div className="flex flex-col text-center">
                     <p className="text-secondary text-md">Risk Level</p>
                     <div className="flex h-full items-center justify-center">
-                      <div
-                        className="h-2 w-12 rounded-full bg-green-500"
-                        style={{ width: `${25}%` }}
-                      />
+                      <ProgressBar level={vault.riskLevel} />
                     </div>
                   </div>
 
