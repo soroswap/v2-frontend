@@ -12,6 +12,7 @@ import { useUserContext } from "@/contexts";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { TheButton } from "@/shared/components";
 import { formatUnits } from "@/shared/lib/utils";
+import { VAULT_MOCK } from "../constants/vault";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
@@ -23,35 +24,20 @@ export const VaultTable = () => {
   const router = useRouter();
   const { connectWallet } = useUserContext();
 
-  const vaultmock: { vaultAddress: string; riskLevel: string }[] = [
-    {
-      vaultAddress: "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
-      riskLevel: "low",
-    },
-    {
-      vaultAddress: "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
-      riskLevel: "medium",
-    },
-    {
-      vaultAddress: "CDRSZ4OGRVUU5ONTI6C6UNF5QFJ3OGGQCNTC5UXXTZQFVRTILJFSVG5D",
-      riskLevel: "high",
-    },
-  ];
-
   const { vaultInfos, isLoading } = useVaultInfo({
-    vaultIds: vaultmock.map((item) => item.vaultAddress),
+    vaultIds: VAULT_MOCK.map((item) => item.vaultAddress),
   });
 
   const { vaultBalances } = useVaultBalance({
-    vaultIds: vaultmock.map((item) => item.vaultAddress),
+    vaultIds: VAULT_MOCK.map((item) => item.vaultAddress),
     userAddress: address,
   });
 
   const vaultTableData: VaultTableData[] = vaultInfos.map(
     (vaultInfo, index) => ({
       ...vaultInfo,
-      vaultAddress: vaultmock[index]?.vaultAddress || "",
-      riskLevel: vaultmock[index]?.riskLevel || "low",
+      vaultAddress: VAULT_MOCK[index]?.vaultAddress || "",
+      riskLevel: VAULT_MOCK[index]?.riskLevel || "low",
     }),
   );
 
@@ -90,7 +76,7 @@ export const VaultTable = () => {
       accessorKey: "riskLevel",
       header: "Risk Level",
       cell: ({ row }) => {
-        // TODO: Separe the risk level 100 % em 3 partes, low - medium - high , com base no vaultmock aqui.
+        // TODO: Separe the risk level 100 % em 3 partes, low - medium - high , com base no VAULT_MOCK aqui.
         return (
           <div className="text-primary">
             <div

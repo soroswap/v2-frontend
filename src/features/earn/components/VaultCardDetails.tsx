@@ -9,6 +9,8 @@ import { useVaultBalance, useVaultInfo } from "../hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
 import { formatNumber } from "@/shared/lib/utils/formatNumber";
+import { ProgressBar } from "./ProgressBar";
+import { VAULT_MOCK } from "../constants/vault";
 
 export const VaultCardDetails = ({
   vaultAddress,
@@ -25,6 +27,10 @@ export const VaultCardDetails = ({
     vaultId: vaultAddress,
     userAddress,
   });
+
+  const riskLevelByVaultAddress = VAULT_MOCK.find(
+    (item) => item.vaultAddress === vaultAddress,
+  );
 
   if (isVaultInfoLoading) {
     return (
@@ -80,10 +86,7 @@ export const VaultCardDetails = ({
             Risk Level
           </p>
           <div className="flex h-full items-center">
-            <div
-              className="flex h-2 rounded-full bg-green-500"
-              style={{ width: `${25}%` }}
-            />
+            <ProgressBar level={riskLevelByVaultAddress?.riskLevel} />
           </div>
         </div>
         {/* Holdings */}
