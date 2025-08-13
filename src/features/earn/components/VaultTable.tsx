@@ -13,10 +13,12 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { TheButton } from "@/shared/components";
 import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
+import { ProgressBar } from "./ProgressBar";
+import { RiskLevel } from "../types/RiskLevel";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
-  riskLevel: string;
+  riskLevel: RiskLevel;
 };
 
 export const VaultTable = () => {
@@ -76,13 +78,11 @@ export const VaultTable = () => {
       accessorKey: "riskLevel",
       header: "Risk Level",
       cell: ({ row }) => {
-        // TODO: Separe the risk level 100 % em 3 partes, low - medium - high , com base no VAULT_MOCK aqui.
+        const vault = row.original;
+
         return (
-          <div className="text-primary">
-            <div
-              className="h-2 rounded-full bg-green-500"
-              style={{ width: `${25}%` }}
-            />
+          <div className="text-primary w-[50%]">
+            <ProgressBar level={vault.riskLevel} />
           </div>
         );
       },
