@@ -12,6 +12,63 @@ import { formatNumber } from "@/shared/lib/utils/formatNumber";
 import { ProgressBar } from "./ProgressBar";
 import { VAULT_MOCK } from "../constants/vault";
 
+const VaultCardDetailsLoading = () => {
+  return (
+    <div className="bg-surface border-surface-alt flex animate-pulse flex-col gap-4 rounded-2xl border p-8 shadow-lg">
+      {/* Back button - matches real height */}
+      <div className="flex items-center gap-4">
+        <div className="h-10 w-10 rounded-lg bg-gray-300" />
+        <div className="h-4 w-12 rounded bg-gray-300" />
+      </div>
+
+      {/* Vault header - matches real height */}
+      <div className="flex items-center gap-4">
+        <div className="h-16 w-16 rounded-full bg-gray-300" />
+        <div className="flex flex-col gap-2">
+          <div className="h-8 w-48 rounded bg-gray-300" />
+        </div>
+      </div>
+
+      {/* Metrics grid - matches real height with proper spacing */}
+      <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+        {/* EST APY */}
+        <div className="flex flex-col gap-4">
+          <div className="h-7 w-20 rounded bg-gray-300" />
+          <div className="h-7 w-16 rounded bg-gray-300" />
+        </div>
+
+        {/* Risk Level */}
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-20 rounded bg-gray-300" />
+          <div className="h-6 w-24 rounded bg-gray-300" />
+        </div>
+
+        {/* Holdings */}
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-16 rounded bg-gray-300" />
+          <div className="h-8 w-32 rounded-lg bg-gray-300" />
+        </div>
+
+        {/* Deposits */}
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-16 rounded bg-gray-300" />
+          <div className="h-7 w-24 rounded bg-gray-300" />
+        </div>
+      </div>
+
+      {/* Vault contract address - matches real height */}
+      <div className="sm:bg-surface-subtle flex items-center justify-between rounded-lg p-0 sm:p-4">
+        <div className="flex items-center gap-3">
+          <div className="hidden h-5 w-32 rounded bg-gray-300 sm:flex" />
+          <div className="hidden h-5 w-64 rounded bg-gray-300 sm:flex" />
+          <div className="flex h-5 w-40 rounded bg-gray-300 sm:hidden" />
+        </div>
+        <div className="h-8 w-8 rounded bg-gray-300" />
+      </div>
+    </div>
+  );
+};
+
 export const VaultCardDetails = ({
   vaultAddress,
 }: {
@@ -33,11 +90,7 @@ export const VaultCardDetails = ({
   );
 
   if (isVaultInfoLoading) {
-    return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="skeleton h-64 w-full max-w-4xl rounded-2xl" />
-      </div>
-    );
+    return <VaultCardDetailsLoading />;
   }
 
   if (!vaultInfo) {
