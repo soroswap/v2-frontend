@@ -50,16 +50,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "PRICE_WRONG_NETWORK",
-          message: "Price is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
-
     // If single asset, return single response for backward compatibility
     if (assetList.length === 1) {
       const priceResponse = await soroswapClient.getPrice(
