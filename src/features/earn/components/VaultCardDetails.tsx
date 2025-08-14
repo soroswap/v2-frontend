@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { TokenIcon } from "@/shared/components/TokenIcon";
-import { CopyAndPasteButton } from "@/shared/components";
+import { CopyAndPasteButton, TheButton } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { useVaultBalance, useVaultInfo } from "../hooks";
 import { useUserContext } from "@/contexts/UserContext";
@@ -11,6 +11,7 @@ import { useTokensList } from "@/shared/hooks";
 import { formatNumber } from "@/shared/lib/utils/formatNumber";
 import { ProgressBar } from "./ProgressBar";
 import { VAULT_MOCK } from "../constants/vault";
+import { formatUnits } from "@/shared/lib/utils";
 
 const VaultCardDetailsLoading = () => {
   return (
@@ -76,7 +77,7 @@ export const VaultCardDetails = ({
 }) => {
   const router = useRouter();
   const { tokenMap } = useTokensList();
-  const { address: userAddress } = useUserContext();
+  const { address: userAddress, connectWallet } = useUserContext();
   const { vaultInfo, isLoading: isVaultInfoLoading } = useVaultInfo({
     vaultId: vaultAddress,
   });
@@ -131,7 +132,9 @@ export const VaultCardDetails = ({
         {/* Est APY */}
         <div className="flex flex-col gap-4">
           <p className="text-primary text-lg font-bold">EST APY</p>
-          <p className="text-primary text-lg">{vaultInfo.apy.toFixed(2)}%</p>
+          <div className="flex h-full items-center">
+            <p className="text-primary text-lg">{vaultInfo.apy.toFixed(2)}%</p>
+          </div>
         </div>
         {/* Risk Level */}
         <div className="flex flex-col gap-2">
@@ -145,18 +148,39 @@ export const VaultCardDetails = ({
         {/* Holdings */}
         <div className="flex flex-col gap-2">
           <p className="text-secondary text-sm font-medium">Holdings</p>
-          <p className="border-surface-page bg-surface-alt text-primary w-fit rounded-lg border text-sm sm:px-3 sm:py-1">
-            {vaultBalance?.underlyingBalance[0] || "Connect wallet"}
-          </p>
+          {userAddress && vaultBalance && vaultInfo ? (
+            <div className="flex h-full items-center">
+              <p className="text-primary w-fit text-sm sm:px-3 sm:py-1">
+                {vaultBalance?.underlyingBalance[0]}{" "}
+                {vaultInfo.assets[0].symbol}
+              </p>
+            </div>
+          ) : (
+            <div className="flex h-full items-center">
+              <TheButton
+                onClick={() => {
+                  connectWallet();
+                }}
+                className="h-8 w-24 p-3 text-xs font-medium"
+              >
+                Connect
+              </TheButton>
+            </div>
+          )}
         </div>
         {/* Deposits */}
         <div className="flex flex-col">
           <p className="text-secondary text-sm font-medium">Deposits</p>
-          <p className="text-primary text-lg font-bold">
-            {formatCurrency(
-              formatNumber(vaultInfo.totalManagedFunds?.[0]?.total_amount),
-            )}
-          </p>
+          <div className="flex h-full items-center">
+            <p className="text-primary text-lg font-bold">
+              {formatCurrency(
+                formatUnits({
+                  value: BigInt(vaultInfo.totalManagedFunds?.[0]?.total_amount),
+                  decimals: 7,
+                }),
+              )}
+            </p>
+          </div>
         </div>
       </div>
 
