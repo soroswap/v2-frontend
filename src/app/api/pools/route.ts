@@ -43,15 +43,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "POOLS_WRONG_NETWORK",
-          message: "Pools is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
     const poolsResponse = await soroswapClient.getPools(
       SOROSWAP.NETWORK,
       [SupportedProtocols.SOROSWAP],

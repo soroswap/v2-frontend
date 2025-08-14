@@ -44,16 +44,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "GET_POOLS_BY_TOKENS_WRONG_NETWORK",
-          message: "Get pools by tokens is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
-
     const poolByTokens = await soroswapClient.getPoolByTokens(
       tokenA,
       tokenB,

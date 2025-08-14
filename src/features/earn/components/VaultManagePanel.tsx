@@ -24,7 +24,7 @@ export const VaultManagePanel = ({
   });
 
   const handleDeposit = async () => {
-    const response = await fetch("/api/earn/deposit", {
+    await fetch("/api/earn/deposit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export const VaultManagePanel = ({
   };
 
   const handleWithdraw = async () => {
-    const response = await fetch("/api/earn/withdraw", {
+    await fetch("/api/earn/withdraw", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

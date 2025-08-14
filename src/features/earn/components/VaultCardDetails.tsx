@@ -8,7 +8,6 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { useVaultBalance, useVaultInfo } from "../hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
-import { formatNumber } from "@/shared/lib/utils/formatNumber";
 import { ProgressBar } from "./ProgressBar";
 import { VAULT_MOCK } from "../constants/vault";
 import { formatUnits } from "@/shared/lib/utils";

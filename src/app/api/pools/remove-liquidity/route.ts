@@ -51,16 +51,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "REMOVE_LIQUIDITY_WRONG_NETWORK",
-          message: "Remove liquidity is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
-
     const removeLiquidityResponse = await soroswapClient.removeLiquidity(
       body,
       SOROSWAP.NETWORK,

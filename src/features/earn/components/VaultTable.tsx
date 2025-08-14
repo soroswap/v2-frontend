@@ -99,7 +99,9 @@ export const VaultTable = () => {
             <div className="text-primary z-40 w-32">
               <TheButton
                 onClick={(e) => {
-                  e.preventDefault(), e.stopPropagation(), connectWallet();
+                  e.preventDefault();
+                  e.stopPropagation();
+                  connectWallet();
                 }}
                 className="h-8 w-24 p-3 text-xs font-medium"
               >
@@ -235,9 +237,9 @@ export const VaultTable = () => {
                       <div className="text-primary mx-auto w-fit">
                         <TheButton
                           onClick={(e) => {
-                            e.preventDefault(),
-                              e.stopPropagation(),
-                              connectWallet();
+                            e.preventDefault();
+                            e.stopPropagation();
+                            connectWallet();
                           }}
                           className="h-8 w-32 p-3 text-xs font-medium text-white"
                         >
