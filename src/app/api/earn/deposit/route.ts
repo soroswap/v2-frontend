@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
         amounts: [Number(amount)],
         caller: caller,
         slippageBps: Number(slippageBps),
+        invest: true,
       },
       network as SupportedNetworks,
     );

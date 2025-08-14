@@ -106,7 +106,7 @@ export default function VaultPageDetails() {
         <div className="mx-auto w-full max-w-6xl">
           <VaultCardDetails vaultAddress={vaultAddress} />
           <VaultManagePanel vaultAddress={vaultAddress} />
-          // TODO: Create a about showing the FeebPG, Assets and roles
+          {/* TODO: Create a about showing the FeebPG, Assets and roles */}
         </div>
       </div>
     </Suspense>

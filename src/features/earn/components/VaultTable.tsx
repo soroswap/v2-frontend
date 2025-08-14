@@ -89,7 +89,7 @@ export const VaultTable = () => {
     {
       accessorKey: "riskLevel",
       header: "Risk Level",
-      cell: ({ row }) => {
+      cell: () => {
         // TODO: Separe the risk level 100 % em 3 partes, low - medium - high , com base no vaultmock aqui.
         return (
           <div className="text-primary">
@@ -113,7 +113,9 @@ export const VaultTable = () => {
             <div className="text-primary z-40 w-32">
               <TheButton
                 onClick={(e) => {
-                  e.preventDefault(), e.stopPropagation(), connectWallet();
+                  e.preventDefault();
+                  e.stopPropagation();
+                  connectWallet();
                 }}
                 className="h-8 w-24 p-3 text-xs font-medium"
               >
@@ -252,9 +254,9 @@ export const VaultTable = () => {
                       <div className="text-primary mx-auto w-fit">
                         <TheButton
                           onClick={(e) => {
-                            e.preventDefault(),
-                              e.stopPropagation(),
-                              connectWallet();
+                            e.preventDefault();
+                            e.stopPropagation();
+                            connectWallet();
                           }}
                           className="h-8 w-32 p-3 text-xs font-medium text-white"
                         >
