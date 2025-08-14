@@ -1,20 +1,21 @@
 "use client";
 
+import { STELLAR } from "@/shared/lib/environmentVars";
+import {
+  ALBEDO_ID,
+  allowAllModules,
+  ISupportedWallet,
+  StellarWalletsKit,
+} from "@creit.tech/stellar-wallets-kit";
+import { LedgerModule } from '@creit.tech/stellar-wallets-kit/modules/ledger.module';
 import {
   createContext,
   ReactNode,
   useContext,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react";
-import {
-  StellarWalletsKit,
-  ALBEDO_ID,
-  allowAllModules,
-  ISupportedWallet,
-} from "@creit.tech/stellar-wallets-kit";
-import { STELLAR } from "@/shared/lib/environmentVars";
 
 interface UserContextProps {
   address: string | null;
@@ -40,7 +41,10 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         const walletKit = new StellarWalletsKit({
           network: STELLAR.WALLET_NETWORK,
           selectedWalletId: ALBEDO_ID,
-          modules: allowAllModules(),
+          modules: [
+            ...allowAllModules(), 
+            new LedgerModule()
+          ],
         });
         kitRef.current = walletKit;
         setKit(walletKit);
@@ -57,6 +61,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
+        console.log("🚀 | connectWallet | address:", address)
         setAddress(address);
       },
     });

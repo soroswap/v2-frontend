@@ -50,16 +50,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "ADD_LIQUIDITY_WRONG_NETWORK",
-          message: "Add liquidity is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
-
     const addLiquidityResponse = await soroswapClient.addLiquidity(
       body,
       SOROSWAP.NETWORK,
