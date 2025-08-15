@@ -109,17 +109,17 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           {/* TODO: Add To Vault % from the  API */}
           <span className="text-secondary text-xs">APY - %</span>
         </div>
-      </div>
 
-      {/* Deposit Button */}
-      <div className="pt-4">
-        <TheButton
-          onClick={handleDeposit}
-          disabled={!address || !amount || parseFloat(amount) <= 0}
-          className="w-full lg:w-auto lg:px-8"
-        >
-          {!address ? "Connect Wallet" : "Deposit"}
-        </TheButton>
+        {/* Deposit Button */}
+        <div className="flex">
+          <TheButton
+            onClick={handleDeposit}
+            disabled={!address || !amount || parseFloat(amount) <= 0}
+            className="w-full text-white lg:w-auto lg:px-8"
+          >
+            {!address ? "Connect Wallet" : "Deposit"}
+          </TheButton>
+        </div>
       </div>
     </section>
   );

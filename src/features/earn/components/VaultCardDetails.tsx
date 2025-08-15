@@ -80,7 +80,7 @@ export const VaultCardDetails = ({
   const { vaultInfo, isLoading: isVaultInfoLoading } = useVaultInfo({
     vaultId: vaultAddress,
   });
-  const { vaultBalance } = useVaultBalance({
+  const { vaultBalance, isLoading: isVaultBalanceLoading } = useVaultBalance({
     vaultId: vaultAddress,
     userAddress,
   });
@@ -146,7 +146,11 @@ export const VaultCardDetails = ({
         {/* Holdings */}
         <div className="flex flex-col gap-2">
           <p className="text-secondary text-sm font-medium">Holdings</p>
-          {userAddress && vaultBalance && vaultInfo ? (
+          {isVaultInfoLoading || isVaultBalanceLoading ? (
+            <div className="flex h-full items-center">
+              <div className="skeleton h-8 w-24" />
+            </div>
+          ) : userAddress && vaultBalance && vaultInfo ? (
             <div className="flex h-full items-center">
               <p className="text-primary w-fit text-sm sm:px-3 sm:py-1">
                 {vaultBalance?.underlyingBalance[0]}{" "}
