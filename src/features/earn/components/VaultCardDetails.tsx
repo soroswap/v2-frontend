@@ -160,7 +160,7 @@ export const VaultCardDetails = ({
                 onClick={() => {
                   connectWallet();
                 }}
-                className="h-8 w-24 p-3 text-xs font-medium"
+                className="h-8 w-24 p-3 text-xs font-medium text-white"
               >
                 Connect
               </TheButton>
