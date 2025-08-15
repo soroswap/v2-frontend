@@ -12,7 +12,7 @@ export const ProgressBar = ({ level = "low" }: { level?: RiskLevel }) => {
   const progressWidth = riskLevelProgress[level];
 
   return (
-    <div className="h-6 w-full overflow-hidden rounded-md border border-white/70 bg-transparent">
+    <div className="border-surface-alt h-6 w-full overflow-hidden rounded-md border bg-transparent">
       <div
         className="h-full bg-green-500 transition-all duration-300 ease-in-out"
         style={{ width: `${progressWidth}%` }}
