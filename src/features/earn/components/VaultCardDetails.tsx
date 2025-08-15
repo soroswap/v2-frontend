@@ -119,7 +119,6 @@ export const VaultCardDetails = ({
           name={vaultInfo.name}
           code={vaultInfo.assets[0].symbol}
           size={64}
-          className="bg-orange-500"
         />
         <div>
           <h3 className="text-primary text-2xl font-bold">{vaultInfo.name}</h3>

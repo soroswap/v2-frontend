@@ -5,10 +5,12 @@ import { useVaultInfo } from "@/features/earn/hooks";
 import { parseUnits } from "@/shared/lib/utils";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
-import { TheButton } from "@/shared/components";
+import { TheButton, TokenIcon } from "@/shared/components";
 import { network } from "@/shared/lib/environmentVars";
+import { useTokensList } from "@/shared/hooks";
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
+  const { tokenMap } = useTokensList();
   const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
   const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
@@ -30,6 +32,14 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     });
   };
 
+  if (!vaultInfo) {
+    return (
+      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
+        <div className="text-secondary text-center">Vault not found</div>
+      </div>
+    );
+  }
+
   return (
     <section className="w-full space-y-6">
       <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center">
@@ -40,16 +50,20 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           </label>
           <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-orange-500 text-xs font-bold text-white">
-                S$
-              </div>
+              <TokenIcon
+                src={tokenMap[vaultInfo.assets[0].address]?.icon}
+                name={vaultInfo.name}
+                code={vaultInfo.assets[0].symbol}
+                size={24}
+              />
               <span className="text-primary text-sm font-medium">
-                {vaultInfo?.assets[0].symbol}
+                {vaultInfo.assets[0].symbol}
               </span>
             </div>
           </div>
           <span className="text-secondary text-xs">
-            You have - {vaultInfo?.assets[0].symbol}
+            {/* TODO: Add balance from the user APi */}
+            You have - {vaultInfo.assets[0].symbol}
           </span>
         </div>
 
@@ -81,15 +95,19 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <label className="text-secondary text-sm font-medium">To vault</label>
           <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 items-center justify-center rounded-full bg-gray-500 text-xs font-bold text-white">
-                a
-              </div>
+              <TokenIcon
+                src={tokenMap[vaultInfo.assets[0].address]?.icon}
+                name={vaultInfo.name}
+                code={vaultInfo.assets[0].symbol}
+                size={24}
+              />
               <span className="text-primary text-sm font-medium">
-                {vaultInfo?.assets[0].symbol}
+                {vaultInfo.assets[0].symbol}
               </span>
             </div>
           </div>
-          <span className="text-secondary text-xs">-%</span>
+          {/* TODO: Add To Vault % from the  API */}
+          <span className="text-secondary text-xs">APY - %</span>
         </div>
       </div>
 
