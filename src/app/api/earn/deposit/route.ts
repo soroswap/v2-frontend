@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const data = await defindexClient.depositToVault(
       vaultId,
       {
-        amounts: [BigInt(amount)],
+        amounts: [Number(amount)],
         caller: caller,
         slippageBps: Number(slippageBps),
         invest: true,
