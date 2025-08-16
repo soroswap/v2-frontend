@@ -76,7 +76,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <TheButton
             onClick={handleWithdraw}
             disabled={!amount || parseFloat(amount) <= 0}
-            className="w-full lg:w-auto lg:px-8"
+            className="w-full text-white lg:w-auto lg:px-8"
             type="submit"
           >
             Withdraw
