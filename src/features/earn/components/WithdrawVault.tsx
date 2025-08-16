@@ -25,13 +25,10 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   return (
     <section className="w-full space-y-6">
-      <div className="flex w-full flex-col gap-6 md:flex-row md:items-start">
+      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center">
         {/* Vault Address Field */}
-        <div className="flex flex-col gap-2 md:flex-1">
-          <label
-            htmlFor="vault-address"
-            className="text-secondary block text-sm font-medium"
-          >
+        <div className="flex flex-col gap-2 lg:flex-1">
+          <label className="text-secondary text-sm font-medium">
             Vault address
           </label>
           <div className="relative">
@@ -54,37 +51,32 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
         </div>
 
         {/* Amount to Withdraw */}
-        <div className="flex flex-col gap-2 md:flex-1">
-          <label
-            htmlFor="withdraw-amount"
-            className="text-secondary block text-sm font-medium"
-          >
+        <div className="flex flex-col gap-2 lg:flex-1">
+          <label className="text-secondary text-sm font-medium">
             Amount to withdraw
           </label>
-          <div className="space-y-2">
-            <input
-              id="withdraw-amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-4 text-2xl font-bold outline-none focus:ring-1"
-              placeholder="0"
-              min="0"
-              step="any"
-              aria-describedby="amount-value"
-            />
-            <p id="amount-value" className="text-secondary text-xs">
-              ${parseFloat(amount) * 1 || "0.00"}
-            </p>
-          </div>
+          <input
+            id="withdraw-amount"
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
+            placeholder="0"
+            min="0"
+            step="any"
+            aria-describedby="amount-value"
+          />
+          <p id="amount-value" className="text-secondary text-xs">
+            ${parseFloat(amount) * 1 || "0.00"}
+          </p>
         </div>
 
         {/* Withdraw Button */}
-        <div className="flex items-end md:w-auto">
+        <div className="flex">
           <TheButton
             onClick={handleWithdraw}
             disabled={!amount || parseFloat(amount) <= 0}
-            className="w-full px-8 md:w-auto"
+            className="w-full lg:w-auto lg:px-8"
             type="submit"
           >
             Withdraw
