@@ -4,44 +4,33 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const vaultId = request.headers.get("vaultId");
-    const network = request.headers.get("network");
-    const amount = request.headers.get("amount");
-    const caller = request.headers.get("caller");
-    const slippageBps = request.headers.get("slippageBps");
-
-    console.log({
-      vaultId,
-      network,
-      amount,
-      caller,
-      slippageBps,
-    });
+    const body = await request.json();
+    const { vaultId, network, amount, caller, slippageBps } = body;
 
     if (!slippageBps) {
       return NextResponse.json(
-        { error: "slippageBps header is required" },
+        { error: "slippageBps is required" },
         { status: 400 },
       );
     }
 
     if (!caller) {
       return NextResponse.json(
-        { error: "caller header is required" },
+        { error: "caller is required" },
         { status: 400 },
       );
     }
 
     if (!amount) {
       return NextResponse.json(
-        { error: "amount header is required" },
+        { error: "amount is required" },
         { status: 400 },
       );
     }
 
     if (!vaultId || !network) {
       return NextResponse.json(
-        { error: "vaultId and network headers are required" },
+        { error: "vaultId and network are required" },
         { status: 400 },
       );
     }
