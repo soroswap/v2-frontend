@@ -4,10 +4,13 @@ import { useState } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { CopyAndPasteButton, TheButton } from "@/shared/components";
 import { network } from "@/shared/lib/environmentVars";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { useVaultInfo } from "@/features/earn/hooks/useVaultInfo";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const [amount, setAmount] = useState("0");
   const { address } = useUserContext();
+  const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
 
   const handleWithdraw = async () => {
     await fetch("/api/earn/withdraw", {
@@ -55,17 +58,14 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <label className="text-secondary text-sm font-medium">
             Amount to withdraw
           </label>
-          <input
-            id="withdraw-amount"
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+          <TokenAmountInput
+            token={vaultInfo?.assets[0]}
+            amount={amount}
+            setAmount={(v) => setAmount(v ?? "0")}
+            isLoading={false}
             className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
-            placeholder="0"
-            min="0"
-            step="any"
-            aria-describedby="amount-value"
           />
+
           <p id="amount-value" className="text-secondary text-xs">
             ${parseFloat(amount) * 1 || "0.00"}
           </p>

@@ -8,6 +8,7 @@ import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
 import { network } from "@/shared/lib/environmentVars";
 import { useTokensList } from "@/shared/hooks";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
@@ -71,12 +72,11 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
         <div className="flex h-full w-full flex-col gap-2 lg:flex-1">
           <label className="text-secondary text-sm font-medium">Amount</label>
           <div className="flex w-full gap-2">
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              min="0"
+            <TokenAmountInput
+              token={vaultInfo.assets[0]}
+              amount={amount}
+              setAmount={(v) => setAmount(v ?? "0")}
+              isLoading={false}
               className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
             />
           </div>

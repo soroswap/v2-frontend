@@ -129,9 +129,13 @@ export const VaultCardDetails = ({
       <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {/* Est APY */}
         <div className="flex flex-col gap-4">
-          <p className="text-primary text-lg font-bold">EST APY</p>
+          <p className="text-secondary flex h-full text-sm font-medium">
+            EST APY
+          </p>
           <div className="flex h-full items-center">
-            <p className="text-primary text-lg">{vaultInfo.apy.toFixed(2)}%</p>
+            <p className="text-primary text-lg font-semibold">
+              {vaultInfo.apy.toFixed(2)}%
+            </p>
           </div>
         </div>
         {/* Risk Level */}
@@ -152,7 +156,7 @@ export const VaultCardDetails = ({
             </div>
           ) : userAddress && vaultBalance && vaultInfo ? (
             <div className="flex h-full items-center">
-              <p className="text-primary w-fit text-sm sm:px-3 sm:py-1">
+              <p className="text-primary w-fit text-lg font-semibold sm:px-3 sm:py-1">
                 {vaultBalance?.underlyingBalance[0]}{" "}
                 {vaultInfo.assets[0].symbol}
               </p>
@@ -174,7 +178,7 @@ export const VaultCardDetails = ({
         <div className="flex flex-col">
           <p className="text-secondary text-sm font-medium">Deposits</p>
           <div className="flex h-full items-center">
-            <p className="text-primary text-lg font-bold">
+            <p className="text-primary text-lg font-semibold">
               {formatCurrency(
                 formatUnits({
                   value: BigInt(vaultInfo.totalManagedFunds?.[0]?.total_amount),
