@@ -6,18 +6,19 @@ import { parseUnits } from "@/shared/lib/utils";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
-import { network } from "@/shared/lib/environmentVars";
+import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 import { useTokensList } from "@/shared/hooks";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { defindexClient } from "@/shared/lib/server/defindexClient";
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
   const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
-  const { address } = useUserContext();
+  const { address, signTransaction } = useUserContext();
   const [amount, setAmount] = useState("0");
 
   const handleDeposit = async () => {
-    await fetch("/api/earn/deposit", {
+    const depositData = await fetch("/api/earn/deposit", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -31,6 +32,20 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
         network: network,
       },
     });
+    const depositDataJson = await depositData.json();
+    console.log("depositData", depositDataJson);
+    const xdr = depositDataJson.xdr;
+    console.log("xdr", xdr);
+    const txHash = await signTransaction(xdr, address ?? "");
+    console.log("txHash", txHash);
+    defindexClient
+      .sendTransaction(txHash, SOROSWAP.NETWORK)
+      .then((res) => {
+        console.log("res", res);
+      })
+      .catch((err) => {
+        console.log("err", err);
+      });
   };
 
   if (!vaultInfo) {
