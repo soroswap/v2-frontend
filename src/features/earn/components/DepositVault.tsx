@@ -106,8 +106,9 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </span>
             </div>
           </div>
-          {/* TODO: Add To Vault % from the  API */}
-          <span className="text-secondary text-xs">APY - %</span>
+          <span className="text-secondary text-xs">
+            APY {vaultInfo.apy.toFixed(2)}%
+          </span>
         </div>
 
         {/* Deposit Button */}
