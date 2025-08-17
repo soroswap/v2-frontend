@@ -22,9 +22,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: vaultInfo });
   } catch (error) {
     console.error("Error fetching vault info:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch vault info" },
-      { status: 500 },
-    );
+    return NextResponse.json(error);
   }
 }
