@@ -48,10 +48,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching vault info:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch vault info" },
-      { status: 500 },
-    );
+    console.error("Error fetching vault deposit:", error);
+    return NextResponse.json(error);
   }
 }
