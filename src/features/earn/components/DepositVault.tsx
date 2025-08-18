@@ -38,14 +38,15 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     console.log("xdr", xdr);
     const txHash = await signTransaction(xdr, address ?? "");
     console.log("txHash", txHash);
-    defindexClient
-      .sendTransaction(txHash, SOROSWAP.NETWORK)
-      .then((res) => {
-        console.log("res", res);
-      })
-      .catch((err) => {
-        console.log("err", err);
-      });
+    const sendTransactionResponse = await fetch("/api/earn/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(txHash),
+    });
+    const sendTransactionResponseJson = await sendTransactionResponse.json();
+    console.log("sendTransactionResponse", sendTransactionResponseJson);
   };
 
   if (!vaultInfo) {
