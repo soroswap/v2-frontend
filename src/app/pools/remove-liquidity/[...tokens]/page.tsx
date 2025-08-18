@@ -21,6 +21,7 @@ import {
   PoolStep,
 } from "@/features/pools/hooks/usePool";
 import { PoolModal } from "@/features/pools/components/PoolModal";
+import { usePoolsSettingsStore } from "@/contexts/store";
 
 // TODO: When the token data is [ ] u can type wathever u want
 // TODO: Flickering
@@ -30,6 +31,7 @@ export default function RemoveLiquidityPage() {
   const params = useParams();
   const router = useRouter();
   const { tokenMap } = useTokensList();
+  const { poolsSettings } = usePoolsSettingsStore();
 
   const [isPoolModalOpen, setIsPoolModalOpen] = useState<boolean>(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] =
@@ -332,9 +334,11 @@ export default function RemoveLiquidityPage() {
           </div>
         </div>
 
-        {/* Slippage Tolerance */}
+        {/* Slippage Tolerance // TODO: remove hardcoded value  */}
         <div className="mb-6">
-          <span className="text-secondary text-sm">Slippage Tolerance 1%</span>
+          <span className="text-secondary text-sm">
+            Slippage Tolerance {poolsSettings.customSlippage}%
+          </span>
         </div>
 
         {/* Remove Button */}
