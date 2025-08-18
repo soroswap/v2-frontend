@@ -9,11 +9,11 @@ import { useVaultInfo } from "@/features/earn/hooks/useVaultInfo";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const [amount, setAmount] = useState("0");
-  const { address } = useUserContext();
+  const { address, signTransaction } = useUserContext();
   const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
 
   const handleWithdraw = async () => {
-    await fetch("/api/earn/withdraw", {
+    const withdrawData = await fetch("/api/earn/withdraw", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -24,6 +24,12 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
         network: network,
       },
     });
+    const withdrawDataJson = await withdrawData.json();
+    console.log("withdrawData", withdrawDataJson);
+    const xdr = withdrawDataJson.xdr;
+    console.log("xdr", xdr);
+    const txHash = await signTransaction(xdr, address ?? "");
+    console.log("txHash", txHash);
   };
 
   return (

@@ -4,8 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { vaultId, network, amount, caller, slippageBps } = body;
+    const vaultId = request.headers.get("vaultId");
+    const network = request.headers.get("network");
+    const amount = request.headers.get("amount");
+    const caller = request.headers.get("caller");
+    const slippageBps = request.headers.get("slippageBps");
 
     if (!slippageBps) {
       return NextResponse.json(
