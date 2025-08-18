@@ -57,7 +57,7 @@ export default function SwapPage() {
       setIsSwapModalOpen(true);
     },
     onError: (error: SwapError) => {
-      console.log("eRror PAGE! ", error);
+      console.log("Error PAGE! ", error);
       console.error("Swap failed:", error);
       setSwapError(error);
     },
@@ -140,6 +140,7 @@ export default function SwapPage() {
                   sellToken.contract === buyToken.contract
                 }
                 onClick={onSwapClick}
+                className="text-[#ededed]"
               >
                 {!buyToken || !sellToken
                   ? "Select a token"

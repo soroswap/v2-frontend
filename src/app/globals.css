@@ -5,89 +5,87 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    /* --- Light Theme (Default) --- */
-    --color-bg-page: #ffffff;
+  /* --- Light Theme (Default) --- */
+  --color-bg-page: #ffffff;
 
+  /* Sync legacy variables */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-text-primary);
 
-    /* Sync legacy variables */
-    --background: var(--color-bg-page);
-    --foreground: var(--color-text-primary);
+  /* --- Design System Color Tokens (Light) --- */
+  --color-primary: #0a0a0a;
+  --color-secondary: #5f6368;
 
-    /* --- Design System Color Tokens (Light) --- */
-    --color-primary: #171717;
-    --color-secondary: #5f6368;
+  --color-brand: #8866dd;
+  --color-surface-page: #ffffff;
+  --color-surface: #f8f9fa;
+  --color-surface-hover: #f1f3f4;
 
-    --color-brand: #8866DD;
-    --color-surface-page: #ffffff;
-    --color-surface: #f8f9fa;
-    --color-surface-hover: #f1f3f4;
+  --color-surface-subtle: #f1f3f4;
+  --color-surface-light: #ffffff;
+  --color-surface-alt: #e8eaed;
 
-    --color-surface-subtle: #f1f3f4;
-    --color-surface-light: #ffffff;
-    --color-surface-alt: #e8eaed;
+  --color-surface-skeleton-start: #e8eaed;
+  --color-surface-skeleton-mid: #f1f3f4;
+  --color-surface-skeleton-end: #e8eaed;
 
-    --color-surface-skeleton-start: #e8eaed;
-    --color-surface-skeleton-mid: #f1f3f4;
-    --color-surface-skeleton-end: #e8eaed;
-
-    /* --color-limiar-primary: #e8eaed;
+  /* --color-limiar-primary: #e8eaed;
     --color-limiar-secondary: #dadce0; */
 
-
-    /* --color-inverse: #ffffff;
+  /* --color-inverse: #ffffff;
     --color-accent-success: #137333;
     --color-accent-warning: #ea4335; */
 
-    --color-icon-muted: #9aa0a6;
+  --color-accent-warning: #ea4335;
 
-    /* Legacy variables mapped to tokens for backward compatibility */
-    --background: var(--color-bg-page);
-    --foreground: var(--color-text-primary);
-    --font-inter: var(--font-inter);
-    --font-darker-grotesque: var(--font-darker-grotesque);
-  }
+  --color-icon-muted: #9aa0a6;
 
-  .dark {
-    --color-bg-page: #0a0a0a;
+  /* Legacy variables mapped to tokens for backward compatibility */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-text-primary);
+  --font-inter: var(--font-inter);
+  --font-darker-grotesque: var(--font-darker-grotesque);
+}
 
-    /* Sync legacy variables */
-    --background: var(--color-bg-page);
-    --foreground: var(--color-primary);
+.dark {
+  --color-bg-page: #0a0a0a;
 
-    /* --- Design System Color Tokens --- */
-    --color-primary: #ededed;
-    --color-secondary: #A0A3C4;
-  
-    --color-brand: #8866DD;
-    --color-surface-page: #0f1016;
-    --color-surface: #181A25;
-    --color-surface-hover: #232136;
+  /* Sync legacy variables */
+  --background: var(--color-bg-page);
+  --foreground: var(--color-primary);
 
-    --color-surface-subtle: #10121A;
-    --color-surface-light: #ffffff;
-    --color-surface-alt: #232136;
-    
-  --color-surface-skeleton-start: #23243A;
-  --color-surface-skeleton-mid: #2A2B42;
-  --color-surface-skeleton-end: #23243A;
+  /* --- Design System Color Tokens --- */
+  --color-primary: #ededed;
+  --color-secondary: #a0a3c4;
 
+  --color-brand: #8866dd;
+  --color-surface-page: #0f1016;
+  --color-surface: #181a25;
+  --color-surface-hover: #232136;
+
+  --color-surface-subtle: #10121a;
+  --color-surface-light: #ffffff;
+  --color-surface-alt: #232136;
+
+  --color-surface-skeleton-start: #23243a;
+  --color-surface-skeleton-mid: #2a2b42;
+  --color-surface-skeleton-end: #23243a;
 
   /* --color-limiar-primary: #23243A;
   --color-limiar-secondary: #35374A; */
 
-
   /* --color-inverse: #171717; */
-  /* --color-accent-success: #CFFFD9;
-  --color-accent-warning: #F88F6D; */
+  /* --color-accent-success: #CFFFD9; */
+  --color-accent-warning: #f88f6d;
 
-  --color-icon-muted: #A0A3C4;
+  --color-icon-muted: #a0a3c4;
 
   /* Legacy variables mapped to tokens for backward compatibility */
   --background: var(--color-bg-page);
   --foreground: var(--color-primary);
   --font-inter: var(--font-inter);
   --font-darker-grotesque: var(--font-darker-grotesque);
-  }
+}
 
 body {
   background: var(--background);
@@ -96,34 +94,50 @@ body {
 }
 
 @keyframes navbar-slide {
-  from { opacity: 0; transform: translateY(-40px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .animate-navbar-slide {
-  animation: navbar-slide 0.3s cubic-bezier(0.4,0,0.2,1);
+  animation: navbar-slide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .skeleton {
   animation: skeleton-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  background: linear-gradient(90deg, var(--color-surface-skeleton-start) 25%, var(--color-surface-skeleton-mid) 50%, var(--color-surface-skeleton-end) 75%);
+  background: linear-gradient(
+    90deg,
+    var(--color-surface-skeleton-start) 25%,
+    var(--color-surface-skeleton-mid) 50%,
+    var(--color-surface-skeleton-end) 75%
+  );
   background-size: 200% 100%;
   border-radius: 0.375rem;
 }
 
 .bg-main {
-  background-image: url('/bg-white.svg');
+  background-image: url("/bg-white.svg");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
 }
 
 .dark .bg-main {
-  background-image: url('/bg.svg');
+  background-image: url("/bg.svg");
 }
 
 /* Hide number input spinners for all browsers */

@@ -11,7 +11,7 @@ interface ThemeSwitchProps {
 
 export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
   const [mounted, setMounted] = useState<boolean>(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   // useEffect only runs on the client, so now we can safely show the UI
   useEffect(() => {
@@ -22,13 +22,21 @@ export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
     return null;
   }
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
+
+  const handleThemeToggle = () => {
+    if (theme === "system") {
+      setTheme(isDark ? "light" : "dark");
+    } else {
+      setTheme(isDark ? "light" : "dark");
+    }
+  };
 
   return (
     <button
       type="button"
       aria-label="Toggle theme"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
+      onClick={handleThemeToggle}
       className={cn(
         "bg-surface-subtle hover:bg-surface-alt relative flex size-10 cursor-pointer items-center justify-center rounded-full transition-colors duration-300",
         className,

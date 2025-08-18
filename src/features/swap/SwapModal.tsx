@@ -57,14 +57,14 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
     ),
     [SwapStep.CREATE_TRUSTLINE]: (
       <div className="flex flex-col items-center space-y-3 text-center">
-        <p className="text-primary leading-relaxed font-medium">
+        <p className="text-primary font-medium leading-relaxed">
           {modalData?.actionData.description}
         </p>
         {modalData?.actionData.assetCode && (
           <div className="text-secondary text-sm">
             <span className="font-medium">Token:</span>
             <br />
-            <span className="font-mono break-all">
+            <span className="break-all font-mono">
               {modalData.actionData.assetCode}
               {modalData.actionData.assetIssuer}
             </span>

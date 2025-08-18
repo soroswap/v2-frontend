@@ -1,17 +1,25 @@
 "use client";
 
-import { STELLAR } from "@/shared/lib/environmentVars";
 import {
+  createContext,
+  ReactNode,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import {
+  StellarWalletsKit,
   allowAllModules,
   ISupportedWallet,
-  StellarWalletsKit
 } from "@creit.tech/stellar-wallets-kit";
+import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
 import {
   WALLET_CONNECT_ID,
   WalletConnectAllowedMethods,
   WalletConnectModule,
-} from '@creit.tech/stellar-wallets-kit/modules/walletconnect.module';
-import { createContext, ReactNode, useContext, useEffect, useRef, useState } from "react";
+} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
+import { STELLAR } from "@/shared/lib/environmentVars";
 
 interface UserContextProps {
   address: string | null;
@@ -38,18 +46,17 @@ export const UserProvider = ({ children }: UserProviderProps) => {
           network: STELLAR.WALLET_NETWORK,
           selectedWalletId: WALLET_CONNECT_ID,
           modules: [
-            ...allowAllModules(),
+            ...[...allowAllModules(), new LedgerModule()],
             new WalletConnectModule({
-              url: 'http://localhost:3000',
-              projectId: '4ee1d28f1fe3c70aa8ebc4677e623e1d',
+              url: "http://localhost:3000",
+              projectId: "4ee1d28f1fe3c70aa8ebc4677e623e1d",
               method: WalletConnectAllowedMethods.SIGN,
               description: `Soroswap`,
-              name: 'Soroswap',
-              icons: ['/walletconnect.svg'],
+              name: "Soroswap",
+              icons: ["/walletconnect.svg"],
               network: STELLAR.WALLET_NETWORK,
             }),
           ],
-          
         });
         kitRef.current = walletKit;
         setKit(walletKit);
@@ -61,11 +68,12 @@ export const UserProvider = ({ children }: UserProviderProps) => {
 
   const connectWallet = async () => {
     if (!kit) return;
-    
+
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
+        console.log("🚀 | connectWallet | address:", address);
         setAddress(address);
       },
     });
@@ -78,27 +86,32 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     }
   };
 
-  const signTransaction = async (xdr: string, userAddress: string): Promise<string> => {
-    console.log("🚀 | signTransaction | userAddress:", userAddress)
+  const signTransaction = async (
+    xdr: string,
+    userAddress: string,
+  ): Promise<string> => {
+    console.log("🚀 | signTransaction | userAddress:", userAddress);
     if (!kit) throw new Error("Wallet kit not initialized");
-    
+
     const { signedTxXdr } = await kit.signTransaction(xdr, {
       address: userAddress,
       networkPassphrase: STELLAR.WALLET_NETWORK,
     });
-    
+
     return signedTxXdr;
   };
 
   return (
-    <UserContext.Provider value={{ 
-      setAddress, 
-      address, 
-      kit, 
-      connectWallet, 
-      disconnect, 
-      signTransaction 
-    }}>
+    <UserContext.Provider
+      value={{
+        setAddress,
+        address,
+        kit,
+        connectWallet,
+        disconnect,
+        signTransaction,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

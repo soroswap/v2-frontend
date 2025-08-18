@@ -42,16 +42,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (network === "testnet") {
-      return NextResponse.json(
-        {
-          code: "USER_POOLS_POSITIONS_WRONG_NETWORK",
-          message: "User pools positions is not available for testnet",
-        },
-        { status: 400 },
-      );
-    }
-
     const userPoolsPositions = await soroswapClient.getUserPositions(
       address,
       SOROSWAP.NETWORK,
