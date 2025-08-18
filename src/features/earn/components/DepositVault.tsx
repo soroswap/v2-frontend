@@ -6,10 +6,9 @@ import { parseUnits } from "@/shared/lib/utils";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
-import { network, SOROSWAP } from "@/shared/lib/environmentVars";
+import { network } from "@/shared/lib/environmentVars";
 import { useTokensList } from "@/shared/hooks";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
-import { defindexClient } from "@/shared/lib/server/defindexClient";
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();

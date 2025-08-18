@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json(sendTransactionResponse);
-  } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+  } catch (error) {
+    console.error("[API ERROR]", error);
 
     return NextResponse.json(error);
   }
