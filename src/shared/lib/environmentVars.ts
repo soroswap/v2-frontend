@@ -57,6 +57,15 @@ export const envVars = {
         ? SupportedNetworks.TESTNET
         : SupportedNetworks.MAINNET,
   },
+
+  DEFINDEX: {
+    API_KEY: process.env.DEFINDEX_API_KEY || "",
+    BASE_URL: process.env.DEFINDEX_API_URL || "",
+    NETWORK:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? SupportedNetworks.TESTNET
+        : SupportedNetworks.MAINNET,
+  },
 };
 
 export const {
@@ -64,5 +73,6 @@ export const {
   isProduction: isProductionEnv,
   STELLAR,
   SOROSWAP,
+  DEFINDEX,
   network,
 } = envVars;
