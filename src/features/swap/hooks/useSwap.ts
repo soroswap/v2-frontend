@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
@@ -29,7 +27,7 @@ export interface SwapResult {
   successful?: boolean;
 }
 
-// Tipos específicos para cada etapa
+// Specific data for the CREATE_TRUSTLINE step
 export interface TrustlineData {
   message: string;
   action: string;
@@ -114,8 +112,6 @@ export function useSwap(options?: UseSwapOptions) {
           data.errorCode === 13 ||
           data.errorMessage === "TokenError.InsufficientTrustlineBalance"
         ) {
-          console.log("data here", data);
-
           // Prevent infinite recursion
           if (retryCount > 2) {
             //TODO: Handle better this.
@@ -222,7 +218,6 @@ export function useSwap(options?: UseSwapOptions) {
         // Step 1: Build XDR
         updateStep(SwapStep.BUILDING_XDR);
         const { xdr } = await buildXdr(quote, userAddress, 0);
-        console.log("xdr = ", xdr);
 
         // Step 2: Sign transaction
         updateStep(SwapStep.WAITING_SIGNATURE);
