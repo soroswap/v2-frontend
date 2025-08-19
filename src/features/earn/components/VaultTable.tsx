@@ -119,7 +119,13 @@ export const VaultTable = () => {
 
         return (
           <div className="text-primary">
-            {vaultBalance.underlyingBalance[0]} {vault.assets[0].symbol}
+            {Number(
+              formatUnits({
+                value: vaultBalance.underlyingBalance[0],
+                decimals: 7,
+              }),
+            ).toFixed(2)}{" "}
+            {vault.assets[0].symbol}
           </div>
         );
       },
@@ -248,7 +254,14 @@ export const VaultTable = () => {
                       </div>
                     ) : (
                       <p className="text-primary text-sm">
-                        {vaultBalances?.[vault.vaultAddress]?.dfTokens || 0}{" "}
+                        {Number(
+                          formatUnits({
+                            value:
+                              vaultBalances?.[vault.vaultAddress]?.dfTokens ||
+                              0,
+                            decimals: 7,
+                          }),
+                        ).toFixed(2)}{" "}
                         {vault.assets[0].symbol}
                       </p>
                     )}

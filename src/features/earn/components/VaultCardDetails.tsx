@@ -157,10 +157,12 @@ export const VaultCardDetails = ({
           ) : userAddress && vaultBalance && vaultInfo ? (
             <div className="flex h-full items-center">
               <p className="text-primary w-fit text-lg font-semibold sm:px-3 sm:py-1">
-                {formatUnits({
-                  value: vaultBalance?.underlyingBalance[0],
-                  decimals: 7,
-                })}{" "}
+                {Number(
+                  formatUnits({
+                    value: vaultBalance?.underlyingBalance[0],
+                    decimals: 7,
+                  }),
+                ).toFixed(2)}{" "}
                 {vaultInfo.assets[0].symbol}
               </p>
             </div>
