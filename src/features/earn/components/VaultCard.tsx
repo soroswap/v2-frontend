@@ -17,7 +17,7 @@ export const VaultCard = () => {
 
       <div className="flex flex-col gap-2">
         <h2 className="text-primary flex text-xl font-bold">
-          Create your Vault
+          Powered by Defindex
         </h2>
         <p className="text-secondary text-sm">
           Take control of your finances by creating your own Vault
