@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@creit.tech/stellar-wallets-kit':
-        specifier: ^1.7.7
-        version: 1.7.7(@stellar/stellar-base@14.0.0-rc.2)(@stellar/stellar-sdk@14.0.0-rc.3)(@trezor/connect@9.5.1(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        specifier: ^1.8.0
+        version: 1.8.0(@stellar/stellar-base@14.0.0-rc.2)(@stellar/stellar-sdk@14.0.0-rc.3)(@trezor/connect@9.5.1(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@defindex/sdk':
         specifier: 0.1.1
         version: 0.1.1
@@ -111,14 +111,14 @@ packages:
     resolution: {integrity: sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==}
     engines: {node: '>=6.9.0'}
 
-  '@creit.tech/stellar-wallets-kit@1.7.7':
-    resolution: {integrity: sha512-XUyiTDI7v4L6LaQtSW80iIGsnzx3WabZCcCjd7enXaz3N8nXQCs2d3G2ZQNErxF8uM400TwHyDhftL1m6Oec4g==}
+  '@creit.tech/stellar-wallets-kit@1.8.0':
+    resolution: {integrity: sha512-RD5rdAs04ykzaRFGiiadNtEtUBId0K/cUdsCzwikPzEElAgZAjP/9uPK22It/hMOaqcKBJ0X/qiudSTOI8cIrQ==}
     engines: {node: '>=16'}
     peerDependencies:
       '@stellar/stellar-base': ^12.1.1
 
-  '@creit.tech/xbull-wallet-connect@0.3.0':
-    resolution: {integrity: sha512-pByi0bTAWd2ZdolVtkXcAU1DYTtz/cJc/IkRUz9x9/1NsFVyrM4UxE8tHgVZ3mwrJ4josoDwYP957ynQw195YQ==}
+  '@creit.tech/xbull-wallet-connect@0.4.0':
+    resolution: {integrity: sha512-LrCUIqUz50SkZ4mv2hTqSmwews8CNRYVoZ9+VjLsK/1U8PByzXTxv1vZyenj6avRTG86ifpoeihz7D3D5YIDrQ==}
     engines: {node: '>=16'}
 
   '@defindex/sdk@0.1.1':
@@ -1640,9 +1640,6 @@ packages:
   big-integer@1.6.52:
     resolution: {integrity: sha512-QxD8cf2eVqJOOz63z6JIN9BzvVs/dlySa5HGSBH5xtR8dPteIRQnBxxKqkNTiT6jbDTF6jAfrd4oMcND9RGbQg==}
     engines: {node: '>=0.6'}
-
-  bignumber.js@9.3.0:
-    resolution: {integrity: sha512-EM7aMFTXbptt/wZdMlBv2t8IViwQL+h6SLHosp8Yf0dqJMTnY6iL32opnAB6kAdL0SZPuvcAzFr31o0c/R3/RA==}
 
   bignumber.js@9.3.1:
     resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
@@ -3796,10 +3793,10 @@ snapshots:
 
   '@babel/runtime@7.27.6': {}
 
-  '@creit.tech/stellar-wallets-kit@1.7.7(@stellar/stellar-base@14.0.0-rc.2)(@stellar/stellar-sdk@14.0.0-rc.3)(@trezor/connect@9.5.1(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@creit.tech/stellar-wallets-kit@1.8.0(@stellar/stellar-base@14.0.0-rc.2)(@stellar/stellar-sdk@14.0.0-rc.3)(@trezor/connect@9.5.1(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.1.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.1.0)(tslib@2.8.1)(typescript@5.8.3)(utf-8-validate@5.0.10)(ws@7.5.10(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@albedo-link/intent': 0.12.0
-      '@creit.tech/xbull-wallet-connect': 0.3.0
+      '@creit.tech/xbull-wallet-connect': 0.4.0
       '@hot-wallet/sdk': 1.0.11(bufferutil@4.0.9)(near-api-js@5.1.1)(typescript@5.8.3)(utf-8-validate@5.0.10)
       '@ledgerhq/hw-app-str': 7.0.4
       '@ledgerhq/hw-transport': 6.31.4
@@ -3855,7 +3852,7 @@ snapshots:
       - utf-8-validate
       - ws
 
-  '@creit.tech/xbull-wallet-connect@0.3.0':
+  '@creit.tech/xbull-wallet-connect@0.4.0':
     dependencies:
       rxjs: 7.8.1
       tweetnacl: 1.0.3
@@ -5237,17 +5234,17 @@ snapshots:
 
   '@trezor/utils@9.2.2(tslib@2.8.1)':
     dependencies:
-      bignumber.js: 9.3.0
+      bignumber.js: 9.3.1
       tslib: 2.8.1
 
   '@trezor/utils@9.3.0(tslib@2.8.1)':
     dependencies:
-      bignumber.js: 9.3.0
+      bignumber.js: 9.3.1
       tslib: 2.8.1
 
   '@trezor/utils@9.3.1(tslib@2.8.1)':
     dependencies:
-      bignumber.js: 9.3.0
+      bignumber.js: 9.3.1
       tslib: 2.8.1
 
   '@trezor/utxo-lib@2.3.1(tslib@2.8.1)':
@@ -5911,8 +5908,6 @@ snapshots:
   big-integer@1.6.36: {}
 
   big-integer@1.6.52: {}
-
-  bignumber.js@9.3.0: {}
 
   bignumber.js@9.3.1: {}
 
@@ -7618,14 +7613,14 @@ snapshots:
 
   ripple-lib-transactionparser@0.8.2:
     dependencies:
-      bignumber.js: 9.3.0
+      bignumber.js: 9.3.1
       lodash: 4.17.21
 
   ripple-lib@1.10.1(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@types/lodash': 4.17.17
       '@types/ws': 7.4.7
-      bignumber.js: 9.3.0
+      bignumber.js: 9.3.1
       https-proxy-agent: 5.0.1
       jsonschema: 1.2.2
       lodash: 4.17.21

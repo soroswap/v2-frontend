@@ -2,12 +2,16 @@
 
 import { STELLAR } from "@/shared/lib/environmentVars";
 import {
-  ALBEDO_ID,
   allowAllModules,
+  FREIGHTER_ID,
   ISupportedWallet,
   StellarWalletsKit,
 } from "@creit.tech/stellar-wallets-kit";
-import { LedgerModule } from '@creit.tech/stellar-wallets-kit/modules/ledger.module';
+import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+import {
+  WalletConnectAllowedMethods,
+  WalletConnectModule
+} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
 import {
   createContext,
   ReactNode,
@@ -40,10 +44,18 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       try {
         const walletKit = new StellarWalletsKit({
           network: STELLAR.WALLET_NETWORK,
-          selectedWalletId: ALBEDO_ID,
+          selectedWalletId: FREIGHTER_ID,
           modules: [
-            ...allowAllModules(), 
-            new LedgerModule()
+            ...[...allowAllModules(), new LedgerModule()],
+            new WalletConnectModule({
+              url: typeof window !== "undefined" ? window.location.origin : "https://v2.soroswap.finance",
+              projectId: "4ee1d28f1fe3c70aa8ebc4677e623e1d",
+              method: WalletConnectAllowedMethods.SIGN,
+              description: `Soroswap`,
+              name: "Soroswap",
+              icons: ["/walletconnect.svg"],
+              network: STELLAR.WALLET_NETWORK,
+            }),
           ],
         });
         kitRef.current = walletKit;
@@ -61,7 +73,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
-        console.log("🚀 | connectWallet | address:", address)
+        console.log("🚀 | connectWallet | address:", address);
         setAddress(address);
       },
     });
@@ -78,6 +90,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     xdr: string,
     userAddress: string,
   ): Promise<string> => {
+    console.log("🚀 | signTransaction | userAddress:", userAddress);
     if (!kit) throw new Error("Wallet kit not initialized");
 
     const { signedTxXdr } = await kit.signTransaction(xdr, {
