@@ -26,32 +26,32 @@ type VaultTableData = VaultInfoResponse & {
 const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   const tvl = vault.totalManagedFunds?.[0]?.total_amount;
   const symbol = vault.assets[0].symbol;
-  const { price } = useTokenPrice(vault.assets[0].address);
+  const { price, isLoading } = useTokenPrice(vault.assets[0].address);
 
   // Validate tvl before converting to BigInt
   if (!tvl || tvl === "0" || tvl === 0) {
     return (
-      <div className="text-primary font-medium">
-        {formatCurrency("0")}
-      </div>
+      <div className="text-primary font-medium">{formatCurrency("0")}</div>
     );
   }
 
   return (
     <div className="text-primary font-medium">
-      {formatCurrency(
-        formatUnits({ value: BigInt(tvl), decimals: 7 }),
-        symbol,
-      )}
+      {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }), symbol)}
       <p className="text-secondary text-xs">
-        {price && tvl && (
-          <span>
-            {formatCurrency(
-              Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
-                Number(price),
-              "USD",
-            )}
-          </span>
+        {isLoading ? (
+          <div className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
+        ) : (
+          price &&
+          tvl && (
+            <p className="h-4">
+              {formatCurrency(
+                Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
+                  Number(price),
+                "USD",
+              )}
+            </p>
+          )
         )}
       </p>
     </div>
