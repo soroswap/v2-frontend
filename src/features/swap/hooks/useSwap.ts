@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";

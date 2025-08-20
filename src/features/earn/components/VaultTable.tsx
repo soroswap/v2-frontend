@@ -22,6 +22,42 @@ type VaultTableData = VaultInfoResponse & {
   riskLevel: RiskLevel;
 };
 
+// Separate component for TVL cell to properly use hooks
+const TvlCell = ({ vault }: { vault: VaultTableData }) => {
+  const tvl = vault.totalManagedFunds?.[0]?.total_amount;
+  const symbol = vault.assets[0].symbol;
+  const { price } = useTokenPrice(vault.assets[0].address);
+
+  // Validate tvl before converting to BigInt
+  if (!tvl || tvl === "0" || tvl === 0) {
+    return (
+      <div className="text-primary font-medium">
+        {formatCurrency("0")}
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-primary font-medium">
+      {formatCurrency(
+        formatUnits({ value: BigInt(tvl), decimals: 7 }),
+        symbol,
+      )}
+      <p className="text-secondary text-xs">
+        {price && tvl && (
+          <span>
+            {formatCurrency(
+              Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
+                Number(price),
+              "USD",
+            )}
+          </span>
+        )}
+      </p>
+    </div>
+  );
+};
+
 export const VaultTable = () => {
   const { address } = useUserContext();
   const router = useRouter();
@@ -135,39 +171,7 @@ export const VaultTable = () => {
       accessorKey: "tvl",
       header: "Total Supplied",
       cell: ({ row }) => {
-        const vault = row.original;
-        const tvl = vault.totalManagedFunds?.[0]?.total_amount;
-        const symbol = vault.assets[0].symbol;
-        const { price } = useTokenPrice(vault.assets[0].address);
-
-        // Validate tvl before converting to BigInt
-        if (!tvl || tvl === "0" || tvl === 0) {
-          return (
-            <div className="text-primary font-medium">
-              {formatCurrency("0")}
-            </div>
-          );
-        }
-
-        return (
-          <div className="text-primary font-medium">
-            {formatCurrency(
-              formatUnits({ value: BigInt(tvl), decimals: 7 }),
-              symbol,
-            )}
-            <p className="text-secondary text-xs">
-              {price && tvl && (
-                <span>
-                  {formatCurrency(
-                    Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
-                      Number(price),
-                    "USD",
-                  )}
-                </span>
-              )}
-            </p>
-          </div>
-        );
+        return <TvlCell vault={row.original} />;
       },
     },
   ];
@@ -198,9 +202,6 @@ export const VaultTable = () => {
           <div className="py-8 text-center">No vaults available</div>
         ) : (
           vaultTableData.map((vault) => {
-            const tvl = vault.totalManagedFunds?.[0]?.total_amount;
-            const symbol = vault.assets[0].symbol;
-
             return (
               <div
                 key={vault.vaultAddress}
@@ -245,18 +246,9 @@ export const VaultTable = () => {
                   {/* TVL */}
                   <div className="flex flex-col text-center">
                     <p className="text-secondary text-md">Total Supplied</p>
-                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium text-nowrap">
-                      {formatCurrency(
-                        formatUnits({ value: BigInt(tvl), decimals: 7 }),
-                        symbol,
-                      )}
-                    </p>
-                    <p className="text-primary text-xs">
-                      {formatCurrency(
-                        formatUnits({ value: BigInt(tvl), decimals: 7 }),
-                        symbol,
-                      )}
-                    </p>
+                    <div className="flex h-full items-center justify-center">
+                      <TvlCell vault={vault} />
+                    </div>
                   </div>
                 </div>
 
@@ -287,7 +279,7 @@ export const VaultTable = () => {
                             decimals: 7,
                           }),
                         ).toFixed(2)}{" "}
-                        {symbol}
+                        {vault.assets[0].symbol}
                       </p>
                     )}
                   </div>

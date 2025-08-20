@@ -1,7 +1,5 @@
 "use client";
 
-import { TheButton } from "@/shared/components";
-
 export const PortfolioCard = () => {
   return (
     <div className="bg-surface border-surface-alt flex size-full flex-col justify-between gap-2 rounded-xl border p-4">

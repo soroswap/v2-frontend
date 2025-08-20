@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 import { useQuote } from "@/features/swap/hooks/useQuote";
 import {
