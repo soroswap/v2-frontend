@@ -137,9 +137,7 @@ export default function SwapPage() {
                 disabled={
                   !sellToken ||
                   !buyToken ||
-                  sellToken.contract === buyToken.contract ||
-                  (independentField === "sell" && !derivedBuyAmount) ||
-                  (independentField === "buy" && !derivedSellAmount)
+                  sellToken.contract === buyToken.contract
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
@@ -148,10 +146,7 @@ export default function SwapPage() {
                   ? "Select a token"
                   : isSwapLoading
                     ? getSwapButtonText(currentStep)
-                    : (independentField === "sell" && !derivedBuyAmount) ||
-                        (independentField === "buy" && !derivedSellAmount)
-                      ? "Not enough liquidity"
-                      : "Swap"}
+                    : "Swap"}
               </TheButton>
             )}
           </div>
