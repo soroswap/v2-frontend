@@ -21,20 +21,6 @@ export const PortfolioCard = () => {
             <p className="text-primary text-lg font-semibold">$0.00</p>
           </div>
         </div>
-        <div>
-          <TheButton
-            className="text-nowrap text-white"
-            onClick={() => {
-              window.open(
-                "https://www.defindex.io",
-                "noreferrer, noopener",
-                "_blank",
-              );
-            }}
-          >
-            Portfolio Dashboard
-          </TheButton>
-        </div>
       </div>
     </div>
   );
