@@ -15,6 +15,7 @@ import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
 import { ProgressBar } from "./ProgressBar";
 import { RiskLevel } from "../types/RiskLevel";
+import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
@@ -137,6 +138,7 @@ export const VaultTable = () => {
         const vault = row.original;
         const tvl = vault.totalManagedFunds?.[0]?.total_amount;
         const symbol = vault.assets[0].symbol;
+        const { price } = useTokenPrice(vault.assets[0].address);
 
         // Validate tvl before converting to BigInt
         if (!tvl || tvl === "0" || tvl === 0) {
@@ -153,6 +155,17 @@ export const VaultTable = () => {
               formatUnits({ value: BigInt(tvl), decimals: 7 }),
               symbol,
             )}
+            <p className="text-secondary text-xs">
+              {price && tvl && (
+                <span>
+                  {formatCurrency(
+                    Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
+                      Number(price),
+                    "USD",
+                  )}
+                </span>
+              )}
+            </p>
           </div>
         );
       },
@@ -233,6 +246,12 @@ export const VaultTable = () => {
                   <div className="flex flex-col text-center">
                     <p className="text-secondary text-md">Total Supplied</p>
                     <p className="text-primary flex h-full items-center justify-center text-sm font-medium text-nowrap">
+                      {formatCurrency(
+                        formatUnits({ value: BigInt(tvl), decimals: 7 }),
+                        symbol,
+                      )}
+                    </p>
+                    <p className="text-primary text-xs">
                       {formatCurrency(
                         formatUnits({ value: BigInt(tvl), decimals: 7 }),
                         symbol,
