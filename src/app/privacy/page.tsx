@@ -23,10 +23,10 @@ export default function PrivacyPage() {
               Privacy Policy explains how we collect, use, and disclose your
               personal data when you visit our website at{" "}
               <a
-                href="https://v2.soroswap.finance"
+                href="https://app.soroswap.finance"
                 className="cursor-pointer text-white hover:text-white/80 hover:underline"
               >
-                https://v2.soroswap.finance
+                https://app.soroswap.finance
               </a>{" "}
               (the "Site") and use our decentralized exchange services
               ("Services").
