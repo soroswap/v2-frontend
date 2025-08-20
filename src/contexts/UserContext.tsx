@@ -1,25 +1,25 @@
 "use client";
 
+import { STELLAR } from "@/shared/lib/environmentVars";
+import {
+  allowAllModules,
+  FREIGHTER_ID,
+  ISupportedWallet,
+  StellarWalletsKit,
+} from "@creit.tech/stellar-wallets-kit";
+import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
+import {
+  WalletConnectAllowedMethods,
+  WalletConnectModule
+} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
 import {
   createContext,
   ReactNode,
   useContext,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react";
-import {
-  StellarWalletsKit,
-  allowAllModules,
-  ISupportedWallet,
-} from "@creit.tech/stellar-wallets-kit";
-import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
-import {
-  WALLET_CONNECT_ID,
-  WalletConnectAllowedMethods,
-  WalletConnectModule,
-} from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
-import { STELLAR } from "@/shared/lib/environmentVars";
 
 interface UserContextProps {
   address: string | null;
@@ -44,11 +44,11 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       try {
         const walletKit = new StellarWalletsKit({
           network: STELLAR.WALLET_NETWORK,
-          selectedWalletId: WALLET_CONNECT_ID,
+          selectedWalletId: FREIGHTER_ID,
           modules: [
             ...[...allowAllModules(), new LedgerModule()],
             new WalletConnectModule({
-              url: "http://localhost:3000",
+              url: typeof window !== "undefined" ? window.location.origin : "https://v2.soroswap.finance",
               projectId: "4ee1d28f1fe3c70aa8ebc4677e623e1d",
               method: WalletConnectAllowedMethods.SIGN,
               description: `Soroswap`,
