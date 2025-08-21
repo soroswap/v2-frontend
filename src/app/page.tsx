@@ -1,17 +1,23 @@
 "use client";
 
-import { cn } from "@/shared/lib/utils/cn";
+import dynamic from "next/dynamic";
 import { useState, useCallback, MouseEvent } from "react";
+import { cn } from "@/shared/lib/utils/cn";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
   SettingsButton,
 } from "@/shared/components/buttons";
-import { SwapPanel, SwapModal, SwapSettingsModal } from "@/features/swap";
+import { SwapSettingsModal } from "@/features/swap";
+import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
 import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
+
+const SwapModal = dynamic(() =>
+  import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
+);
 
 const getSwapButtonText = (step: SwapStep): string => {
   switch (step) {
