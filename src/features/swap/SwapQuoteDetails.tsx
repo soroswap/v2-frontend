@@ -66,8 +66,12 @@ export const SwapQuoteDetails = ({
   // Get network fee
   const getNetworkFee = () => {
     if (quote.platformFee?.feeAmount) {
-      return formatUnits({ value: quote.platformFee.feeAmount.toString() });
+      return formatUnits({
+        value: quote.platformFee.feeAmount.toString(),
+      });
     }
+
+    return "0.00001";
   };
 
   const getTradingPath = () => {
@@ -135,7 +139,7 @@ export const SwapQuoteDetails = ({
             <p className="text-secondary text-sm">Price Impact</p>
             <p
               className={cn(
-                "text-sm",
+                "bg-surface-alt rounded-full px-2 py-1 text-sm",
                 Number(quote.priceImpactPct) > 5
                   ? "text-red-400"
                   : Number(quote.priceImpactPct) > 2
