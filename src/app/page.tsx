@@ -12,7 +12,12 @@ import {
 import { SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
 import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
-import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
+import {
+  SwapStep,
+  SwapResult,
+  SwapError,
+  SwapModalState,
+} from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
 
 const SwapModal = dynamic(() =>
@@ -71,7 +76,10 @@ export default function SwapPage() {
     onStepChange: (step: SwapStep) => {
       if (
         step === SwapStep.WAITING_SIGNATURE ||
-        step === SwapStep.CREATE_TRUSTLINE
+        step === SwapStep.CREATE_TRUSTLINE ||
+        step === SwapStep.SENDING_TRANSACTION ||
+        step === SwapStep.SUCCESS ||
+        step === SwapStep.ERROR
       ) {
         setIsSwapModalOpen(true);
       }
@@ -98,7 +106,6 @@ export default function SwapPage() {
           <p className="text-primary text-xl sm:text-2xl">Swap</p>
           <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
-
         <div className="flex flex-col gap-2">
           <div className="relative z-10">
             <SwapPanel
@@ -163,9 +170,9 @@ export default function SwapPage() {
           </div>
         </div>
 
-        {isSwapModalOpen && (
+        {isSwapModalOpen && modalData && (
           <SwapModal
-            currentStep={currentStep}
+            state={modalData}
             onClose={() => {
               setIsSwapModalOpen(false);
               setSwapResult(null);
@@ -173,10 +180,8 @@ export default function SwapPage() {
             }}
             error={swapError || undefined}
             transactionHash={swapResult?.txHash || swapResult?.hash}
-            modalData={modalData}
           />
         )}
-
         {isSettingsModalOpen && (
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}

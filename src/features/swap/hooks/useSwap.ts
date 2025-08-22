@@ -46,31 +46,34 @@ export interface SwapModalDataMap {
   [SwapStep.IDLE]: never;
   [SwapStep.BUILDING_XDR]: never;
   [SwapStep.CREATE_TRUSTLINE]: TrustlineData;
-  [SwapStep.WAITING_SIGNATURE]: never;
+  [SwapStep.WAITING_SIGNATURE]: QuoteResponse;
   [SwapStep.SENDING_TRANSACTION]: never;
-  [SwapStep.SUCCESS]: never;
-  [SwapStep.ERROR]: never;
+  [SwapStep.SUCCESS]: SwapResult;
+  [SwapStep.ERROR]: SwapError;
 }
 
-export type SwapModalData<T extends SwapStep = SwapStep> = SwapModalDataMap[T];
-
+export type SwapModalState = {
+  [K in SwapStep]: SwapModalDataMap[K] extends never
+    ? { currentStep: K; data?: undefined }
+    : { currentStep: K; data: SwapModalDataMap[K] };
+}[SwapStep];
 export interface UseSwapOptions {
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalState) => void;
 }
 
 export function useSwap(options?: UseSwapOptions) {
   const [currentStep, setCurrentStep] = useState<SwapStep>(SwapStep.IDLE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<SwapError | null>(null);
-  const [modalData, setModalData] = useState<SwapModalData | undefined>(
+  const [modalData, setModalData] = useState<SwapModalState | undefined>(
     undefined,
   );
   const { signTransaction: signTransactionFromContext } = useUserContext();
 
   const updateStep = useCallback(
-    <T extends SwapStep>(step: T, data?: SwapModalData<T>) => {
+    <T extends SwapStep>(step: T, data?: SwapModalState) => {
       setCurrentStep(step);
       setModalData(data || undefined);
       options?.onStepChange?.(step, data);
@@ -83,7 +86,10 @@ export function useSwap(options?: UseSwapOptions) {
       const swapError: SwapError = { step, message, details };
       console.log("swapError Handle Error= ", swapError);
       setError(swapError);
-      updateStep(SwapStep.ERROR);
+      updateStep(SwapStep.ERROR, {
+        currentStep: SwapStep.ERROR,
+        data: swapError,
+      });
       setIsLoading(false);
       options?.onError?.(swapError);
     },
@@ -135,7 +141,10 @@ export function useSwap(options?: UseSwapOptions) {
             message: data.message,
           };
 
-          updateStep(SwapStep.CREATE_TRUSTLINE, trustlineData);
+          updateStep(SwapStep.CREATE_TRUSTLINE, {
+            currentStep: SwapStep.CREATE_TRUSTLINE,
+            data: trustlineData,
+          });
           const signedXdr = await signTransaction(
             data.actionData.xdr,
             userAddress,
@@ -222,11 +231,16 @@ export function useSwap(options?: UseSwapOptions) {
         const { xdr } = await buildXdr(quote, userAddress, 0);
 
         // Step 2: Sign transaction
-        updateStep(SwapStep.WAITING_SIGNATURE);
+        updateStep(SwapStep.WAITING_SIGNATURE, {
+          currentStep: SwapStep.WAITING_SIGNATURE,
+          data: quote,
+        });
         const signedXdr = await signTransaction(xdr, userAddress);
 
         // Step 3: Send transaction
-        updateStep(SwapStep.SENDING_TRANSACTION);
+        updateStep(SwapStep.SENDING_TRANSACTION, {
+          currentStep: SwapStep.SENDING_TRANSACTION,
+        });
         const sendResult = await sendTransaction(signedXdr);
 
         // Success

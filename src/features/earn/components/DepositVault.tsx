@@ -2,50 +2,40 @@
 
 import { useState } from "react";
 import { useVaultInfo } from "@/features/earn/hooks";
-import { parseUnits } from "@/shared/lib/utils";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
-import { network } from "@/shared/lib/environmentVars";
 import { useTokensList } from "@/shared/hooks";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { EarnVaultModal } from "./EarnVaultModal";
+import {
+  EarnVaultStep,
+  useEarnVault,
+} from "@/features/earn/hooks/useEarnVault";
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
   const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
-  const { address, signTransaction } = useUserContext();
+  const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+
+  const { currentStep, transactionHash, executeDeposit, reset } =
+    useEarnVault();
 
   const handleDeposit = async () => {
-    const depositData = await fetch("/api/earn/deposit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        amount: parseUnits({
-          value: amount,
-          decimals: 7,
-        }).toString(),
-        caller: address ?? "",
-        slippageBps: "100",
+    if (!address) return;
+    setIsOpenModal(true);
+    try {
+      await executeDeposit({
         vaultId: vaultAddress,
-        network: network,
-      },
-    });
-    const depositDataJson = await depositData.json();
-    console.log("depositData", depositDataJson);
-    const xdr = depositDataJson.xdr;
-    console.log("xdr", xdr);
-    const txHash = await signTransaction(xdr, address ?? "");
-    console.log("txHash", txHash);
-    const sendTransactionResponse = await fetch("/api/earn/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(txHash),
-    });
-    const sendTransactionResponseJson = await sendTransactionResponse.json();
-    console.log("sendTransactionResponse", sendTransactionResponseJson);
+        amount,
+        userAddress: address,
+        slippageBps: 100,
+      });
+    } catch {
+      // noop; state handled in hook
+    }
   };
 
   if (!vaultInfo) {
@@ -55,6 +45,16 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
       </div>
     );
   }
+
+  if (!vaultInfo.assets || vaultInfo.assets.length === 0) {
+    return (
+      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
+        <div className="text-secondary text-center">Vault assets not available</div>
+      </div>
+    );
+  }
+
+  const firstAsset = vaultInfo.assets[0];
 
   return (
     <section className="w-full space-y-6">
@@ -67,19 +67,19 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[vaultInfo.assets[0].address]?.icon}
+                src={tokenMap[firstAsset.address]?.icon}
                 name={vaultInfo.name}
-                code={vaultInfo.assets[0].symbol}
+                code={firstAsset.symbol}
                 size={24}
               />
               <span className="text-primary text-sm font-medium">
-                {vaultInfo.assets[0].symbol}
+                {firstAsset.symbol}
               </span>
             </div>
           </div>
           <span className="text-secondary text-xs">
             {/* TODO: Add balance from the user APi */}
-            You have - {vaultInfo.assets[0].symbol}
+            You have - {firstAsset.symbol}
           </span>
         </div>
 
@@ -88,7 +88,7 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <label className="text-secondary text-sm font-medium">Amount</label>
           <div className="flex w-full gap-2">
             <TokenAmountInput
-              token={vaultInfo.assets[0]}
+              token={firstAsset}
               amount={amount}
               setAmount={(v) => setAmount(v ?? "0")}
               isLoading={false}
@@ -111,13 +111,13 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
             <div className="flex items-center gap-2">
               <TokenIcon
-                src={tokenMap[vaultInfo.assets[0].address]?.icon}
+                src={tokenMap[firstAsset.address]?.icon}
                 name={vaultInfo.name}
-                code={vaultInfo.assets[0].symbol}
+                code={firstAsset.symbol}
                 size={24}
               />
               <span className="text-primary text-sm font-medium">
-                {vaultInfo.assets[0].symbol}
+                {firstAsset.symbol}
               </span>
             </div>
           </div>
@@ -137,6 +137,17 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           </TheButton>
         </div>
       </div>
+      {isOpenModal && currentStep !== EarnVaultStep.IDLE && (
+        <EarnVaultModal
+          currentStep={currentStep}
+          onClose={() => {
+            reset();
+            setIsOpenModal(false);
+          }}
+          transactionHash={transactionHash}
+          operationType="deposit"
+        />
+      )}
     </section>
   );
 };

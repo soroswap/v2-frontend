@@ -88,7 +88,16 @@ export const SwapQuoteDetails = ({
 
   // Get platform name
   const getPlatformName = () => {
-    return `${quote.routePlan?.[0]?.swapInfo?.protocol}`.toUpperCase();
+    return (
+      <div>
+        {quote.routePlan.map((route) => (
+          <p key={route.swapInfo.protocol}>
+            {route.swapInfo.protocol.toUpperCase()}
+            {/* {route.swapInfo.protocol..toUpperCase()} */}
+          </p>
+        ))}
+      </div>
+    );
   };
 
   const conversionRate = getConversionRate();
@@ -127,12 +136,12 @@ export const SwapQuoteDetails = ({
       >
         <div className="space-y-3 border-t border-[#23243a] p-4">
           {/* Network Fee */}
-          <div className="flex items-center justify-between">
+          {/* <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Network fee</p>
             <p className="text-primary text-sm">
               ~{getNetworkFee()} {sellToken.code}
             </p>
-          </div>
+          </div> */}
 
           {/* Price Impact */}
           <div className="flex items-center justify-between">
@@ -186,6 +195,7 @@ export const SwapQuoteDetails = ({
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Platform</p>
             <p className="text-primary text-sm">{getPlatformName()}</p>
+            {/* <p className="text-primary text-sm">{getPlatformName()}</p> */}
           </div>
         </div>
       </div>
