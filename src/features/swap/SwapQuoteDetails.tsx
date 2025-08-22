@@ -5,9 +5,12 @@ import { AssetInfo } from "@soroswap/sdk";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import { useState } from "react";
 import { QuoteResponse, TradeType } from "@soroswap/sdk";
+import { ChevronDownIcon } from "lucide-react";
+import { useTokensList } from "@/shared/hooks";
+import { TokenIcon } from "@/shared/components";
 
 interface SwapQuoteDetailsProps {
-  quote: QuoteResponse | null;
+  quote: QuoteResponse | undefined;
   sellToken: AssetInfo | null;
   buyToken: AssetInfo | null;
   className?: string;
@@ -19,14 +22,15 @@ export const SwapQuoteDetails = ({
   buyToken,
   className,
 }: SwapQuoteDetailsProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { tokenMap } = useTokensList();
 
-  if (!quote || !sellToken || !buyToken) {
+  if (!quote || !sellToken || !buyToken || !quote.amountIn) {
     return null;
   }
 
   // Calculate conversion rate
-  const getConversionRate = () => {
+  const getConversionRate = (): number => {
     if (quote.tradeType === TradeType.EXACT_IN) {
       const amountIn = Number(
         formatUnits({ value: quote.amountIn.toString() }),
@@ -52,10 +56,10 @@ export const SwapQuoteDetails = ({
   const getExpectedOutput = () => {
     if (quote.tradeType === TradeType.EXACT_IN) {
       return formatUnits({
-        value: quote.amountOut?.toString() ?? "0",
+        value: quote.amountOut?.toString(),
       });
     } else {
-      return formatUnits({ value: quote.amountOut.toString() });
+      return formatUnits({ value: quote.amountIn.toString() });
     }
   };
 
@@ -68,21 +72,20 @@ export const SwapQuoteDetails = ({
   };
 
   const getTradingPath = () => {
-    //TODO: Implement this with the routePlan object
-
-    if ("path" in quote.rawTrade) {
-      // For regular trades, we need to map contract addresses to token symbols
-      // For now, we'll show a simplified path
-      return `${sellToken.code} > ${buyToken.code}`;
+    if (quote.routePlan) {
+      return quote.routePlan
+        .map((route) =>
+          route.swapInfo.path
+            .map((item) => tokenMap[item.split(":")[0]]?.code)
+            .join(" > "),
+        )
+        .join(" > ");
     }
-    return `${sellToken.code} > ${buyToken.code}`;
   };
 
   // Get platform name
   const getPlatformName = () => {
-    // This would ideally come from the quote data
-    // For now, return a default based on available protocols
-    return "SDEX";
+    return `${quote.routePlan?.[0]?.swapInfo?.protocol}`.toUpperCase();
   };
 
   const conversionRate = getConversionRate();
@@ -99,30 +102,16 @@ export const SwapQuoteDetails = ({
         onClick={() => setIsOpen(!isOpen)}
         className="hover:bg-brand/5 flex w-full items-center justify-between p-4 text-left transition-colors"
       >
-        <span className="text-sm text-[#A0A3C4]">
+        <p className="text-sm text-[#A0A3C4]">
           1 {sellToken.code} = {conversionRate.toFixed(6)} {buyToken.code}
-        </span>
+        </p>
         <div
           className={cn(
             "transition-transform duration-200",
             isOpen ? "rotate-180" : "rotate-0",
           )}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            className="text-[#A0A3C4]"
-          >
-            <path
-              d="M4 6L8 10L12 6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <ChevronDownIcon className="text-secondary size-4" />
         </div>
       </button>
 
@@ -136,15 +125,15 @@ export const SwapQuoteDetails = ({
         <div className="space-y-3 border-t border-[#23243a] p-4">
           {/* Network Fee */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#A0A3C4]">Network fee</span>
-            <span className="text-sm text-white">
+            <p className="text-secondary text-sm">Network fee</p>
+            <p className="text-sm text-white">
               ~{getNetworkFee()} {sellToken.code}
-            </span>
+            </p>
           </div>
 
           {/* Price Impact */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#A0A3C4]">Price Impact</span>
+            <span className="text-secondary text-sm">Price Impact</span>
             <span
               className={cn(
                 "text-sm",
@@ -161,26 +150,38 @@ export const SwapQuoteDetails = ({
 
           {/* Expected Output */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#A0A3C4]">Expected output</span>
+            <span className="text-secondary text-sm">Expected output</span>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-white">
-                {getExpectedOutput()} {buyToken.code}
-              </span>
-              <div className="bg-brand/20 flex h-4 w-4 items-center justify-center rounded-full">
-                <span className="text-xs text-[#8866DD]">?</span>
-              </div>
+              <span className="text-sm text-white">{getExpectedOutput()}</span>
+              {buyToken.contract ? (
+                <TokenIcon
+                  src={tokenMap[buyToken.contract]?.icon}
+                  name={tokenMap[buyToken.contract]?.name}
+                  code={tokenMap[buyToken.contract]?.code}
+                  size={20}
+                />
+              ) : (
+                sellToken.contract && (
+                  <TokenIcon
+                    src={tokenMap[sellToken.contract]?.icon}
+                    name={tokenMap[sellToken.contract]?.name}
+                    code={tokenMap[sellToken.contract]?.code}
+                    size={20}
+                  />
+                )
+              )}
             </div>
           </div>
 
           {/* Trading Path */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#A0A3C4]">Path</span>
+            <span className="text-secondary text-sm">Path</span>
             <span className="text-sm text-white">{getTradingPath()}</span>
           </div>
 
           {/* Platform */}
           <div className="flex items-center justify-between">
-            <span className="text-sm text-[#A0A3C4]">Platform</span>
+            <span className="text-secondary text-sm">Platform</span>
             <span className="text-sm text-white">{getPlatformName()}</span>
           </div>
         </div>

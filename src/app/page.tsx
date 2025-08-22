@@ -9,7 +9,7 @@ import {
   ConnectWallet,
   SettingsButton,
 } from "@/shared/components/buttons";
-import { SwapSettingsModal } from "@/features/swap";
+import { SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
 import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
 import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
@@ -56,6 +56,7 @@ export default function SwapPage() {
     handleSwitchTokens,
     handleSwap,
     resetSwap,
+    quote,
   } = useSwapController({
     userAddress: userAddress || undefined,
     onSuccess: (result: SwapResult) => {
@@ -136,6 +137,11 @@ export default function SwapPage() {
           />
 
           <div className="flex flex-col gap-2">
+            <SwapQuoteDetails
+              quote={quote}
+              sellToken={sellToken}
+              buyToken={buyToken}
+            />
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
