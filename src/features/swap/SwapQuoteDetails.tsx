@@ -68,7 +68,6 @@ export const SwapQuoteDetails = ({
     if (quote.platformFee?.feeAmount) {
       return formatUnits({ value: quote.platformFee.feeAmount.toString() });
     }
-    return "0.00001"; // Default estimated network fee
   };
 
   const getTradingPath = () => {
@@ -93,7 +92,7 @@ export const SwapQuoteDetails = ({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border border-[#23243a] bg-[#10121A]",
+        "bg-surface overflow-hidden rounded-2xl border border-[#23243a]",
         className,
       )}
     >
@@ -102,7 +101,7 @@ export const SwapQuoteDetails = ({
         onClick={() => setIsOpen(!isOpen)}
         className="hover:bg-brand/5 flex w-full items-center justify-between p-4 text-left transition-colors"
       >
-        <p className="text-sm text-[#A0A3C4]">
+        <p className="text-secondary text-sm">
           1 {sellToken.code} = {conversionRate.toFixed(6)} {buyToken.code}
         </p>
         <div
@@ -126,15 +125,15 @@ export const SwapQuoteDetails = ({
           {/* Network Fee */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Network fee</p>
-            <p className="text-sm text-white">
+            <p className="text-primary text-sm">
               ~{getNetworkFee()} {sellToken.code}
             </p>
           </div>
 
           {/* Price Impact */}
           <div className="flex items-center justify-between">
-            <span className="text-secondary text-sm">Price Impact</span>
-            <span
+            <p className="text-secondary text-sm">Price Impact</p>
+            <p
               className={cn(
                 "text-sm",
                 Number(quote.priceImpactPct) > 5
@@ -145,14 +144,14 @@ export const SwapQuoteDetails = ({
               )}
             >
               ~{quote.priceImpactPct}%
-            </span>
+            </p>
           </div>
 
           {/* Expected Output */}
           <div className="flex items-center justify-between">
-            <span className="text-secondary text-sm">Expected output</span>
+            <p className="text-secondary text-sm">Expected output</p>
             <div className="flex items-center gap-1">
-              <span className="text-sm text-white">{getExpectedOutput()}</span>
+              <p className="text-primary text-sm">{getExpectedOutput()}</p>
               {buyToken.contract ? (
                 <TokenIcon
                   src={tokenMap[buyToken.contract]?.icon}
@@ -175,14 +174,14 @@ export const SwapQuoteDetails = ({
 
           {/* Trading Path */}
           <div className="flex items-center justify-between">
-            <span className="text-secondary text-sm">Path</span>
-            <span className="text-sm text-white">{getTradingPath()}</span>
+            <p className="text-secondary text-sm">Path</p>
+            <p className="text-primary text-sm">{getTradingPath()}</p>
           </div>
 
           {/* Platform */}
           <div className="flex items-center justify-between">
-            <span className="text-secondary text-sm">Platform</span>
-            <span className="text-sm text-white">{getPlatformName()}</span>
+            <p className="text-secondary text-sm">Platform</p>
+            <p className="text-primary text-sm">{getPlatformName()}</p>
           </div>
         </div>
       </div>
