@@ -135,13 +135,12 @@ export default function SwapPage() {
             isLoading={isQuoteLoading}
             variant="outline"
           />
-
+          <SwapQuoteDetails
+            quote={quote}
+            sellToken={sellToken}
+            buyToken={buyToken}
+          />
           <div className="flex flex-col gap-2">
-            <SwapQuoteDetails
-              quote={quote}
-              sellToken={sellToken}
-              buyToken={buyToken}
-            />
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
             ) : (
