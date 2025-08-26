@@ -44,7 +44,7 @@ export interface TrustlineData {
 
 export interface SwapModalDataMap {
   [SwapStep.IDLE]: never;
-  [SwapStep.BUILDING_XDR]: never;
+  [SwapStep.BUILDING_XDR]: BuildQuoteResponse;
   [SwapStep.CREATE_TRUSTLINE]: TrustlineData;
   [SwapStep.WAITING_SIGNATURE]: QuoteResponse;
   [SwapStep.SENDING_TRANSACTION]: never;
@@ -115,79 +115,71 @@ export function useSwap(options?: UseSwapOptions) {
           }),
         });
         const data = await response.json();
-        console.log("response = ", data);
-        if (
-          data.errorCode === 13 ||
-          data.errorMessage === "TokenError.InsufficientTrustlineBalance"
-        ) {
-          // Prevent infinite recursion
-          if (retryCount > 2) {
-            //TODO: Handle better this.
-            handleError(
-              SwapStep.CREATE_TRUSTLINE,
-              "Failed to create trustline after multiple attempts",
-              data,
+
+        if (!response.ok) {
+          if (
+            data.errorCode === 13 ||
+            data.errorMessage === "TokenError.InsufficientTrustlineBalance"
+          ) {
+            // Prevent infinite recursion
+            if (retryCount > 2) {
+              //TODO: Handle better this.
+              handleError(
+                SwapStep.CREATE_TRUSTLINE,
+                "Failed to create trustline after multiple attempts",
+                data,
+              );
+              throw new Error(
+                "Failed to create trustline after multiple attempts",
+              );
+            }
+
+            // Create typed trustline data
+            const trustlineData: TrustlineData = {
+              action: data.action,
+              actionData: data.actionData,
+              errorCode: data.errorCode,
+              message: data.message,
+            };
+
+            updateStep(SwapStep.CREATE_TRUSTLINE, {
+              currentStep: SwapStep.CREATE_TRUSTLINE,
+              data: trustlineData,
+            });
+            const signedXdr = await signTransaction(
+              data.actionData.xdr,
+              userAddress,
             );
-            throw new Error(
-              "Failed to create trustline after multiple attempts",
-            );
+            console.log("signedXdr = ", signedXdr);
+            const sendResult = await sendTransaction(signedXdr);
+            console.log("sendResult = ", sendResult);
+
+            // Trustline created successfully, now retry the build
+            console.log("Trustline created, retrying build...");
+            updateStep(SwapStep.BUILDING_XDR, {
+              currentStep: SwapStep.BUILDING_XDR,
+              data: data,
+            });
+
+            // Retry the buildXdr with the same quote and increment retry count
+            return await buildXdr(quote, userAddress, retryCount + 1);
           }
-
-          // Create typed trustline data
-          const trustlineData: TrustlineData = {
-            action: data.action,
-            actionData: data.actionData,
-            errorCode: data.errorCode,
-            message: data.message,
-          };
-
-          updateStep(SwapStep.CREATE_TRUSTLINE, {
-            currentStep: SwapStep.CREATE_TRUSTLINE,
-            data: trustlineData,
-          });
-          const signedXdr = await signTransaction(
-            data.actionData.xdr,
-            userAddress,
-          );
-          console.log("signedXdr = ", signedXdr);
-          const sendResult = await sendTransaction(signedXdr);
-          console.log("sendResult = ", sendResult);
-          // updateStep(SwapStep.SUCCESS);
-          // setIsLoading(false);
-          // const result: SwapResult = {
-          //   txHash: sendResult.data.txHash,
-          //   success: sendResult.data.status === "success" ? true : false,
-          // };
-
-          // Trustline created successfully, now retry the build
-          console.log("Trustline created, retrying build...");
-          updateStep(SwapStep.BUILDING_XDR);
-
-          // Retry the buildXdr with the same quote and increment retry count
-          return await buildXdr(quote, userAddress, retryCount + 1);
-        }
-        if (data.message === "TokenError.InsufficientBalance") {
-          console.log("here2");
           handleError(SwapStep.BUILDING_XDR, data.message, data);
+          throw new Error(data.message);
         }
+        updateStep(SwapStep.BUILDING_XDR, {
+          currentStep: SwapStep.BUILDING_XDR,
+          data: data,
+        });
+
         return data;
-      } catch (error: any) {
-        console.log("buildXdr error = ", error);
-        // If we're in CREATE_TRUSTLINE step, the error occurred during trustline creation
-        if (currentStep === SwapStep.CREATE_TRUSTLINE) {
-          handleError(
-            SwapStep.CREATE_TRUSTLINE,
-            error.message || "Failed to create trustline",
-            error,
-          );
-        } else {
-          handleError(
-            SwapStep.BUILDING_XDR,
-            error.message || "Failed to build transaction",
-            error,
-          );
-        }
-        throw error; // Re-throw to be caught by executeSwap
+      } catch (error) {
+        handleError(
+          SwapStep.BUILDING_XDR,
+          "Failed to build transaction",
+          error,
+        );
+        throw error;
       }
     },
     [currentStep, updateStep, handleError],
