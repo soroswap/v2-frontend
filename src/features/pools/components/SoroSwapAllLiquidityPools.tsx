@@ -51,9 +51,9 @@ export const SoroSwapAllLiquidityPools = () => {
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
-            <span className="text-primary font-semibold">
+            <p className="text-primary font-semibold">
               {tokenAData?.code}/{tokenBData?.code}
-            </span>
+            </p>
           </div>
         );
       },
