@@ -3,33 +3,15 @@
 import { Moon, Sun } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 interface ThemeSwitchProps {
   className?: string;
 }
 
 export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
-  const [mounted, setMounted] = useState<boolean>(false);
-  const { theme, resolvedTheme, setTheme } = useTheme();
-
-  // useEffect only runs on the client, so now we can safely show the UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return null;
-  }
-
-  const isDark = resolvedTheme === "dark";
-
+  const { resolvedTheme, setTheme } = useTheme();
   const handleThemeToggle = () => {
-    if (theme === "system") {
-      setTheme(isDark ? "light" : "dark");
-    } else {
-      setTheme(isDark ? "light" : "dark");
-    }
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
 
   return (
@@ -42,19 +24,14 @@ export const ThemeSwitch = ({ className }: ThemeSwitchProps) => {
         className,
       )}
     >
-      {/* Sun icon */}
       <Sun
         className={cn(
-          "text-accent-warning absolute size-10 transition-transform duration-300",
-          isDark ? "scale-0 rotate-90" : "scale-100 rotate-0",
+          "text-accent-warning absolute size-10 scale-100 rotate-0 transition-transform duration-300 dark:scale-0 dark:rotate-90",
         )}
       />
-
-      {/* Moon icon */}
       <Moon
         className={cn(
-          "text-brand size-10 transition-transform duration-300",
-          isDark ? "scale-100 rotate-0" : "scale-0 -rotate-90",
+          "text-brand size-10 scale-0 -rotate-90 transition-transform duration-300 dark:scale-100 dark:rotate-0",
         )}
       />
     </button>

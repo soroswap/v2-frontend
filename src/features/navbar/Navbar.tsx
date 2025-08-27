@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ThemeSwitch } from "@/features/navbar";
 import { ConnectWallet } from "@/shared/components/buttons";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
-import { useTheme } from "next-themes";
 
 const NAV_LINKS = [
   { name: "Swap", href: "/" },
@@ -19,18 +18,7 @@ const NAV_LINKS = [
 
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-  const [mounted, setMounted] = useState<boolean>(false);
   const pathname = usePathname();
-  const { resolvedTheme } = useTheme();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const logoSrc =
-    mounted && resolvedTheme === "dark"
-      ? "/SoroswapPurpleWhite.svg"
-      : "/SoroswapPurpleBlack.svg";
 
   return (
     <header className="bg-surface-page fixed top-0 left-0 z-50 h-25 w-full text-3xl">
@@ -38,13 +26,24 @@ export const Navbar = () => {
         {/* Logo */}
         <div className="flex max-h-[56px] min-h-[30px] max-w-[162px] min-w-[88px] items-center gap-3">
           <Link href="/">
-            <Image
-              src={logoSrc}
-              alt="Soroswap"
-              width={162}
-              height={56}
-              className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain"
-            />
+            <>
+              <Image
+                src="/SoroswapPurpleBlack.svg"
+                alt="Soroswap"
+                width={162}
+                height={56}
+                className="h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain dark:hidden"
+                priority
+              />
+              <Image
+                src="/SoroswapPurpleWhite.svg"
+                alt="Soroswap"
+                width={162}
+                height={56}
+                className="hidden h-[40px] min-h-[30px] w-auto min-w-[88px] object-contain dark:block"
+                priority
+              />
+            </>
           </Link>
         </div>
         {/* Nav Links */}
@@ -143,7 +142,7 @@ export const Navbar = () => {
         {/* Right Side Controls */}
         <div className="flex items-center gap-3">
           {/* Theme Switch */}
-          <ThemeSwitch className="hidden md:block" />
+          <ThemeSwitch />
           {/* Connect Wallet Button */}
           <ConnectWallet className="hidden md:block" />
         </div>
