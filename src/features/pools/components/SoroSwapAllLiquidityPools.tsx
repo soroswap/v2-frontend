@@ -60,9 +60,18 @@ export const SoroSwapAllLiquidityPools = () => {
     },
     {
       accessorKey: "tvl",
+      sortDescFirst: true,
+      sortingFn: (rowA, rowB, id) => {
+        const a = rowA.getValue(id) as bigint | null | undefined;
+        const b = rowB.getValue(id) as bigint | null | undefined;
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+        return a < b ? -1 : a > b ? 1 : 0;
+      },
       header: ({ column }) => (
         <div className="flex items-center justify-end gap-2">
-          <span className="text-primary">TVL</span>
+          <p className="text-primary">TVL</p>
           <ArrowUp
             className={cn(
               "text-primary size-4 cursor-pointer transition-transform duration-300",
@@ -77,9 +86,9 @@ export const SoroSwapAllLiquidityPools = () => {
       cell: ({ getValue }) => {
         const value = getValue<bigint>();
         return (
-          <span className="flex justify-end">
+          <p className="flex justify-end">
             {value ? value.toString() : <div className="skeleton h-4 w-16" />}
-          </span>
+          </p>
         );
       },
     },
@@ -98,6 +107,7 @@ export const SoroSwapAllLiquidityPools = () => {
           router.push(`/pools/add-liquidity/${row.tokenA}/${row.tokenB}`);
         }}
         enableRowSelection={true}
+        initialSorting={[{ id: "tvl", desc: true }]}
       />
     </section>
   );

@@ -97,6 +97,8 @@ export interface TheTableProps<T extends RowData>
    * Callback when a row is clicked
    */
   onRowClick?: (row: T) => void;
+
+  initialSorting?: SortingState;
 }
 
 export type RowSelectionState = Record<string, boolean>;
@@ -117,10 +119,11 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
     className,
     enableRowSelection,
     onRowClick,
+    initialSorting,
   } = props;
 
   // Local sorting state (client-side)
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>(initialSorting ?? []);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   // Build TanStack Table instance
@@ -140,6 +143,9 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
     getSortedRowModel: getSortedRowModel(),
     getRowId,
     getCoreRowModel: getCoreRowModel(),
+    initialState: {
+      sorting: initialSorting,
+    },
   });
 
   const handleRowClick = (row: Row<T>) => {
