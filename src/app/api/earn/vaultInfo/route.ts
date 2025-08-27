@@ -20,8 +20,8 @@ export async function GET(request: NextRequest) {
     );
 
     return NextResponse.json({ data: vaultInfo });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error fetching vault info:", error);
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: error?.statusCode || 500 });
   }
 }
