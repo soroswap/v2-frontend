@@ -54,15 +54,7 @@ export async function GET(request: NextRequest) {
       data: poolsResponse,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
-
-    return NextResponse.json(
-      {
-        code: "POOLS_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    console.error("[API ERROR]", error);
+    return NextResponse.json(error, { status: error.status || 500 });
   }
 }
