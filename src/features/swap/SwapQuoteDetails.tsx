@@ -93,7 +93,6 @@ export const SwapQuoteDetails = ({
         {quote.routePlan.map((route) => (
           <p key={route.swapInfo.protocol}>
             {route.swapInfo.protocol.toUpperCase()}
-            {/* {route.swapInfo.protocol..toUpperCase()} */}
           </p>
         ))}
       </div>
@@ -194,7 +193,7 @@ export const SwapQuoteDetails = ({
           {/* Platform */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Platform</p>
-            <p className="text-primary text-sm">{getPlatformName()}</p>
+            <div className="text-primary text-sm">{getPlatformName()}</div>
             {/* <p className="text-primary text-sm">{getPlatformName()}</p> */}
           </div>
         </div>

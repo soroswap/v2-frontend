@@ -22,7 +22,6 @@ export const SwapModal = ({
   error,
 }: SwapModalProps) => {
   const { currentStep } = state;
-  console.log("state", state);
   const { tokenMap } = useTokensList();
 
   const getStepTitle = (step: SwapStep): string => {
