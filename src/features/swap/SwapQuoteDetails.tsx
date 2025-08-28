@@ -111,7 +111,7 @@ export const SwapQuoteDetails = ({
       {/* Header - Always visible and clickable */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="hover:bg-brand/5 flex w-full items-center justify-between p-4 text-left transition-colors"
+        className="hover:bg-brand/5 flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors"
       >
         <p className="text-secondary text-sm">
           1 {sellToken.code} = {conversionRate.toFixed(6)} {buyToken.code}
