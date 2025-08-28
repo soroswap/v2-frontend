@@ -5,6 +5,7 @@ import { Inter, Darker_Grotesque } from "next/font/google";
 import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
 import { ThemeProvider } from "next-themes";
+import { Footer } from "@/shared/components/Footer";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -44,6 +45,7 @@ export default function RootLayout({
           <UserProvider>
             <Navbar />
             {children}
+            <Footer />
           </UserProvider>
         </ThemeProvider>
       </body>

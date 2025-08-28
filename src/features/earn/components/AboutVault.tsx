@@ -218,42 +218,6 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
             </div>
           </article>
         </div>
-
-        <article className="bg-surface-alt border-surface-alt rounded-lg border p-4">
-          <header className="sr-only">
-            <h3>Additional Vault Details</h3>
-          </header>
-          <dl className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            <div className="flex flex-col space-y-1">
-              <dt className="text-secondary text-xs font-medium">Vault Name</dt>
-              <dd className="text-primary text-sm font-semibold">
-                {vaultInfo.name}
-              </dd>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <dt className="text-secondary text-xs font-medium">Symbol</dt>
-              <dd className="text-primary text-sm font-semibold">
-                {vaultInfo.symbol}
-              </dd>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <dt className="text-secondary text-xs font-medium">APY</dt>
-              <dd className="text-primary text-sm font-semibold">
-                <data value={vaultInfo.apy}>{vaultInfo.apy.toFixed(2)}%</data>
-              </dd>
-            </div>
-            <div className="flex flex-col space-y-1">
-              <dt className="text-secondary text-xs font-medium">
-                Vault Address
-              </dt>
-              <dd className="text-primary font-mono text-xs font-semibold">
-                <address className="not-italic">
-                  {vaultAddress.slice(0, 8)}...{vaultAddress.slice(-6)}
-                </address>
-              </dd>
-            </div>
-          </dl>
-        </article>
       </header>
     </section>
   );
