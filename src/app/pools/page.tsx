@@ -12,7 +12,7 @@ export default function PoolsPage() {
       <div className="bg-surface flex w-full max-w-7xl flex-col rounded-2xl border border-[#8866DD] p-4 shadow-xl sm:p-8">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <span className="text-primary text-xl sm:text-2xl">Pools</span>
+          <p className="text-primary text-xl sm:text-2xl">Pools</p>
 
           {/* "Add Liquidity" CTA – collapses to short label on very small screens */}
           <Link
@@ -22,8 +22,8 @@ export default function PoolsPage() {
             <span className="text-lg leading-none">
               <PlusIcon />
             </span>
-            <span className="xs:inline hidden">Add&nbsp;Liquidity</span>
-            <span className="xs:hidden">Add</span>
+            <p className="xs:inline hidden">Add&nbsp;Liquidity</p>
+            <p className="xs:hidden">Add</p>
           </Link>
         </div>
 
