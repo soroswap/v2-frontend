@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ExternalLink,
-  Github,
-  Linkedin,
-  MessageCircle,
-  FileText,
-  Twitter,
-  LinkedinIcon,
-} from "lucide-react";
+import { FileText } from "lucide-react";
 import Image from "next/image";
 
 export const Footer = () => {

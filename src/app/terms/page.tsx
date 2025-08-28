@@ -17,10 +17,10 @@ export default function TermsPage() {
           <section className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold">1. Introduction</h2>
             <p>
-              Welcome to Soroswap, a decentralized cryptocurrency exchange ("the
-              Exchange"). By using the services provided by Soroswap, you
-              ("User," "You," or "Your") agree to comply with and be bound by
-              these Terms of Use ("Terms"). If you do not agree with these
+              Welcome to Soroswap, a decentralized cryptocurrency exchange (&quot;the
+              Exchange&quot;). By using the services provided by Soroswap, you
+              (&quot;User,&quot; &quot;You,&quot; or &quot;Your&quot;) agree to comply with and be bound by
+              these Terms of Use (&quot;Terms&quot;). If you do not agree with these
               Terms, please do not use the services of the Exchange.
             </p>
             <p>
@@ -96,10 +96,10 @@ export default function TermsPage() {
               network. Soroswap is not responsible for your investment losses.
             </p>
             <p>
-              Cryptocurrency assets, "automated market making" (AMM), "voting"
-              and the "decentralized exchange" (DEX) are unregulated and do not
+              Cryptocurrency assets, &quot;automated market making&quot; (AMM), &quot;voting&quot;
+              and the &quot;decentralized exchange&quot; (DEX) are unregulated and do not
               have governmental oversight. The SEC has recently issued a
-              "Statement on Cryptocurrencies and Initial Coin Offerings" that
+              &quot;Statement on Cryptocurrencies and Initial Coin Offerings&quot; that
               may be of interest to you.
             </p>
           </section>
@@ -128,7 +128,7 @@ export default function TermsPage() {
               </li>
               <li>
                 Not engage in any activities that would result in the
-                exploitation or manipulation of the Exchange's services,
+                exploitation or manipulation of the Exchange&apos;s services,
                 including but not limited to market manipulation, fraudulent
                 behavior, or money laundering.
               </li>
@@ -194,7 +194,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold">11. Disclaimer of Warranty</h2>
             <p>
               Soroswap is open-source software licensed under the Apache-2.0
-              license. It is provided free of charge and on an "AS IS" BASIS,
+              license. It is provided free of charge and on an &quot;AS IS&quot; BASIS,
               WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND.
             </p>
           </section>

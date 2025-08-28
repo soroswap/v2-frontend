@@ -19,7 +19,7 @@ export default function PrivacyPage() {
               1. Important Information and Who We Are
             </h2>
             <p>
-              Welcome to Soroswap ("Soroswap", "we", "our", or "us"). This
+              Welcome to Soroswap (&quot;Soroswap&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). This
               Privacy Policy explains how we collect, use, and disclose your
               personal data when you visit our website at{" "}
               <a
@@ -28,8 +28,8 @@ export default function PrivacyPage() {
               >
                 https://app.soroswap.finance
               </a>{" "}
-              (the "Site") and use our decentralized exchange services
-              ("Services").
+              (the &quot;Site&quot;) and use our decentralized exchange services
+              (&quot;Services&quot;).
             </p>
             <p>
               For any questions regarding this Privacy Policy or our privacy
@@ -201,7 +201,7 @@ export default function PrivacyPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">12. Children's Privacy</h2>
+            <h2 className="text-2xl font-bold">12. Children&apos;s Privacy</h2>
             <p>
               The Site is a general audience site and is not intended for anyone
               under the age of 18. We do not knowingly collect personal data via
@@ -236,8 +236,8 @@ export default function PrivacyPage() {
             </p>
             <ul className="ml-6 list-disc space-y-2">
               <li>
-                Request access to your personal data (commonly known as a "data
-                subject access request").
+                Request access to your personal data (commonly known as a &quot;data
+                subject access request&quot;).
               </li>
               <li>
                 Request correction of the personal data we hold about you.
