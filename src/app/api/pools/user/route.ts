@@ -54,15 +54,8 @@ export async function GET(request: NextRequest) {
       data: userPoolsPositions,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API ERROR]", error);
 
-    return NextResponse.json(
-      {
-        code: "USER_POOLS_POSITIONS_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    return NextResponse.json(error, { status: error.status || 500 });
   }
 }

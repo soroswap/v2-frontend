@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { defindexClient } from "@/shared/lib/server/defindexClient";
 import { SupportedNetworks } from "@defindex/sdk";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,6 +24,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: vaultInfo });
   } catch (error: any) {
     console.error("Error fetching vault info:", error);
-    return NextResponse.json(error, { status: error?.statusCode || 500 });
+    return NextResponse.json(error, { status: error.statusCode || 500 });
   }
 }
