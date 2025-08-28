@@ -3,7 +3,7 @@ import { SwapStep, SwapModalState } from "@/features/swap/hooks/useSwap";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
-import { SwapError } from "./hooks/useSwap";
+import { SwapError } from "@/features/swap/hooks/useSwap";
 import { RotateArrowButton, TokenIcon } from "@/shared/components";
 import { useTokensList } from "@/shared/hooks";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";

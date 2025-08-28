@@ -153,13 +153,7 @@ export const TokenSelector = ({
         <ChevronDown className="text-primary size-4" />
       </button>
       {isOpen && (
-        <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsOpen(false)}
-          />
-          {/* Sheet */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="border-surface-alt bg-surface relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border p-4 sm:max-w-sm">
             {/* Header */}
             <div className="flex items-center justify-between">
@@ -254,7 +248,7 @@ export const TokenSelector = ({
               )}
             </div>
           </div>
-        </Modal>
+        </div>
       )}
       {isOpenModalUserCustomAsset && userCustomAsset && (
         <Modal
