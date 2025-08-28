@@ -1,7 +1,5 @@
 "use client";
 
-import { TheButton } from "@/shared/components";
-
 export const PortfolioCard = () => {
   return (
     <div className="bg-surface border-surface-alt flex size-full flex-col justify-between gap-2 rounded-xl border p-4">
@@ -20,20 +18,6 @@ export const PortfolioCard = () => {
             <p className="text-secondary text-sm">Realized APY</p>
             <p className="text-primary text-lg font-semibold">$0.00</p>
           </div>
-        </div>
-        <div>
-          <TheButton
-            className="text-nowrap text-white"
-            onClick={() => {
-              window.open(
-                "https://www.defindex.io",
-                "noreferrer, noopener",
-                "_blank",
-              );
-            }}
-          >
-            Portfolio Dashboard
-          </TheButton>
         </div>
       </div>
     </div>

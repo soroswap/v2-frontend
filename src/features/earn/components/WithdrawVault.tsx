@@ -81,7 +81,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
         <div className="flex">
           <TheButton
             onClick={handleWithdraw}
-            disabled={!amount || parseFloat(amount) <= 0}
+            disabled={!amount || parseFloat(amount) <= 0 || !address}
             className="w-full text-white lg:w-auto lg:px-8"
             type="submit"
           >

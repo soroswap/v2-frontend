@@ -15,10 +15,47 @@ import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
 import { ProgressBar } from "./ProgressBar";
 import { RiskLevel } from "../types/RiskLevel";
+import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
   riskLevel: RiskLevel;
+};
+
+// Separate component for TVL cell to properly use hooks
+const TvlCell = ({ vault }: { vault: VaultTableData }) => {
+  const tvl = vault.totalManagedFunds?.[0]?.total_amount;
+  const symbol = vault.assets[0].symbol;
+  const { price, isLoading } = useTokenPrice(vault.assets[0].address);
+
+  // Validate tvl before converting to BigInt
+  if (!tvl || tvl === "0" || tvl === 0) {
+    return (
+      <div className="text-primary font-medium">{formatCurrency("0")}</div>
+    );
+  }
+
+  return (
+    <div className="text-primary font-medium">
+      {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }), symbol)}
+      <p className="text-secondary text-xs">
+        {isLoading ? (
+          <div className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
+        ) : (
+          price &&
+          tvl && (
+            <p className="h-4">
+              {formatCurrency(
+                Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
+                  Number(price),
+                "USD",
+              )}
+            </p>
+          )
+        )}
+      </p>
+    </div>
+  );
 };
 
 export const VaultTable = () => {
@@ -119,32 +156,22 @@ export const VaultTable = () => {
 
         return (
           <div className="text-primary">
-            {vaultBalance.underlyingBalance[0]} {vault.assets[0].symbol}
+            {Number(
+              formatUnits({
+                value: vaultBalance.underlyingBalance[0],
+                decimals: 7,
+              }),
+            ).toFixed(2)}{" "}
+            {vault.assets[0].symbol}
           </div>
         );
       },
     },
     {
       accessorKey: "tvl",
-      header: "TVL",
+      header: "Total Supplied",
       cell: ({ row }) => {
-        const vault = row.original;
-        const tvl = vault.totalManagedFunds?.[0]?.total_amount;
-
-        // Validate tvl before converting to BigInt
-        if (!tvl || tvl === "0" || tvl === 0) {
-          return (
-            <div className="text-primary font-medium">
-              {formatCurrency("0")}
-            </div>
-          );
-        }
-
-        return (
-          <div className="text-primary font-medium">
-            {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }))}
-          </div>
-        );
+        return <TvlCell vault={row.original} />;
       },
     },
   ];
@@ -175,8 +202,6 @@ export const VaultTable = () => {
           <div className="py-8 text-center">No vaults available</div>
         ) : (
           vaultTableData.map((vault) => {
-            const tvl = vault.totalManagedFunds?.[0]?.total_amount;
-
             return (
               <div
                 key={vault.vaultAddress}
@@ -220,12 +245,10 @@ export const VaultTable = () => {
 
                   {/* TVL */}
                   <div className="flex flex-col text-center">
-                    <p className="text-secondary text-md">TVL</p>
-                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium text-nowrap">
-                      {formatCurrency(
-                        formatUnits({ value: BigInt(tvl), decimals: 7 }),
-                      )}
-                    </p>
+                    <p className="text-secondary text-md">Total Supplied</p>
+                    <div className="flex h-full items-center justify-center">
+                      <TvlCell vault={vault} />
+                    </div>
                   </div>
                 </div>
 
@@ -248,7 +271,14 @@ export const VaultTable = () => {
                       </div>
                     ) : (
                       <p className="text-primary text-sm">
-                        {vaultBalances?.[vault.vaultAddress]?.dfTokens || 0}{" "}
+                        {Number(
+                          formatUnits({
+                            value:
+                              vaultBalances?.[vault.vaultAddress]?.dfTokens ||
+                              0,
+                            decimals: 7,
+                          }),
+                        ).toFixed(2)}{" "}
                         {vault.assets[0].symbol}
                       </p>
                     )}

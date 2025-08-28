@@ -17,14 +17,14 @@ export const VaultCard = () => {
 
       <div className="flex flex-col gap-2">
         <h2 className="text-primary flex text-xl font-bold">
-          Create your Vault
+          Powered by Defindex
         </h2>
         <p className="text-secondary text-sm">
           Take control of your finances by creating your own Vault
         </p>
 
         <TheButton
-          className="w-full text-white"
+          className="w-full items-center gap-4 text-white"
           onClick={() => {
             window.open(
               "https://app.defindex.io",
@@ -34,6 +34,12 @@ export const VaultCard = () => {
           }}
         >
           Create Vault
+          <Image
+            src="/defindexLogo.svg"
+            alt="Defindex"
+            width={20}
+            height={20}
+          />
         </TheButton>
       </div>
     </div>
