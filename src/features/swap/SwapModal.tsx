@@ -1,3 +1,5 @@
+"use client";
+
 import { ReactNode } from "react";
 import { SwapStep, SwapModalState } from "@/features/swap/hooks/useSwap";
 import { CheckIcon, XIcon } from "lucide-react";

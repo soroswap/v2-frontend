@@ -101,6 +101,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       networkPassphrase: STELLAR.WALLET_NETWORK,
     });
 
+    if (!signedTxXdr) throw new Error("Failed to sign transaction");
     return signedTxXdr;
   };
 

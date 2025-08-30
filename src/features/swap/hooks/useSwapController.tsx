@@ -5,7 +5,7 @@ import {
   SwapError,
   SwapResult,
   SwapStep,
-  SwapModalData,
+  SwapModalState,
   useSwap,
 } from "@/features/swap/hooks/useSwap";
 import { useTokensList } from "@/shared/hooks/useTokensList";
@@ -96,7 +96,7 @@ export interface UseSwapControllerProps {
    */
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalState) => void;
 }
 
 export function useSwapController({

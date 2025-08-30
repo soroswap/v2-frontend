@@ -4,7 +4,7 @@ import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 
 //TODO: Check the response from sendTransaction
-interface SendTransactionResponse {
+export interface SendTransactionResponse {
   status: string;
   txHash: string;
   hash?: string;
@@ -64,15 +64,8 @@ export async function POST(request: NextRequest) {
       data: sendTransactionResponse,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API ERROR]", error);
 
-    return NextResponse.json(
-      {
-        code: "SEND_TRANSACTION_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    return NextResponse.json(error, { status: 500 | error.statusCode });
   }
 }

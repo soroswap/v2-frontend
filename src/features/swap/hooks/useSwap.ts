@@ -2,7 +2,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
-import { SendTransactionResponseData } from "@/app/api/send/route";
+import {
+  SendTransactionResponse,
+  SendTransactionResponseData,
+} from "@/app/api/send/route";
 import { useUserContext } from "@/contexts";
 
 export enum SwapStep {
@@ -47,7 +50,7 @@ export interface SwapModalDataMap {
   [SwapStep.BUILDING_XDR]: BuildQuoteResponse;
   [SwapStep.CREATE_TRUSTLINE]: TrustlineData;
   [SwapStep.WAITING_SIGNATURE]: QuoteResponse;
-  [SwapStep.SENDING_TRANSACTION]: never;
+  [SwapStep.SENDING_TRANSACTION]: SendTransactionResponse;
   [SwapStep.SUCCESS]: SwapResult;
   [SwapStep.ERROR]: SwapError;
 }
@@ -150,9 +153,7 @@ export function useSwap(options?: UseSwapOptions) {
               data.actionData.xdr,
               userAddress,
             );
-            console.log("signedXdr = ", signedXdr);
             const sendResult = await sendTransaction(signedXdr);
-            console.log("sendResult = ", sendResult);
 
             // Trustline created successfully, now retry the build
             console.log("Trustline created, retrying build...");
@@ -228,12 +229,15 @@ export function useSwap(options?: UseSwapOptions) {
           data: quote,
         });
         const signedXdr = await signTransaction(xdr, userAddress);
+        console.log("signedXdr = ", signedXdr);
 
         // Step 3: Send transaction
+        const sendResult = await sendTransaction(signedXdr);
+        console.log("sendResult = ", sendResult);
         updateStep(SwapStep.SENDING_TRANSACTION, {
           currentStep: SwapStep.SENDING_TRANSACTION,
+          data: sendResult.data,
         });
-        const sendResult = await sendTransaction(signedXdr);
 
         // Success
         updateStep(SwapStep.SUCCESS);
