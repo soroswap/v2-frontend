@@ -172,7 +172,7 @@ export default function PoolsAddLiquidityPage() {
                   !TOKEN_A || !TOKEN_B || TOKEN_A.contract === TOKEN_B.contract
                 }
                 onClick={onAddLiquidityPool}
-                className="bg-brand hover:bg-brand/80 text-primary disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
+                className="bg-brand hover:bg-brand/80 disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold text-white disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
               >
                 {!TOKEN_A || !TOKEN_B
                   ? "Select a token"
