@@ -16,11 +16,10 @@ export const UserLiquidity = () => {
   const { tokenMap } = useTokensList();
   const { positions: userPositions, isLoading: positionsLoading } =
     useUserPoolPositions(address);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [rowData, setRowData] = useState<UserPosition | null>(null);
 
   const handleRowClick = (position: UserPosition) => {
-    console.log("Row clicked:", position);
     setIsModalOpen(true);
     setRowData(position);
   };
@@ -53,7 +52,7 @@ export const UserLiquidity = () => {
           pool.poolInfo.tokenB.slice(0, 4);
 
         return (
-          <div className="flex items-center gap-4">
+          <div className="flex w-full flex-col items-start gap-4 sm:flex-row sm:items-center">
             <div className="relative">
               <TokenIcon
                 src={tokenMap[pool.poolInfo.tokenA]?.icon}
@@ -66,7 +65,7 @@ export const UserLiquidity = () => {
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
-            <span className="text-primary font-semibold">
+            <span className="text-primary flex text-xs font-semibold text-nowrap sm:text-sm">
               {displayTokenA}/{displayTokenB}
             </span>
           </div>
