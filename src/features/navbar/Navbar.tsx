@@ -76,7 +76,7 @@ export const Navbar = () => {
         <>
           <div className="absolute top-1/2 right-4 z-50 -translate-y-1/2 md:hidden">
             <button
-              className="bg-surface-alt inline-flex size-14 items-center justify-center rounded-full"
+              className="bg-surface-alt inline-flex size-14 cursor-pointer items-center justify-center rounded-full"
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open menu"
             >
