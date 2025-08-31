@@ -5,6 +5,7 @@ import { Modal } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
 import Link from "next/link";
+import { formatUnits } from "@/shared/lib/utils";
 
 export const UserPoolModal = ({
   isOpen,
@@ -46,13 +47,13 @@ export const UserPoolModal = ({
             {displayTokenAName}/{displayTokenBName}
           </span>
         </div>
-
         {/* Liquidity Pool */}
         <div className="flex w-full flex-col gap-1">
           <p className="text-secondary text-sm">Liquidity Pool</p>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>Total LP</span>
-            <span>-</span>
+            {/* <span>{rowData.poolInfo.totalSupply || "0"}</span> */}
+            <span>0</span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -63,7 +64,12 @@ export const UserPoolModal = ({
               />
               {displayTokenAName}
             </div>
-            <span>-</span>
+            <span>
+              {formatUnits({
+                value: rowData.poolInfo.reserveA || "0",
+                decimals: 7,
+              })}
+            </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -74,16 +80,20 @@ export const UserPoolModal = ({
               />
               {displayTokenBName}
             </div>
-            <span>-</span>
+            <span>
+              {formatUnits({
+                value: rowData.poolInfo.reserveB || "0",
+                decimals: 7,
+              })}
+            </span>
           </div>
         </div>
-
         {/* Your Liquidity */}
         <div className="flex w-full flex-col gap-1">
           <p className="text-secondary text-sm">Your Liquidity</p>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>Share of pool</span>
-            <span>-</span>
+            <span>{rowData.poolInfo.reserveLp || "0"}</span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>LP Balance</span>
@@ -98,7 +108,13 @@ export const UserPoolModal = ({
               />
               {displayTokenAName}
             </div>
-            <span>-</span>
+            {/* <span>
+              {formatUnits({
+                value: rowData.amountA || "0",
+                decimals: 7,
+              })}
+            </span> */}
+            <span>0</span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -109,10 +125,15 @@ export const UserPoolModal = ({
               />
               {displayTokenBName}
             </div>
-            <span>-</span>
+            {/* <span>
+              {formatUnits({
+                value: rowData.amountB || "0",
+                decimals: 7,
+              })}
+            </span> */}
+            <span>0</span>
           </div>
         </div>
-
         <div className="flex w-full gap-1">
           <div className="flex w-full">
             <Link
