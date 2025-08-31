@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { Modal } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPosition } from "@soroswap/sdk";
-import Link from "next/link";
 import { formatUnits } from "@/shared/lib/utils";
 
 export const UserPoolModal = ({
