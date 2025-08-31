@@ -70,7 +70,6 @@ export default function SwapPage() {
       setIsSwapModalOpen(true);
     },
     onError: (error: SwapError) => {
-      console.log("Error PAGE! ", error);
       console.error("Swap failed:", error);
       setSwapError(error);
     },
