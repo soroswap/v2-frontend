@@ -124,7 +124,11 @@ export function useSwapController({
   // Quote logic
   // ---------------------------------------------------------------------------
   const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
-  const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
+  const {
+    quote,
+    isLoading: isQuoteLoading,
+    quoteError,
+  } = useQuote(quoteRequest);
 
   // Build the quote request payload every time the user changes relevant data.
   useEffect(() => {
@@ -269,6 +273,7 @@ export function useSwapController({
     // quote info
     quote,
     isQuoteLoading,
+    quoteError,
     derivedSellAmount,
     derivedBuyAmount,
 

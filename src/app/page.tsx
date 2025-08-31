@@ -62,6 +62,7 @@ export default function SwapPage() {
     handleSwap,
     resetSwap,
     quote,
+    quoteError,
   } = useSwapController({
     userAddress: userAddress || undefined,
     onSuccess: (result: SwapResult) => {
@@ -155,7 +156,8 @@ export default function SwapPage() {
                 disabled={
                   !sellToken ||
                   !buyToken ||
-                  sellToken.contract === buyToken.contract
+                  sellToken.contract === buyToken.contract ||
+                  (!quote && quoteError)
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
@@ -164,7 +166,9 @@ export default function SwapPage() {
                   ? "Select a token"
                   : isSwapLoading
                     ? getSwapButtonText(currentStep)
-                    : "Swap"}
+                    : !quote && quoteError?.message === "No path found"
+                      ? "Not enough liquidity"
+                      : "Swap"}
               </TheButton>
             )}
           </div>
