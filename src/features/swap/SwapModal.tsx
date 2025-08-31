@@ -26,6 +26,13 @@ export const SwapModal = ({
   const { currentStep } = state;
   const { tokenMap } = useTokensList();
 
+  const getActualErrorMessage = (error: SwapError | undefined) => {
+    if (error?.message === "TokenError.InsufficientBalance") {
+      return "Insufficient Balance";
+    }
+    return error?.message;
+  };
+
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {
       case SwapStep.WAITING_SIGNATURE:
@@ -37,7 +44,7 @@ export const SwapModal = ({
       case SwapStep.SUCCESS:
         return "Swap Completed";
       case SwapStep.ERROR:
-        return error?.message || "Swap Failed";
+        return getActualErrorMessage(error) || "Swap Failed";
       default:
         return "Processing";
     }
