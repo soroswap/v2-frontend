@@ -87,7 +87,11 @@ export const SoroSwapAllLiquidityPools = () => {
         const value = getValue<bigint>();
         return (
           <p className="flex justify-end">
-            {value ? value.toString() : <div className="skeleton h-4 w-16" />}
+            {value >= 0 ? (
+              value.toString()
+            ) : (
+              <div className="skeleton h-4 w-16" />
+            )}
           </p>
         );
       },
