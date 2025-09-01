@@ -154,6 +154,7 @@ export function useSwap(options?: UseSwapOptions) {
               userAddress,
             );
             const sendResult = await sendTransaction(signedXdr);
+            console.log("sendResult = ", sendResult);
 
             // Trustline created successfully, now retry the build
             console.log("Trustline created, retrying build...");

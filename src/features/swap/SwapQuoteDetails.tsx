@@ -64,15 +64,15 @@ export const SwapQuoteDetails = ({
   };
 
   // Get network fee
-  const getNetworkFee = () => {
-    if (quote.platformFee?.feeAmount) {
-      return formatUnits({
-        value: quote.platformFee.feeAmount.toString(),
-      });
-    }
+  // const getNetworkFee = () => {
+  //   if (quote.platformFee?.feeAmount) {
+  //     return formatUnits({
+  //       value: quote.platformFee.feeAmount.toString(),
+  //     });
+  //   }
 
-    return "0.00001";
-  };
+  //   return "0.00001";
+  // };
 
   const getTradingPath = () => {
     if (quote.routePlan) {

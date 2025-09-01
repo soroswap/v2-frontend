@@ -12,12 +12,7 @@ import {
 import { SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
 import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
-import {
-  SwapStep,
-  SwapResult,
-  SwapError,
-  SwapModalState,
-} from "@/features/swap/hooks/useSwap";
+import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
 
 const SwapModal = dynamic(() =>
