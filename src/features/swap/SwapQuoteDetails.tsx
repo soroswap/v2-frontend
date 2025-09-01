@@ -143,6 +143,7 @@ export const SwapQuoteDetails = ({
           </div> */}
 
           {/* Price Impact */}
+          {/* //TODO: Check the right color >5 or <2 ? */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Price Impact</p>
             <p
