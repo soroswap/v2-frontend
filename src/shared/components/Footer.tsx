@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { FileText } from "lucide-react";
 import Image from "next/image";
+import { FileText } from "lucide-react";
 
 export const Footer = () => {
   return (
@@ -70,6 +70,7 @@ export const Footer = () => {
               alt="GitHub"
               width={20}
               height={20}
+              className="invert dark:invert-0"
             />
           </Link>
           <Link
@@ -84,6 +85,7 @@ export const Footer = () => {
               alt="LinkedIn"
               width={20}
               height={20}
+              className="invert dark:invert-0"
             />
           </Link>
           <Link
@@ -98,6 +100,7 @@ export const Footer = () => {
               alt="Discord"
               width={20}
               height={20}
+              className="invert dark:invert-0"
             />
           </Link>
           <Link
@@ -112,6 +115,7 @@ export const Footer = () => {
               alt="Medium"
               width={20}
               height={20}
+              className="invert dark:invert-0"
             />
           </Link>
           <Link
@@ -126,6 +130,7 @@ export const Footer = () => {
               alt="Twitter"
               width={20}
               height={20}
+              className="invert dark:invert-0"
             />
           </Link>
         </div>

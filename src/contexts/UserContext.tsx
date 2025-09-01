@@ -10,7 +10,7 @@ import {
 import { LedgerModule } from "@creit.tech/stellar-wallets-kit/modules/ledger.module";
 import {
   WalletConnectAllowedMethods,
-  WalletConnectModule
+  WalletConnectModule,
 } from "@creit.tech/stellar-wallets-kit/modules/walletconnect.module";
 import {
   createContext,
@@ -48,7 +48,10 @@ export const UserProvider = ({ children }: UserProviderProps) => {
           modules: [
             ...[...allowAllModules(), new LedgerModule()],
             new WalletConnectModule({
-              url: typeof window !== "undefined" ? window.location.origin : "https://v2.soroswap.finance",
+              url:
+                typeof window !== "undefined"
+                  ? window.location.origin
+                  : "https://v2.soroswap.finance",
               projectId: "4ee1d28f1fe3c70aa8ebc4677e623e1d",
               method: WalletConnectAllowedMethods.SIGN,
               description: `Soroswap`,
@@ -98,6 +101,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       networkPassphrase: STELLAR.WALLET_NETWORK,
     });
 
+    if (!signedTxXdr) throw new Error("Failed to sign transaction");
     return signedTxXdr;
   };
 

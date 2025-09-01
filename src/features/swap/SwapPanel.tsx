@@ -42,7 +42,7 @@ export const SwapPanel = ({
     >
       {/* Panel header */}
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-base font-medium text-[#A0A3C4]">{label}</span>
+        <p className="text-base font-medium text-[#A0A3C4]">{label}</p>
         {/* 25% / 50% / MAX controls could live here later */}
       </div>
 

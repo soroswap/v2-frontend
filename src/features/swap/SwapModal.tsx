@@ -1,31 +1,37 @@
 "use client";
 
 import { ReactNode } from "react";
-import { SwapStep, SwapModalData } from "@/features/swap/hooks/useSwap";
+import { SwapStep, SwapModalState } from "@/features/swap/hooks/useSwap";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
-import { SwapError } from "./hooks/useSwap";
+import { SwapError } from "@/features/swap/hooks/useSwap";
+import { RotateArrowButton, TokenIcon } from "@/shared/components";
+import { useTokensList } from "@/shared/hooks";
+import { formatUnits } from "@/shared/lib/utils/parseUnits";
 
-interface SwapModalProps<T extends SwapStep = SwapStep> {
-  currentStep: T;
+interface SwapModalProps {
+  state: SwapModalState;
   onClose: () => void;
   transactionHash?: string;
   error?: SwapError;
-  modalData?: SwapModalData<T>;
 }
 
-export const SwapModal = <T extends SwapStep = SwapStep>({
-  currentStep,
+export const SwapModal = ({
+  state,
   onClose,
   transactionHash,
   error,
-  modalData,
-}: SwapModalProps<T>) => {
-  console.log("currentStep = ", currentStep);
-  console.log("modalData = ", modalData);
-  console.log("SwapModal error = ", error);
-  console.log("transactionHash = ", transactionHash);
+}: SwapModalProps) => {
+  const { currentStep } = state;
+  const { tokenMap } = useTokensList();
+
+  const getActualErrorMessage = (error: SwapError | undefined) => {
+    if (error?.message === "TokenError.InsufficientBalance") {
+      return "Insufficient Balance";
+    }
+    return error?.message;
+  };
 
   const getStepTitle = (step: SwapStep): string => {
     switch (step) {
@@ -38,7 +44,7 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
       case SwapStep.SUCCESS:
         return "Swap Completed";
       case SwapStep.ERROR:
-        return error?.message || "Swap Failed";
+        return getActualErrorMessage(error) || "Swap Failed";
       default:
         return "Processing";
     }
@@ -47,7 +53,44 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
   const getStepContent: Record<Exclude<SwapStep, SwapStep.IDLE>, ReactNode> = {
     [SwapStep.WAITING_SIGNATURE]: (
       <div>
-        <p>Please sign the transaction in your wallet...</p>
+        {currentStep === SwapStep.WAITING_SIGNATURE && (
+          <>
+            <div className="flex flex-col gap-4">
+              <p>Please sign the transaction in your wallet...</p>
+              <div>
+                <div className="flex flex-col gap-4">
+                  <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+                    <TokenIcon
+                      src={tokenMap[state.data.assetIn].icon}
+                      name={tokenMap[state.data.assetIn].name}
+                      code={tokenMap[state.data.assetIn].code}
+                      size={32}
+                    />
+                    <p>
+                      {formatUnits({ value: state.data.amountIn })}{" "}
+                      {tokenMap[state.data.assetIn].code}
+                    </p>
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <RotateArrowButton isLoading={false} disabled={false} />
+                  </div>
+                  <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+                    <TokenIcon
+                      src={tokenMap[state.data.assetOut].icon}
+                      name={tokenMap[state.data.assetOut].name}
+                      code={tokenMap[state.data.assetOut].code}
+                      size={32}
+                    />
+                    <p>
+                      {formatUnits({ value: state.data.amountOut })}{" "}
+                      {tokenMap[state.data.assetOut].code}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     ),
     [SwapStep.BUILDING_XDR]: (
@@ -57,18 +100,22 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
     ),
     [SwapStep.CREATE_TRUSTLINE]: (
       <div className="flex flex-col items-center space-y-3 text-center">
-        <p className="text-primary font-medium leading-relaxed">
-          {modalData?.actionData.description}
-        </p>
-        {modalData?.actionData.assetCode && (
-          <div className="text-secondary text-sm">
-            <span className="font-medium">Token:</span>
-            <br />
-            <span className="break-all font-mono">
-              {modalData.actionData.assetCode}
-              {modalData.actionData.assetIssuer}
-            </span>
-          </div>
+        {currentStep === SwapStep.CREATE_TRUSTLINE && (
+          <>
+            <p className="text-primary leading-relaxed font-medium">
+              {state.data.actionData.description}
+            </p>
+            {state.data.actionData.assetCode && (
+              <div className="text-secondary text-sm">
+                <span className="font-medium">Token:</span>
+                <br />
+                <span className="font-mono break-all">
+                  {state.data.actionData.assetCode}
+                  {state.data.actionData.assetIssuer}
+                </span>
+              </div>
+            )}
+          </>
         )}
       </div>
     ),
@@ -108,7 +155,7 @@ export const SwapModal = <T extends SwapStep = SwapStep>({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-page border-brand flex min-h-72 w-full max-w-md flex-col rounded-2xl border p-6 shadow-xl">
+      <div className="bg-surface-page border-brand w/full flex min-h-72 max-w-md flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">
