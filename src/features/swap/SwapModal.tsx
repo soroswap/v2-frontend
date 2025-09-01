@@ -55,35 +55,37 @@ export const SwapModal = ({
       <div>
         {currentStep === SwapStep.WAITING_SIGNATURE && (
           <>
-            <p>Please sign the transaction in your wallet...</p>
-            <div>
-              <div className="flex flex-col gap-2">
-                <div className="relative flex items-center gap-2">
-                  <TokenIcon
-                    src={tokenMap[state.data.assetIn].icon}
-                    name={tokenMap[state.data.assetIn].name}
-                    code={tokenMap[state.data.assetIn].code}
-                    size={32}
-                  />
-                  <p>
-                    {formatUnits({ value: state.data.amountIn })}{" "}
-                    {tokenMap[state.data.assetIn].code}
-                  </p>
-                </div>
-                <div className="relative flex items-center gap-2">
-                  <RotateArrowButton isLoading={false} disabled={false} />
-                </div>
-                <div className="flex items-center gap-2">
-                  <TokenIcon
-                    src={tokenMap[state.data.assetOut].icon}
-                    name={tokenMap[state.data.assetOut].name}
-                    code={tokenMap[state.data.assetOut].code}
-                    size={32}
-                  />
-                  <p>
-                    {formatUnits({ value: state.data.amountOut })}{" "}
-                    {tokenMap[state.data.assetOut].code}
-                  </p>
+            <div className="flex flex-col gap-4">
+              <p>Please sign the transaction in your wallet...</p>
+              <div>
+                <div className="flex flex-col gap-4">
+                  <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+                    <TokenIcon
+                      src={tokenMap[state.data.assetIn].icon}
+                      name={tokenMap[state.data.assetIn].name}
+                      code={tokenMap[state.data.assetIn].code}
+                      size={32}
+                    />
+                    <p>
+                      {formatUnits({ value: state.data.amountIn })}{" "}
+                      {tokenMap[state.data.assetIn].code}
+                    </p>
+                  </div>
+                  <div className="relative flex items-center gap-2">
+                    <RotateArrowButton isLoading={false} disabled={false} />
+                  </div>
+                  <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+                    <TokenIcon
+                      src={tokenMap[state.data.assetOut].icon}
+                      name={tokenMap[state.data.assetOut].name}
+                      code={tokenMap[state.data.assetOut].code}
+                      size={32}
+                    />
+                    <p>
+                      {formatUnits({ value: state.data.amountOut })}{" "}
+                      {tokenMap[state.data.assetOut].code}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
