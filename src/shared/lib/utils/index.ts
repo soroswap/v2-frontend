@@ -3,6 +3,8 @@ export * from "./bigIntReplacer";
 export * from "./calculateTvl";
 export * from "./cn";
 export * from "./formatAddress";
+export * from "./formatCurrency";
+export * from "./formatNumber";
 export * from "./isStellarAddress";
 export * from "./parseUnits";
 export * from "./slippageBps";

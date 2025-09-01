@@ -1,12 +1,19 @@
-import * as StellarSdk from "@stellar/stellar-sdk";
+import {
+  Horizon,
+  rpc,
+  Asset,
+  Address,
+  Contract,
+  BASE_FEE,
+  Networks,
+  xdr,
+  TransactionBuilder,
+  scValToNative,
+} from "@stellar/stellar-sdk";
 import { AssetInfo } from "@soroswap/sdk";
 
-const horizonServer = new StellarSdk.Horizon.Server(
-  "https://horizon.stellar.org",
-);
-const sorobanServer = new StellarSdk.rpc.Server(
-  "https://mainnet.sorobanrpc.com",
-);
+const horizonServer = new Horizon.Server("https://horizon.stellar.org");
+const sorobanServer = new rpc.Server("https://mainnet.sorobanrpc.com");
 
 export async function findAsset(assetString: string): Promise<AssetInfo> {
   if (assetString.includes(":") || assetString.includes("-")) {
@@ -24,9 +31,7 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
     return {
       code: assetInfo.records[0].asset_code,
       issuer: assetInfo.records[0].asset_issuer,
-      contract: new StellarSdk.Asset(code, issuer).contractId(
-        StellarSdk.Networks.PUBLIC,
-      ),
+      contract: new Asset(code, issuer).contractId(Networks.PUBLIC),
       name: `${code}:${issuer}`,
       org: undefined,
       domain: undefined,
@@ -38,17 +43,17 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
 
     const invocations: Invocation[] = [
       {
-        contract: new StellarSdk.Address(assetString),
+        contract: new Address(assetString),
         method: "name",
         args: [],
       },
       {
-        contract: new StellarSdk.Address(assetString),
+        contract: new Address(assetString),
         method: "symbol",
         args: [],
       },
       {
-        contract: new StellarSdk.Address(assetString),
+        contract: new Address(assetString),
         method: "decimals",
         args: [],
       },
@@ -68,9 +73,7 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
     return {
       code: symbol,
       issuer: issuer,
-      contract: new StellarSdk.Asset(code, issuer).contractId(
-        StellarSdk.Networks.PUBLIC,
-      ),
+      contract: new Asset(code, issuer).contractId(Networks.PUBLIC),
       name: name,
       org: undefined,
       domain: undefined,
@@ -81,40 +84,38 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
 }
 
 export interface Invocation {
-  contract: StellarSdk.Address;
+  contract: Address;
   method: string;
-  args: StellarSdk.xdr.ScVal[];
+  args: xdr.ScVal[];
 }
 
 const StellarRouterContractAddress =
   "CBZV3HBP672BV7FF3ZILVT4CNPW3N5V2WTJ2LAGOAYW5R7L2D5SLUDFZ";
 
 async function simulateMultipleInvocations(invocations: Invocation[]) {
-  const stellarRouterContract = new StellarSdk.Contract(
-    StellarRouterContractAddress,
-  );
+  const stellarRouterContract = new Contract(StellarRouterContractAddress);
   const helperAccount = await horizonServer.loadAccount(
     "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
   );
 
-  const params: StellarSdk.xdr.ScVal[] = [
-    new StellarSdk.Address(
+  const params: xdr.ScVal[] = [
+    new Address(
       "GALAXYVOIDAOPZTDLHILAJQKCVVFMD4IKLXLSZV5YHO7VY74IWZILUTO",
     ).toScVal(),
-    StellarSdk.xdr.ScVal.scvVec(
+    xdr.ScVal.scvVec(
       invocations.map((invocation) =>
-        StellarSdk.xdr.ScVal.scvVec([
-          new StellarSdk.Address(invocation.contract.toString()).toScVal(),
-          StellarSdk.xdr.ScVal.scvSymbol(invocation.method),
-          StellarSdk.xdr.ScVal.scvVec(invocation.args),
+        xdr.ScVal.scvVec([
+          new Address(invocation.contract.toString()).toScVal(),
+          xdr.ScVal.scvSymbol(invocation.method),
+          xdr.ScVal.scvVec(invocation.args),
         ]),
       ),
     ),
   ];
 
-  const tx = new StellarSdk.TransactionBuilder(helperAccount, {
-    fee: StellarSdk.BASE_FEE,
-    networkPassphrase: StellarSdk.Networks.PUBLIC,
+  const tx = new TransactionBuilder(helperAccount, {
+    fee: BASE_FEE,
+    networkPassphrase: Networks.PUBLIC,
   })
     .addOperation(stellarRouterContract.call("exec", ...params))
     .setTimeout(500)
@@ -123,10 +124,8 @@ async function simulateMultipleInvocations(invocations: Invocation[]) {
   const sim = await sorobanServer.simulateTransaction(tx);
 
   if ("result" in sim && sim.result) {
-    return StellarSdk.scValToNative(sim.result.retval);
+    return scValToNative(sim.result.retval);
   }
 
   return null;
 }
-// const testAsset =
-// ("SAVE-GBWKWJTPYLDEIUZ3EZ34HGXWRQ4R6DUCNLG5SIT72RL243IJZLLG5UOJ");

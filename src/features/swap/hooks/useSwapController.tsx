@@ -5,7 +5,7 @@ import {
   SwapError,
   SwapResult,
   SwapStep,
-  SwapModalData,
+  SwapModalState,
   useSwap,
 } from "@/features/swap/hooks/useSwap";
 import { useTokensList } from "@/shared/hooks/useTokensList";
@@ -96,7 +96,7 @@ export interface UseSwapControllerProps {
    */
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalState) => void;
 }
 
 export function useSwapController({
@@ -124,7 +124,11 @@ export function useSwapController({
   // Quote logic
   // ---------------------------------------------------------------------------
   const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
-  const { quote, isLoading: isQuoteLoading } = useQuote(quoteRequest);
+  const {
+    quote,
+    isLoading: isQuoteLoading,
+    quoteError,
+  } = useQuote(quoteRequest);
 
   // Build the quote request payload every time the user changes relevant data.
   useEffect(() => {
@@ -269,6 +273,7 @@ export function useSwapController({
     // quote info
     quote,
     isQuoteLoading,
+    quoteError,
     derivedSellAmount,
     derivedBuyAmount,
 

@@ -44,6 +44,6 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("[API QUOTE ERROR]", error);
 
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: error?.status || 500 });
   }
 }

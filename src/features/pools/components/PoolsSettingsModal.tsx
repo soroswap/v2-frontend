@@ -70,10 +70,14 @@ export const PoolsSettingsModal = ({
                 className="text-secondary"
                 data-tooltip-id="max-slippage-tooltip"
               />
-              <Tooltip
-                id="max-slippage-tooltip"
-                content="Your transaction will revert if the price changes unfavorably by more than this percentage."
-              />
+              <Tooltip id="max-slippage-tooltip">
+                <div className="flex max-w-[350px] flex-col gap-2 text-sm text-white">
+                  <p>
+                    Your transaction will revert if the price changes
+                    unfavorably by more than this percentage.
+                  </p>
+                </div>
+              </Tooltip>
             </div>
             {slippageLevel && (
               <div className={cn("flex items-center gap-2", slippageColor)}>

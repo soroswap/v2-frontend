@@ -14,11 +14,13 @@ const fetcher = async (
     body: JSON.stringify(quoteRequest, bigIntReplacer, 2),
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(data.detail || data.title || "Quote failed");
   }
 
-  return await response.json();
+  return data;
 };
 
 export function useQuote(quoteRequest: QuoteRequest | null) {
@@ -38,7 +40,6 @@ export function useQuote(quoteRequest: QuoteRequest | null) {
     quote: data,
     quoteError: error,
     isLoading,
-    isError: error,
     mutate,
   };
 }

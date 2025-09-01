@@ -2,7 +2,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
-import { SendTransactionResponseData } from "@/app/api/send/route";
+import {
+  SendTransactionResponse,
+  SendTransactionResponseData,
+} from "@/app/api/send/route";
 import { useUserContext } from "@/contexts";
 
 export enum SwapStep {
@@ -44,33 +47,36 @@ export interface TrustlineData {
 
 export interface SwapModalDataMap {
   [SwapStep.IDLE]: never;
-  [SwapStep.BUILDING_XDR]: never;
+  [SwapStep.BUILDING_XDR]: BuildQuoteResponse;
   [SwapStep.CREATE_TRUSTLINE]: TrustlineData;
-  [SwapStep.WAITING_SIGNATURE]: never;
-  [SwapStep.SENDING_TRANSACTION]: never;
-  [SwapStep.SUCCESS]: never;
-  [SwapStep.ERROR]: never;
+  [SwapStep.WAITING_SIGNATURE]: QuoteResponse;
+  [SwapStep.SENDING_TRANSACTION]: SendTransactionResponse;
+  [SwapStep.SUCCESS]: SwapResult;
+  [SwapStep.ERROR]: SwapError;
 }
 
-export type SwapModalData<T extends SwapStep = SwapStep> = SwapModalDataMap[T];
-
+export type SwapModalState = {
+  [K in SwapStep]: SwapModalDataMap[K] extends never
+    ? { currentStep: K; data?: undefined }
+    : { currentStep: K; data: SwapModalDataMap[K] };
+}[SwapStep];
 export interface UseSwapOptions {
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
-  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalData<T>) => void;
+  onStepChange?: <T extends SwapStep>(step: T, data?: SwapModalState) => void;
 }
 
 export function useSwap(options?: UseSwapOptions) {
   const [currentStep, setCurrentStep] = useState<SwapStep>(SwapStep.IDLE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<SwapError | null>(null);
-  const [modalData, setModalData] = useState<SwapModalData | undefined>(
+  const [modalData, setModalData] = useState<SwapModalState | undefined>(
     undefined,
   );
   const { signTransaction: signTransactionFromContext } = useUserContext();
 
   const updateStep = useCallback(
-    <T extends SwapStep>(step: T, data?: SwapModalData<T>) => {
+    <T extends SwapStep>(step: T, data?: SwapModalState) => {
       setCurrentStep(step);
       setModalData(data || undefined);
       options?.onStepChange?.(step, data);
@@ -83,7 +89,10 @@ export function useSwap(options?: UseSwapOptions) {
       const swapError: SwapError = { step, message, details };
       console.log("swapError Handle Error= ", swapError);
       setError(swapError);
-      updateStep(SwapStep.ERROR);
+      updateStep(SwapStep.ERROR, {
+        currentStep: SwapStep.ERROR,
+        data: swapError,
+      });
       setIsLoading(false);
       options?.onError?.(swapError);
     },
@@ -109,76 +118,70 @@ export function useSwap(options?: UseSwapOptions) {
           }),
         });
         const data = await response.json();
-        console.log("response = ", data);
-        if (
-          data.errorCode === 13 ||
-          data.errorMessage === "TokenError.InsufficientTrustlineBalance"
-        ) {
-          // Prevent infinite recursion
-          if (retryCount > 2) {
-            //TODO: Handle better this.
-            handleError(
-              SwapStep.CREATE_TRUSTLINE,
-              "Failed to create trustline after multiple attempts",
-              data,
+
+        if (!response.ok) {
+          if (
+            data.errorCode === 13 ||
+            data.errorMessage === "TokenError.InsufficientTrustlineBalance"
+          ) {
+            // Prevent infinite recursion
+            if (retryCount > 2) {
+              //TODO: Handle better this.
+              handleError(
+                SwapStep.CREATE_TRUSTLINE,
+                "Failed to create trustline after multiple attempts",
+                data,
+              );
+              throw new Error(
+                "Failed to create trustline after multiple attempts",
+              );
+            }
+
+            // Create typed trustline data
+            const trustlineData: TrustlineData = {
+              action: data.action,
+              actionData: data.actionData,
+              errorCode: data.errorCode,
+              message: data.message,
+            };
+
+            updateStep(SwapStep.CREATE_TRUSTLINE, {
+              currentStep: SwapStep.CREATE_TRUSTLINE,
+              data: trustlineData,
+            });
+            const signedXdr = await signTransaction(
+              data.actionData.xdr,
+              userAddress,
             );
-            throw new Error(
-              "Failed to create trustline after multiple attempts",
-            );
+            const sendResult = await sendTransaction(signedXdr);
+            console.log("sendResult = ", sendResult);
+
+            // Trustline created successfully, now retry the build
+            console.log("Trustline created, retrying build...");
+            updateStep(SwapStep.BUILDING_XDR, {
+              currentStep: SwapStep.BUILDING_XDR,
+              data: data,
+            });
+
+            // Retry the buildXdr with the same quote and increment retry count
+            return await buildXdr(quote, userAddress, retryCount + 1);
           }
-
-          // Create typed trustline data
-          const trustlineData: TrustlineData = {
-            action: data.action,
-            actionData: data.actionData,
-            errorCode: data.errorCode,
-            message: data.message,
-          };
-
-          updateStep(SwapStep.CREATE_TRUSTLINE, trustlineData);
-          const signedXdr = await signTransaction(
-            data.actionData.xdr,
-            userAddress,
-          );
-          console.log("signedXdr = ", signedXdr);
-          const sendResult = await sendTransaction(signedXdr);
-          console.log("sendResult = ", sendResult);
-          // updateStep(SwapStep.SUCCESS);
-          // setIsLoading(false);
-          // const result: SwapResult = {
-          //   txHash: sendResult.data.txHash,
-          //   success: sendResult.data.status === "success" ? true : false,
-          // };
-
-          // Trustline created successfully, now retry the build
-          console.log("Trustline created, retrying build...");
-          updateStep(SwapStep.BUILDING_XDR);
-
-          // Retry the buildXdr with the same quote and increment retry count
-          return await buildXdr(quote, userAddress, retryCount + 1);
-        }
-        if (data.message === "TokenError.InsufficientBalance") {
-          console.log("here2");
           handleError(SwapStep.BUILDING_XDR, data.message, data);
+          throw new Error(data.message);
         }
+        updateStep(SwapStep.BUILDING_XDR, {
+          currentStep: SwapStep.BUILDING_XDR,
+          data: data,
+        });
+
         return data;
-      } catch (error: any) {
-        console.log("buildXdr error = ", error);
-        // If we're in CREATE_TRUSTLINE step, the error occurred during trustline creation
-        if (currentStep === SwapStep.CREATE_TRUSTLINE) {
-          handleError(
-            SwapStep.CREATE_TRUSTLINE,
-            error.message || "Failed to create trustline",
-            error,
-          );
-        } else {
-          handleError(
-            SwapStep.BUILDING_XDR,
-            error.message || "Failed to build transaction",
-            error,
-          );
-        }
-        throw error; // Re-throw to be caught by executeSwap
+      } catch (error) {
+        handleError(
+          SwapStep.BUILDING_XDR,
+          "Failed to build transaction",
+          error,
+        );
+        throw error;
       }
     },
     [currentStep, updateStep, handleError],
@@ -222,12 +225,20 @@ export function useSwap(options?: UseSwapOptions) {
         const { xdr } = await buildXdr(quote, userAddress, 0);
 
         // Step 2: Sign transaction
-        updateStep(SwapStep.WAITING_SIGNATURE);
+        updateStep(SwapStep.WAITING_SIGNATURE, {
+          currentStep: SwapStep.WAITING_SIGNATURE,
+          data: quote,
+        });
         const signedXdr = await signTransaction(xdr, userAddress);
+        console.log("signedXdr = ", signedXdr);
 
         // Step 3: Send transaction
-        updateStep(SwapStep.SENDING_TRANSACTION);
         const sendResult = await sendTransaction(signedXdr);
+        console.log("sendResult = ", sendResult);
+        updateStep(SwapStep.SENDING_TRANSACTION, {
+          currentStep: SwapStep.SENDING_TRANSACTION,
+          data: sendResult.data,
+        });
 
         // Success
         updateStep(SwapStep.SUCCESS);

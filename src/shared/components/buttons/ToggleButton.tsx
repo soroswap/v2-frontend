@@ -25,8 +25,8 @@ export const ToggleButton = ({
     >
       <span
         className={cn(
-          "absolute top-1 left-0 size-4 rounded-full bg-black transition-transform dark:bg-white",
-          isActive ? "translate-x-5" : "translate-x-1",
+          "absolute top-1 left-0 size-4 rounded-full bg-white transition-transform dark:bg-white",
+          isActive ? "translate-x-5" : "bg-brand translate-x-1",
         )}
       />
     </button>

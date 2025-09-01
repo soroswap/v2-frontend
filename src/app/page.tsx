@@ -1,17 +1,23 @@
 "use client";
 
-import { cn } from "@/shared/lib/utils/cn";
+import dynamic from "next/dynamic";
 import { useState, useCallback, MouseEvent } from "react";
+import { cn } from "@/shared/lib/utils/cn";
 import {
   TheButton,
   RotateArrowButton,
   ConnectWallet,
   SettingsButton,
 } from "@/shared/components/buttons";
-import { SwapPanel, SwapModal, SwapSettingsModal } from "@/features/swap";
+import { SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
+import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
 import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
+
+const SwapModal = dynamic(() =>
+  import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
+);
 
 const getSwapButtonText = (step: SwapStep): string => {
   switch (step) {
@@ -50,6 +56,8 @@ export default function SwapPage() {
     handleSwitchTokens,
     handleSwap,
     resetSwap,
+    quote,
+    quoteError,
   } = useSwapController({
     userAddress: userAddress || undefined,
     onSuccess: (result: SwapResult) => {
@@ -57,14 +65,16 @@ export default function SwapPage() {
       setIsSwapModalOpen(true);
     },
     onError: (error: SwapError) => {
-      console.log("Error PAGE! ", error);
       console.error("Swap failed:", error);
       setSwapError(error);
     },
     onStepChange: (step: SwapStep) => {
       if (
         step === SwapStep.WAITING_SIGNATURE ||
-        step === SwapStep.CREATE_TRUSTLINE
+        step === SwapStep.CREATE_TRUSTLINE ||
+        step === SwapStep.SENDING_TRANSACTION ||
+        step === SwapStep.SUCCESS ||
+        step === SwapStep.ERROR
       ) {
         setIsSwapModalOpen(true);
       }
@@ -91,7 +101,6 @@ export default function SwapPage() {
           <p className="text-primary text-xl sm:text-2xl">Swap</p>
           <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
         </div>
-
         <div className="flex flex-col gap-2">
           <div className="relative z-10">
             <SwapPanel
@@ -128,7 +137,11 @@ export default function SwapPage() {
             isLoading={isQuoteLoading}
             variant="outline"
           />
-
+          <SwapQuoteDetails
+            quote={quote}
+            sellToken={sellToken}
+            buyToken={buyToken}
+          />
           <div className="flex flex-col gap-2">
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
@@ -137,7 +150,8 @@ export default function SwapPage() {
                 disabled={
                   !sellToken ||
                   !buyToken ||
-                  sellToken.contract === buyToken.contract
+                  sellToken.contract === buyToken.contract ||
+                  (!quote && quoteError)
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
@@ -146,15 +160,17 @@ export default function SwapPage() {
                   ? "Select a token"
                   : isSwapLoading
                     ? getSwapButtonText(currentStep)
-                    : "Swap"}
+                    : !quote && quoteError?.message === "No path found"
+                      ? "Not enough liquidity"
+                      : "Swap"}
               </TheButton>
             )}
           </div>
         </div>
 
-        {isSwapModalOpen && (
+        {isSwapModalOpen && modalData && (
           <SwapModal
-            currentStep={currentStep}
+            state={modalData}
             onClose={() => {
               setIsSwapModalOpen(false);
               setSwapResult(null);
@@ -162,10 +178,8 @@ export default function SwapPage() {
             }}
             error={swapError || undefined}
             transactionHash={swapResult?.txHash || swapResult?.hash}
-            modalData={modalData}
           />
         )}
-
         {isSettingsModalOpen && (
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}

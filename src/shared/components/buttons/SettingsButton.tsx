@@ -1,7 +1,7 @@
 "use client";
 
-import { ButtonHTMLAttributes, MouseEventHandler } from "react";
 import Image from "next/image";
+import { ButtonHTMLAttributes, MouseEventHandler } from "react";
 
 interface SettingsButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   onClick: MouseEventHandler<HTMLButtonElement>;
