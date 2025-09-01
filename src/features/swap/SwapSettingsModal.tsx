@@ -192,6 +192,48 @@ export const SwapSettingsModal = ({
           </div>
         </div>
 
+        <div className="flex h-full flex-row justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <p className="text-secondary text-lg font-medium">Max Hops</p>
+            <Info
+              size={14}
+              className="text-secondary"
+              data-tooltip-id="max-hops-tooltip"
+            />
+            <Tooltip id="max-hops-tooltip">
+              <div className="flex max-w-[350px] flex-col gap-2 text-sm text-white">
+                <p>
+                  The maximum number of hops the router will make to find the
+                  best route.
+                </p>
+              </div>
+            </Tooltip>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={settings.maxHops}
+              onChange={(e) => {
+                const raw = Number(e.target.value);
+                const safe = Number.isFinite(raw)
+                  ? Math.min(10, Math.max(1, raw))
+                  : 1;
+                setSwapSettings({
+                  ...settings,
+                  maxHops: safe,
+                });
+              }}
+              className={cn(
+                "bg-surface text-primary w-[70px] rounded-lg border border-transparent p-2 text-center text-sm outline-none",
+              )}
+              placeholder="1"
+              min={1}
+              max={10}
+              step={1}
+            />
+          </div>
+        </div>
+
         {/* Protocols */}
         <div className="flex h-full flex-col gap-2">
           <button
