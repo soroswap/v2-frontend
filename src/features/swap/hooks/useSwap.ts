@@ -241,7 +241,6 @@ export function useSwap(options?: UseSwapOptions) {
         });
 
         // Success
-        updateStep(SwapStep.SUCCESS);
         setIsLoading(false);
 
         const result: SwapResult = {
@@ -251,11 +250,14 @@ export function useSwap(options?: UseSwapOptions) {
               ? true
               : false,
         };
+        updateStep(SwapStep.SUCCESS, {
+          currentStep: SwapStep.SUCCESS,
+          data: result,
+        });
 
         options?.onSuccess?.(result);
         return result;
       } catch (error: any) {
-        console.log("executeSwap error = ", error);
         // Only handle error here if it hasn't been handled by buildXdr
         // buildXdr will handle its own errors and call handleError directly
         if (currentStep !== SwapStep.ERROR) {

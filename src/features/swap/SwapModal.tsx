@@ -125,7 +125,7 @@ export const SwapModal = ({
       </div>
     ),
     [SwapStep.SUCCESS]: (
-      <div>
+      <div className="flex flex-col gap-2">
         {transactionHash && (
           <a
             href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
@@ -155,7 +155,7 @@ export const SwapModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-page border-brand w/full flex min-h-72 max-w-md flex-col rounded-2xl border p-6 shadow-xl">
+      <div className="bg-surface-page border-brand w/full flex min-h-72 max-w-md min-w-96 flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">
