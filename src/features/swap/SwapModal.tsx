@@ -8,6 +8,7 @@ import { network } from "@/shared/lib/environmentVars";
 import { SwapError } from "@/features/swap/hooks/useSwap";
 import { RotateArrowButton, TokenIcon } from "@/shared/components";
 import { useTokensList } from "@/shared/hooks";
+import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 
 interface SwapModalProps {
@@ -25,6 +26,15 @@ export const SwapModal = ({
 }: SwapModalProps) => {
   const { currentStep } = state;
   const { tokenMap } = useTokensList();
+  const userTokenList = useUserAssetList();
+
+  // Create combined token map including user custom assets
+  const combinedTokenMap = {
+    ...tokenMap,
+    ...Object.fromEntries(
+      userTokenList.map((token) => [token.contract, token]),
+    ),
+  };
 
   const getActualErrorMessage = (error: SwapError | undefined) => {
     if (error?.message === "TokenError.InsufficientBalance") {
@@ -61,14 +71,14 @@ export const SwapModal = ({
                 <div className="flex flex-col gap-4">
                   <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
                     <TokenIcon
-                      src={tokenMap[state.data.assetIn].icon}
-                      name={tokenMap[state.data.assetIn].name}
-                      code={tokenMap[state.data.assetIn].code}
+                      src={combinedTokenMap[state.data.assetIn]?.icon}
+                      name={combinedTokenMap[state.data.assetIn]?.name}
+                      code={combinedTokenMap[state.data.assetIn]?.code}
                       size={32}
                     />
                     <p>
                       {formatUnits({ value: state.data.amountIn })}{" "}
-                      {tokenMap[state.data.assetIn].code}
+                      {combinedTokenMap[state.data.assetIn]?.code}
                     </p>
                   </div>
                   <div className="relative flex items-center gap-2">
@@ -76,14 +86,14 @@ export const SwapModal = ({
                   </div>
                   <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
                     <TokenIcon
-                      src={tokenMap[state.data.assetOut].icon}
-                      name={tokenMap[state.data.assetOut].name}
-                      code={tokenMap[state.data.assetOut].code}
+                      src={combinedTokenMap[state.data.assetOut]?.icon}
+                      name={combinedTokenMap[state.data.assetOut]?.name}
+                      code={combinedTokenMap[state.data.assetOut]?.code}
                       size={32}
                     />
                     <p>
                       {formatUnits({ value: state.data.amountOut })}{" "}
-                      {tokenMap[state.data.assetOut].code}
+                      {combinedTokenMap[state.data.assetOut]?.code}
                     </p>
                   </div>
                 </div>

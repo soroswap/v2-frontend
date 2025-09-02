@@ -224,9 +224,17 @@ export function useSwapController({
    */
   const handleTokenSelect = useCallback(
     (field: IndependentField) => (token: AssetInfo | null) => {
-      dispatchSwap({ type: "SET_TOKEN", field, token });
+      const oppositeToken = field === "sell" ? buyToken : sellToken;
+      
+      // If selecting a token that's already on the opposite side, switch them
+      if (token && oppositeToken && token.contract === oppositeToken.contract) {
+        dispatchSwap({ type: "SWITCH_TOKENS" });
+      } else {
+        // Normal token selection
+        dispatchSwap({ type: "SET_TOKEN", field, token });
+      }
     },
-    [],
+    [sellToken, buyToken],
   );
 
   /**
