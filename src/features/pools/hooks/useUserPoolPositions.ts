@@ -1,7 +1,9 @@
-import { UserPosition } from "@soroswap/sdk";
+import { UserPositionResponse } from "@soroswap/sdk";
 import useSWR from "swr";
 
-const fetchUserPositions = async (address: string): Promise<UserPosition[]> => {
+const fetchUserPositions = async (
+  address: string,
+): Promise<UserPositionResponse[]> => {
   const response = await fetch("/api/pools/user", {
     headers: {
       address,
@@ -13,7 +15,7 @@ const fetchUserPositions = async (address: string): Promise<UserPosition[]> => {
   }
 
   const { data } = await response.json();
-  return data || [];
+  return (data as UserPositionResponse[]) || [];
 };
 
 export function useUserPoolPositions(address: string | null) {

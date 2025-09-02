@@ -15,6 +15,7 @@ import { AssetInfo } from "@soroswap/sdk";
 const horizonServer = new Horizon.Server("https://horizon.stellar.org");
 const sorobanServer = new rpc.Server("https://mainnet.sorobanrpc.com");
 
+/* This function is used to find an asset on the Stellar network */
 export async function findAsset(assetString: string): Promise<AssetInfo> {
   if (assetString.includes(":") || assetString.includes("-")) {
     // find the assetString through horizon
