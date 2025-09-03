@@ -8,8 +8,6 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { useVaultBalance, useVaultInfo } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
-import { ProgressBar } from "@/features/earn/components/ProgressBar";
-import { VAULT_MOCK } from "@/features/earn/constants/vault";
 import { formatUnits } from "@/shared/lib/utils";
 
 const VaultCardDetailsLoading = () => {
@@ -85,9 +83,9 @@ export const VaultCardDetails = ({
     userAddress,
   });
 
-  const riskLevelByVaultAddress = VAULT_MOCK.find(
-    (item) => item.vaultAddress === vaultAddress,
-  );
+  // const riskLevelByVaultAddress = VAULT_MOCK.find(
+  //   (item) => item.vaultAddress === vaultAddress,
+  // );
 
   if (isVaultInfoLoading) {
     return <VaultCardDetailsLoading />;
