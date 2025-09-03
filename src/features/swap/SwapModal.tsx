@@ -120,7 +120,7 @@ export const SwapModal = ({
                 <span className="font-medium">Token:</span>
                 <br />
                 <span className="font-mono break-all">
-                  {state.data.actionData.assetCode}
+                  {state.data.actionData.assetCode}:
                   {state.data.actionData.assetIssuer}
                 </span>
               </div>
