@@ -74,6 +74,7 @@ export default function PoolsAddLiquidityPage() {
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);
       setAddLiquidityResult(null);
+      setIsSwapModalOpen(true); // Open modal to show error
     },
     onStepChange: (step: PoolStep) => {
       if (step === PoolStep.WAITING_SIGNATURE) {

@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
       data: addLiquidityResponse,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API ERROR]", error);
 
     return NextResponse.json(error, { status: error?.response?.status || 500 });
   }
