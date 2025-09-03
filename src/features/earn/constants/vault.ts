@@ -1,4 +1,4 @@
-import { RiskLevel } from "../types/RiskLevel";
+import { RiskLevel } from "@/features/earn/types/RiskLevel";
 
 export const VAULT_MOCK: { vaultAddress: string; riskLevel: RiskLevel }[] = [
   {
