@@ -88,7 +88,7 @@ export const SoroSwapAllLiquidityPools = () => {
         return (
           <p className="flex justify-end">
             {typeof value === "bigint" ? (
-              formatCurrency(value.toString(), " ", "")
+              value.toLocaleString("pt-BR")
             ) : (
               <span className="skeleton h-4 w-16" />
             )}
