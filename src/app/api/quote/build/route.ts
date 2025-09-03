@@ -34,6 +34,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(buildXdrResponse);
   } catch (error: any) {
     console.error("[API ERROR]", error);
-    return NextResponse.json(error, { status: error?.status || 500 });
+    return NextResponse.json(error, {
+      status: error?.status || error?.statusCode || 500,
+    });
   }
 }

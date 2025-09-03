@@ -151,7 +151,9 @@ export default function SwapPage() {
                   !sellToken ||
                   !buyToken ||
                   sellToken.contract === buyToken.contract ||
-                  (!quote && quoteError)
+                  (!quote && quoteError) ||
+                  quoteError?.message === "No path found" ||
+                  !typedValue
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
