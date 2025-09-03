@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const data = await defindexClient.depositToVault(
       vaultId,
       {
-        amounts: [Number(amount)],
+        amounts: [Number(amount)], //TODO: Change to formatUnits Because 0.001 should be 10000000
         caller: caller,
         slippageBps: Number(slippageBps),
         invest: true,
@@ -52,6 +52,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching vault deposit:", error);
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: 500 });
   }
 }
