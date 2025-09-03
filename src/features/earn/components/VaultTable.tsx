@@ -111,19 +111,19 @@ export const VaultTable = () => {
         return <div className="text-primary">{vault.apy.toFixed(2)} %</div>;
       },
     },
-    {
-      accessorKey: "riskLevel",
-      header: "Risk Level",
-      cell: ({ row }) => {
-        const vault = row.original;
+    // {
+    //   accessorKey: "riskLevel",
+    //   header: "Risk Level",
+    //   cell: ({ row }) => {
+    //     const vault = row.original;
 
-        return (
-          <div className="text-primary w-[50%]">
-            <ProgressBar level={vault.riskLevel} />
-          </div>
-        );
-      },
-    },
+    //     return (
+    //       <div className="text-primary w-[50%]">
+    //         <ProgressBar level={vault.riskLevel} />
+    //       </div>
+    //     );
+    //   },
+    // },
     {
       accessorKey: "holding",
       header: "Holdings",

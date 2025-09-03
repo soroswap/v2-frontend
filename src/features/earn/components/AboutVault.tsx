@@ -6,11 +6,112 @@ import { CopyAndPasteButton, TokenIcon } from "@/shared/components";
 import { useTokensList } from "@/shared/hooks";
 import { Tooltip } from "react-tooltip";
 
+const AboutVaultLoading = () => {
+  return (
+    <section className="w-full space-y-6">
+      <header className="w-full space-y-4">
+        <div className="h-7 w-40 animate-pulse rounded bg-gray-300" />
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {/* Assets Card Skeleton */}
+          <article className="bg-surface-alt border-surface-alt rounded-lg border p-4">
+            <header className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-12 animate-pulse rounded bg-gray-300" />
+                <div className="h-4 w-4 animate-pulse rounded bg-gray-300" />
+              </div>
+            </header>
+            <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-5 animate-pulse rounded-full bg-gray-300" />
+                  <div className="flex flex-col gap-1">
+                    <div className="h-4 w-8 animate-pulse rounded bg-gray-300" />
+                    <div className="h-3 w-20 animate-pulse rounded bg-gray-300" />
+                  </div>
+                </div>
+                <div className="ml-8 space-y-1">
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-300" />
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1">
+                      <div className="h-3 w-12 animate-pulse rounded bg-gray-300" />
+                      <div className="h-3 w-16 animate-pulse rounded bg-gray-300" />
+                    </div>
+                    <div className="h-5 w-12 animate-pulse rounded-full bg-gray-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          {/* Fee Structure Card Skeleton */}
+          <article className="bg-surface-alt border-surface-alt rounded-lg border p-4">
+            <header className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-20 animate-pulse rounded bg-gray-300" />
+                <div className="h-4 w-4 animate-pulse rounded bg-gray-300" />
+              </div>
+            </header>
+            <div className="space-y-2">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-16 animate-pulse rounded bg-gray-300" />
+                  <div className="h-4 w-8 animate-pulse rounded bg-gray-300" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="h-3 w-12 animate-pulse rounded bg-gray-300" />
+                  <div className="h-4 w-8 animate-pulse rounded bg-gray-300" />
+                </div>
+              </div>
+            </div>
+          </article>
+
+          {/* Roles Card Skeleton */}
+          <article className="bg-surface-alt border-surface-alt rounded-lg border p-4 md:col-span-2 lg:col-span-1">
+            <header className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-10 animate-pulse rounded bg-gray-300" />
+                <div className="h-4 w-4 animate-pulse rounded bg-gray-300" />
+              </div>
+            </header>
+            <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="flex flex-col space-y-1">
+                  <div className="h-4 w-16 animate-pulse rounded bg-gray-300" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-32 animate-pulse rounded bg-gray-300" />
+                    <div className="h-4 w-4 animate-pulse rounded bg-gray-300" />
+                  </div>
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <div className="h-4 w-14 animate-pulse rounded bg-gray-300" />
+                  <div className="flex items-center gap-2">
+                    <div className="h-3 w-28 animate-pulse rounded bg-gray-300" />
+                    <div className="h-4 w-4 animate-pulse rounded bg-gray-300" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </header>
+    </section>
+  );
+};
+
 export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
-  const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
+  const {
+    vaultInfo,
+    isLoading: isVaultInfoLoading,
+    isError,
+  } = useVaultInfo({ vaultId: vaultAddress });
 
-  if (!vaultInfo) {
+  if (isVaultInfoLoading) {
+    return <AboutVaultLoading />;
+  }
+
+  if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
       <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
         <div className="text-secondary text-center">Vault not found</div>
@@ -44,7 +145,7 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </div>
             </header>
             <div className="space-y-2">
-              {vaultInfo.assets?.length > 0 ? (
+              {vaultInfo?.assets?.length && vaultInfo.assets.length > 0 ? (
                 <ul className="space-y-2">
                   {vaultInfo.assets.map((asset, index) => (
                     <li key={index} className="space-y-2">
@@ -130,9 +231,9 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </div>
             </header>
             <div className="space-y-2">
-              {vaultInfo.feesBps ? (
+              {vaultInfo?.feesBps ? (
                 <dl className="space-y-1">
-                  {typeof vaultInfo.feesBps === "object" ? (
+                  {typeof vaultInfo?.feesBps === "object" ? (
                     Object.entries(vaultInfo.feesBps).map(
                       ([feeType, feeValue]) => (
                         <div
@@ -188,9 +289,9 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </div>
             </header>
             <div className="space-y-2">
-              {vaultInfo.roles ? (
+              {vaultInfo?.roles ? (
                 <dl className="space-y-2">
-                  {Object.entries(vaultInfo.roles).map(([role, address]) => (
+                  {Object.entries(vaultInfo?.roles).map(([role, address]) => (
                     <div key={role} className="flex flex-col space-y-1">
                       <dt className="text-primary text-sm font-medium capitalize">
                         {role.replace(/([A-Z])/g, " $1").trim()}

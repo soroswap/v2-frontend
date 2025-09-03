@@ -5,11 +5,11 @@ import { ArrowLeft } from "lucide-react";
 import { TokenIcon } from "@/shared/components/TokenIcon";
 import { CopyAndPasteButton, TheButton } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
-import { useVaultBalance, useVaultInfo } from "../hooks";
+import { useVaultBalance, useVaultInfo } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
-import { ProgressBar } from "./ProgressBar";
-import { VAULT_MOCK } from "../constants/vault";
+import { ProgressBar } from "@/features/earn/components/ProgressBar";
+import { VAULT_MOCK } from "@/features/earn/constants/vault";
 import { formatUnits } from "@/shared/lib/utils";
 
 const VaultCardDetailsLoading = () => {
@@ -38,10 +38,10 @@ const VaultCardDetailsLoading = () => {
         </div>
 
         {/* Risk Level */}
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <div className="h-5 w-20 rounded bg-gray-300" />
           <div className="h-6 w-24 rounded bg-gray-300" />
-        </div>
+        </div> */}
 
         {/* Holdings */}
         <div className="flex flex-col gap-2">
@@ -93,13 +93,7 @@ export const VaultCardDetails = ({
     return <VaultCardDetailsLoading />;
   }
 
-  if (!vaultInfo) {
-    return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault not found</div>
-      </div>
-    );
-  }
+  if (!vaultInfo) return;
 
   return (
     <div className="bg-surface border-surface-alt flex flex-col gap-4 rounded-2xl border p-8 shadow-lg">
@@ -139,14 +133,14 @@ export const VaultCardDetails = ({
           </div>
         </div>
         {/* Risk Level */}
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <p className="text-secondary flex h-full text-sm font-medium">
             Risk Level
           </p>
           <div className="flex h-full items-center">
             <ProgressBar level={riskLevelByVaultAddress?.riskLevel} />
           </div>
-        </div>
+        </div> */}
         {/* Holdings */}
         <div className="flex flex-col gap-2">
           <p className="text-secondary text-sm font-medium">Holdings</p>
@@ -162,7 +156,7 @@ export const VaultCardDetails = ({
                     value: vaultBalance?.underlyingBalance[0],
                     decimals: 7,
                   }),
-                ).toFixed(2)}{" "}
+                )}{" "}
                 {vaultInfo.assets[0].symbol}
               </p>
             </div>
