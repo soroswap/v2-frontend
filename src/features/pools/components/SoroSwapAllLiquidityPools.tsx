@@ -4,7 +4,7 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { TheTable } from "@/shared/components";
 import { Pool } from "@soroswap/sdk";
 import { ArrowUp } from "lucide-react";
-import { cn, formatCurrency } from "@/shared/lib/utils";
+import { cn } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
 import { useRouter } from "next/navigation";
 
