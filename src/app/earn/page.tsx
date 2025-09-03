@@ -10,7 +10,7 @@ import {
 import { TheButton } from "@/shared/components";
 
 const EarnPageSkeleton = () => (
-  <main className="mt-[100px] flex h-[calc(100vh-100px)] flex-col">
+  <main className="mt-[100px] flex min-h-[calc(100vh-100px)] flex-col pb-24">
     <div className="flex h-full flex-col space-y-6">
       <div className="p-6">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -45,7 +45,7 @@ const EarnPageSkeleton = () => (
         </div>
       </div>
 
-      <div className="bg-surface-page border-surface-alt flex-1 rounded-lg border p-6">
+      <div className="bg-surface-page/75 border-surface-alt mx-6 flex-1 rounded-lg border p-6 backdrop-blur-[25px]">
         <div className="border-surface-alt flex items-center justify-between border-b py-6 sm:p-6">
           <div className="skeleton h-6 w-16" />
           <div className="skeleton h-10 w-32" />
@@ -76,7 +76,7 @@ const EarnPageSkeleton = () => (
 export default function EarnPage() {
   return (
     <Suspense fallback={<EarnPageSkeleton />}>
-      <main className="mt-[100px] flex h-[calc(100vh-100px)] flex-col">
+      <main className="mt-[100px] flex min-h-[calc(100vh-100px)] flex-col pb-24">
         <div className="flex h-full flex-col space-y-6">
           <div className="p-6">
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
@@ -89,7 +89,7 @@ export default function EarnPage() {
             </div>
           </div>
 
-          <div className="bg-surface-page border-surface-alt flex-1 rounded-lg border p-6">
+          <div className="bg-surface-page/75 border-surface-alt mx-6 flex flex-1 flex-col rounded-lg border p-6 backdrop-blur-[25px]">
             <div className="border-surface-alt flex items-center justify-between border-b py-6 sm:p-6">
               <h2 className="text-primary text-xl font-bold">Vaults</h2>
               <TheButton
