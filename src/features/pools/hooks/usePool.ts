@@ -47,7 +47,7 @@ export interface UsePoolOptions {
   onError?: (error: PoolError) => void;
   onStepChange?: (step: PoolStep) => void;
 }
-
+//TODO: Check the response from  remove-liquidity. it's not returning status/successful
 export function usePool(options?: UsePoolOptions) {
   const [currentStep, setCurrentStep] = useState<PoolStep>(PoolStep.IDLE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
