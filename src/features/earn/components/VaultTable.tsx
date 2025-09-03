@@ -40,17 +40,17 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
       {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }), symbol)}
       <p className="text-secondary text-xs">
         {isLoading ? (
-          <div className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
+          <span className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
         ) : (
           price &&
           tvl && (
-            <p className="h-4">
+            <span className="h-4">
               {formatCurrency(
                 Number(formatUnits({ value: BigInt(tvl), decimals: 7 })) *
                   Number(price),
                 "USD",
               )}
-            </p>
+            </span>
           )
         )}
       </p>

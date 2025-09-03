@@ -13,6 +13,7 @@ interface UseVaultBalanceReturn {
   vaultBalances: VaultBalance | null;
   isLoading: boolean;
   isError: boolean;
+  revalidate: () => void;
 }
 
 const fetchVaultBalance = async (
@@ -64,6 +65,7 @@ export const useVaultBalance = ({
     data: singleVaultBalance,
     error,
     isLoading,
+    mutate: mutateSingle,
   } = useSWR(
     vaultId && userAddress ? ["vault-balance", vaultId, userAddress] : null,
     () => fetchVaultBalance(vaultId!, userAddress!),
@@ -78,6 +80,7 @@ export const useVaultBalance = ({
     data: multipleVaultBalances,
     error: multipleError,
     isLoading: multipleLoading,
+    mutate: mutateMultiple,
   } = useSWR(
     vaultIds && vaultIds.length > 0 && userAddress
       ? ["vault-balances", vaultIds.join(","), userAddress]
@@ -92,10 +95,20 @@ export const useVaultBalance = ({
 
   console.log("multipleVaultBalances", multipleVaultBalances);
 
+  const revalidate = () => {
+    if (vaultId && userAddress) {
+      mutateSingle();
+    }
+    if (vaultIds && vaultIds.length > 0 && userAddress) {
+      mutateMultiple();
+    }
+  };
+
   return {
     vaultBalance: singleVaultBalance || null,
     vaultBalances: multipleVaultBalances || null,
     isLoading: isLoading || multipleLoading,
     isError: Boolean(error) || Boolean(multipleError),
+    revalidate,
   };
 };

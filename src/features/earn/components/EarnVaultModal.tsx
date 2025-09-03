@@ -4,32 +4,46 @@ import { ReactNode } from "react";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
+import {
+  EarnVaultStep,
+  EarnVaultError,
+  EarnVaultModalState,
+} from "@/features/earn/hooks/useEarnVault";
 
 type EarnVaultOperation = "deposit" | "withdraw";
 
-export enum EarnVaultStep {
-  IDLE,
-  DEPOSITING,
-  WAITING_SIGNATURE,
-  SENDING_TRANSACTION,
-  WITHDRAWING,
-  SUCCESS,
-  ERROR,
-}
-
 interface EarnVaultModalProps {
-  currentStep: EarnVaultStep;
+  modalData: EarnVaultModalState;
   onClose: () => void;
-  transactionHash?: string;
   operationType?: EarnVaultOperation;
 }
 
 export const EarnVaultModal = ({
-  currentStep,
+  modalData,
   onClose,
-  transactionHash,
   operationType = "deposit",
 }: EarnVaultModalProps) => {
+  const { currentStep } = modalData;
+  const getActualErrorMessage = (error: EarnVaultError | undefined) => {
+    if (!error?.message) return "Something went wrong. Please try again.";
+
+    // Handle common error patterns
+    if (
+      error.message.includes("InsufficientBalance") ||
+      error.message.includes("TokenErrors.InsufficientBalance")
+    ) {
+      return "Insufficient Balance";
+    }
+    if (error.message.includes("Transaction failed: 500")) {
+      return "Network error. Please try again later.";
+    }
+    if (error.message.includes("User rejected")) {
+      return "Transaction was rejected";
+    }
+
+    return error.message;
+  };
+
   const getStepTitle = (step: EarnVaultStep): string => {
     const isDeposit = operationType === "deposit";
 
@@ -77,27 +91,39 @@ export const EarnVaultModal = ({
     ),
     [EarnVaultStep.SUCCESS]: (
       <div>
-        {transactionHash && (
-          <a
-            href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
-          >
-            View on Stellar.Expert
-          </a>
-        )}
-        {transactionHash && (
-          <div className="flex items-center justify-center gap-2">
-            <p>Copy Transaction Hash </p>
-            <CopyAndPasteButton textToCopy={transactionHash} />
-          </div>
-        )}
+        {currentStep === EarnVaultStep.SUCCESS &&
+          modalData.data &&
+          (modalData.data.txHash || modalData.data.hash) && (
+            <>
+              <a
+                href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${modalData.data.txHash || modalData.data.hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
+              >
+                View on Stellar.Expert
+              </a>
+              <div className="flex items-center justify-center gap-2">
+                <p>Copy Transaction Hash </p>
+                <CopyAndPasteButton
+                  textToCopy={
+                    modalData.data.txHash || modalData.data.hash || ""
+                  }
+                />
+              </div>
+            </>
+          )}
       </div>
     ),
     [EarnVaultStep.ERROR]: (
       <div>
-        <p>Something went wrong. Please try again.</p>
+        <p>
+          {getActualErrorMessage(
+            currentStep === EarnVaultStep.ERROR && modalData.data
+              ? modalData.data
+              : undefined,
+          )}
+        </p>
       </div>
     ),
   };

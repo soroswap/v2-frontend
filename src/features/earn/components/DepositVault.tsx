@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useVaultInfo } from "@/features/earn/hooks";
+import { useVaultInfo, useVaultBalance } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
@@ -72,9 +72,21 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const { revalidate } = useVaultBalance({
+    vaultId: vaultAddress,
+    userAddress: address,
+  });
 
-  const { currentStep, transactionHash, executeDeposit, reset } =
-    useEarnVault();
+  const { currentStep, executeDeposit, reset, modalData } =
+    useEarnVault({
+      onSuccess: () => {
+        revalidate(); // Revalidate vault balance after successful deposit
+      },
+      onError: (error) => {
+        // Keep modal open to show error message to user
+        console.log("Deposit error:", error);
+      },
+    });
 
   const handleDeposit = async () => {
     if (!address) return;
@@ -87,7 +99,7 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
         slippageBps: 100,
       });
     } catch {
-      // noop; state handled in hook
+      // Keep modal open to show error - error handling is done in useEarnVault hook
     }
   };
 
@@ -196,14 +208,13 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           </TheButton>
         </div>
       </div>
-      {isOpenModal && currentStep !== EarnVaultStep.IDLE && (
+      {isOpenModal && currentStep !== EarnVaultStep.IDLE && modalData && (
         <EarnVaultModal
-          currentStep={currentStep}
+          modalData={modalData}
           onClose={() => {
             reset();
             setIsOpenModal(false);
           }}
-          transactionHash={transactionHash}
           operationType="deposit"
         />
       )}
