@@ -30,7 +30,7 @@ const VaultCardDetailsLoading = () => {
       </div>
 
       {/* Metrics grid - matches real height with proper spacing */}
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-3 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {/* EST APY */}
         <div className="flex flex-col gap-4">
           <div className="h-7 w-20 rounded bg-gray-300" />
@@ -120,7 +120,7 @@ export const VaultCardDetails = ({
       </div>
 
       {/* Metrics grid */}
-      <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-3 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {/* Est APY */}
         <div className="flex flex-col gap-4">
           <p className="text-secondary flex h-full text-sm font-medium">
