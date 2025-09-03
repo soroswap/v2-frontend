@@ -31,16 +31,20 @@ export const TokenSelectorModal = ({
   );
 
   const findSearchedAsset = useCallback(async (value: string) => {
-    if (!value.trim()) return;
+    const query = value.trim();
+    if (!query) return;
+    // Only attempt lookup when it's a 56-char address/contract ID or a code:issuer pair
+    if (query.length !== 56 && !query.includes(":")) return;
 
     setIsSearchingAsset(true);
     try {
-      const asset = await findAsset(value);
+      const asset = await findAsset(query);
       setUserCustomAsset(asset);
       return asset;
     } catch (error) {
       console.error("Error finding asset:", error);
       setUserCustomAsset(null);
+      return null;
     } finally {
       setIsSearchingAsset(false);
     }
