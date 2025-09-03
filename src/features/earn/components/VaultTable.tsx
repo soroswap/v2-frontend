@@ -156,12 +156,10 @@ export const VaultTable = () => {
 
         return (
           <div className="text-primary">
-            {Number(
-              formatUnits({
-                value: vaultBalance.underlyingBalance[0],
-                decimals: 7,
-              }),
-            ).toFixed(2)}{" "}
+            {formatUnits({
+              value: vaultBalance.underlyingBalance[0],
+              decimals: 7,
+            })}{" "}
             {vault.assets[0].symbol}
           </div>
         );
