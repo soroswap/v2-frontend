@@ -149,12 +149,12 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
                 <ul className="space-y-2">
                   {vaultInfo.assets.map((asset, index) => (
                     <li key={index} className="space-y-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 py-2">
                         <TokenIcon
                           src={tokenMap[asset.address]?.icon}
                           name={asset.symbol}
                           code={asset.symbol}
-                          size={20}
+                          size={24}
                         />
                         <div className="flex flex-col">
                           <p className="text-primary text-sm font-medium">
@@ -213,7 +213,7 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
           <article className="bg-surface-alt border-surface-alt rounded-lg border p-4">
             <header className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 py-2">
                 <h3 className="text-secondary text-sm font-medium">
                   Fee Structure
                 </h3>
@@ -270,7 +270,7 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
           <article className="bg-surface-alt border-surface-alt rounded-lg border p-4 md:col-span-2 lg:col-span-1">
             <header className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 py-2">
                 <h3 className="text-secondary text-sm font-medium">Roles</h3>
                 <Info
                   size={14}
