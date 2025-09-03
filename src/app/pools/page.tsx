@@ -22,8 +22,8 @@ export default function PoolsPage() {
             <span className="text-lg leading-none">
               <PlusIcon />
             </span>
-            <p className="xs:inline hidden">Add&nbsp;Liquidity</p>
-            <p className="xs:hidden">Add</p>
+            <p className="hidden sm:inline">Create&nbsp;Pool</p>
+            <p className="sm:hidden">Create</p>
           </Link>
         </div>
 

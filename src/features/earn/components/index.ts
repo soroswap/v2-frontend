@@ -1,4 +1,5 @@
 export * from "./DepositVault";
+export * from "./EarnVaultModal";
 export * from "./PortfolioCard";
 export * from "./ProgressBar";
 export * from "./Tab";

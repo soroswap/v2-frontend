@@ -51,8 +51,8 @@ export default function RemoveLiquidityPage() {
   // Find the specific pool position for these tokens
   const poolPosition = userPositions?.find(
     (position) =>
-      position.poolInfo.tokenA === tokenAAddress &&
-      position.poolInfo.tokenB === tokenBAddress,
+      position.poolInformation.tokenA.address === tokenAAddress &&
+      position.poolInformation.tokenB.address === tokenBAddress,
   );
 
   // Get token info
@@ -92,7 +92,7 @@ export default function RemoveLiquidityPage() {
       // Get user's liquidity balance em formato decimal
       const userBalance =
         typeof poolPosition.userPosition === "bigint"
-          ? Number(poolPosition.userPosition) / 10000000 // Converter de stroops para unidade
+          ? Number(poolPosition.userPosition) / 10000000 // Convert from stroops to decimal
           : parseFloat(String(poolPosition.userPosition || "0")) / 10000000;
 
       if (userBalance === 0) {
@@ -100,7 +100,7 @@ export default function RemoveLiquidityPage() {
       }
 
       // Get pool info
-      const poolInfo = poolPosition.poolInfo;
+      const poolInfo = poolPosition.poolInformation;
 
       // Get total reserves in decimal format
       const reserveA =
@@ -113,19 +113,21 @@ export default function RemoveLiquidityPage() {
           ? Number(poolInfo.reserveB) / 10000000
           : parseFloat(String(poolInfo.reserveB || "0")) / 10000000;
 
-      // Total LP Supply hardcoded for now
-      const totalSupply = 4650140128520; // TODO REMOVE HARDCODED
-      const totalLP = totalSupply / 10000000; // Convert to decimal = 465014.012852
+      const totalSupply = poolInfo.totalSupply;
+      const totalLP =
+        typeof totalSupply === "bigint"
+          ? Number(totalSupply) / 10000000
+          : parseFloat(String(totalSupply || "0")) / 10000000;
 
       // Calculate how much the user can receive of each token based on their participation
       // Share = userBalance / totalLP
       // UserTokenAmount = (userBalance / totalLP) * reserveTotal
-      const userMaxTokenA = (userBalance / totalLP) * reserveA; // ≈ 1.8218855 XLM
-      const userMaxTokenB = (userBalance / totalLP) * reserveB; // ≈ 0.7260629 EURC
+      const userMaxTokenA = (userBalance / totalLP) * reserveA;
+      const userMaxTokenB = (userBalance / totalLP) * reserveB;
 
       // Apply the selected percentage
       const userTokenAmount =
-        tokenAddress === poolInfo.tokenA
+        tokenAddress === poolInfo.tokenA.address
           ? userMaxTokenA * (percent / 100)
           : userMaxTokenB * (percent / 100);
 

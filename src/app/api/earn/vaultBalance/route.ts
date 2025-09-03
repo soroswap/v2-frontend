@@ -24,6 +24,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: vaultBalance });
   } catch (error) {
     console.error("Error fetching vault balance:", error);
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: 500 });
   }
 }

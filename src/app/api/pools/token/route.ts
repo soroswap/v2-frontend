@@ -56,15 +56,8 @@ export async function GET(request: NextRequest) {
       data: poolByTokens,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API ERROR]", error);
 
-    return NextResponse.json(
-      {
-        code: "GET_POOLS_BY_TOKENS_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    return NextResponse.json(error, { status: error?.response?.status || 500 });
   }
 }

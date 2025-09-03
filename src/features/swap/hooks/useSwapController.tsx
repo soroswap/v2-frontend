@@ -151,7 +151,7 @@ export function useSwapController({
       parts: 10,
       slippageBps: slippageBps(swapSettings.customSlippage),
       assetList: [SupportedAssetLists.SOROSWAP], // TODO: when user add an custom asset , So we  don't have the assset from the soroswap we need to disable this
-      maxHops: 2,
+      maxHops: swapSettings.maxHops,
     };
 
     // Debounce to avoid creating too many SWR keys / requests.
@@ -224,9 +224,17 @@ export function useSwapController({
    */
   const handleTokenSelect = useCallback(
     (field: IndependentField) => (token: AssetInfo | null) => {
-      dispatchSwap({ type: "SET_TOKEN", field, token });
+      const oppositeToken = field === "sell" ? buyToken : sellToken;
+      
+      // If selecting a token that's already on the opposite side, switch them
+      if (token && oppositeToken && token.contract === oppositeToken.contract) {
+        dispatchSwap({ type: "SWITCH_TOKENS" });
+      } else {
+        // Normal token selection
+        dispatchSwap({ type: "SET_TOKEN", field, token });
+      }
     },
-    [],
+    [sellToken, buyToken],
   );
 
   /**

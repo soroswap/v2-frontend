@@ -74,16 +74,41 @@ export const SwapQuoteDetails = ({
   //   return "0.00001";
   // };
 
-  const getTradingPath = () => {
-    if (quote.routePlan) {
-      return quote.routePlan
-        .map((route) =>
-          route.swapInfo.path
-            .map((item) => tokenMap[item.split(":")[0]]?.code)
-            .join(" > "),
-        )
-        .join(" > ");
-    }
+  const getTradingPath = (): string => {
+    if (!quote.routePlan || quote.routePlan.length === 0) return "";
+
+    const formatPathToken = (item: string) => {
+      // Try contract lookup first
+      if (tokenMap[item]?.code) return tokenMap[item].code;
+      // If string contains a separator, prefer the left part (could be contract or CODE)
+      if (item.includes(":")) {
+        const left = item.split(":")[0];
+        return tokenMap[left]?.code || left;
+      }
+      // Fallback to shortened identifier
+      return `${item.slice(0, 4)}…${item.slice(-4)}`;
+    };
+
+    const formatProtocolName = (protocol: string): string => {
+      return protocol.charAt(0).toUpperCase() + protocol.slice(1).toLowerCase();
+    };
+
+    const formatPercent = (percent: string): string => {
+      const num = Number(percent);
+      if (!Number.isFinite(num)) return "";
+      // Convert to percentage if it's a decimal (0.33 -> 33%)
+      const pct = num <= 1 ? Math.round(num * 100) : Math.round(num);
+      return ` (${pct}%)`;
+    };
+
+    const routeStrings = quote.routePlan.map((route) => {
+      const protocol = formatProtocolName(route.swapInfo.protocol);
+      const path = route.swapInfo.path.map(formatPathToken).join(" > ");
+      const percentage = formatPercent(route.percent);
+      return `${protocol}: ${path}${percentage}`;
+    });
+
+    return routeStrings.join("\n");
   };
 
   // Get platform name
@@ -186,9 +211,15 @@ export const SwapQuoteDetails = ({
           </div>
 
           {/* Trading Path */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             <p className="text-secondary text-sm">Path</p>
-            <p className="text-primary text-sm">{getTradingPath()}</p>
+            <div className="text-primary text-sm text-right">
+              {getTradingPath().split('\n').map((route, index) => (
+                <p key={index} className="whitespace-nowrap">
+                  {route}
+                </p>
+              ))}
+            </div>
           </div>
 
           {/* Platform */}

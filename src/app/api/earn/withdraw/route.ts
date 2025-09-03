@@ -51,6 +51,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error withdrawing from vault:", error);
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: 500 });
   }
 }

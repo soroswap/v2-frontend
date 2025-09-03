@@ -15,8 +15,8 @@ importers:
         specifier: 0.1.1
         version: 0.1.1
       '@soroswap/sdk':
-        specifier: 0.3.6
-        version: 0.3.6
+        specifier: 0.3.7
+        version: 0.3.7
       '@stellar/stellar-sdk':
         specifier: 14.1.1
         version: 14.1.1
@@ -938,8 +938,8 @@ packages:
   '@solana/web3.js@1.98.2':
     resolution: {integrity: sha512-BqVwEG+TaG2yCkBMbD3C4hdpustR4FpuUFRPUmqRZYYlPI9Hg4XMWxHWOWRzHE9Lkc9NDjzXFX7lDXSgzC7R1A==}
 
-  '@soroswap/sdk@0.3.6':
-    resolution: {integrity: sha512-8jNTR6/3A9cbmonfCmWlZ/gfVK6tmc14Yd8/kxtOUOgmnirQLDfMNDok/bs/yhnRPZOmHo8eKr9WPEQEDqexlw==}
+  '@soroswap/sdk@0.3.7':
+    resolution: {integrity: sha512-Lt/r7IgfFp8eDWJBy6VFOB/tQlgHZnxqW1r8J/m0PCo7ao7JEWc3Rl0VbM4PKPX3WE5fLoyglxD39ylWoMMJqg==}
     engines: {node: '>=16.0.0'}
 
   '@stablelib/aead@1.0.1':
@@ -4910,7 +4910,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@soroswap/sdk@0.3.6':
+  '@soroswap/sdk@0.3.7':
     dependencies:
       axios: 1.10.0
     transitivePeerDependencies:

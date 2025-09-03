@@ -47,6 +47,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[API ERROR]", error);
 
-    return NextResponse.json(error);
+    return NextResponse.json(error, { status: 500 });
   }
 }

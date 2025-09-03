@@ -8,6 +8,7 @@ import { network } from "@/shared/lib/environmentVars";
 import { SwapError } from "@/features/swap/hooks/useSwap";
 import { RotateArrowButton, TokenIcon } from "@/shared/components";
 import { useTokensList } from "@/shared/hooks";
+import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 
 interface SwapModalProps {
@@ -25,6 +26,15 @@ export const SwapModal = ({
 }: SwapModalProps) => {
   const { currentStep } = state;
   const { tokenMap } = useTokensList();
+  const userTokenList = useUserAssetList();
+
+  // Create combined token map including user custom assets
+  const combinedTokenMap = {
+    ...tokenMap,
+    ...Object.fromEntries(
+      userTokenList.map((token) => [token.contract, token]),
+    ),
+  };
 
   const getActualErrorMessage = (error: SwapError | undefined) => {
     if (error?.message === "TokenError.InsufficientBalance") {
@@ -61,14 +71,14 @@ export const SwapModal = ({
                 <div className="flex flex-col gap-4">
                   <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
                     <TokenIcon
-                      src={tokenMap[state.data.assetIn].icon}
-                      name={tokenMap[state.data.assetIn].name}
-                      code={tokenMap[state.data.assetIn].code}
+                      src={combinedTokenMap[state.data.assetIn]?.icon}
+                      name={combinedTokenMap[state.data.assetIn]?.name}
+                      code={combinedTokenMap[state.data.assetIn]?.code}
                       size={32}
                     />
                     <p>
                       {formatUnits({ value: state.data.amountIn })}{" "}
-                      {tokenMap[state.data.assetIn].code}
+                      {combinedTokenMap[state.data.assetIn]?.code}
                     </p>
                   </div>
                   <div className="relative flex items-center gap-2">
@@ -76,14 +86,14 @@ export const SwapModal = ({
                   </div>
                   <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
                     <TokenIcon
-                      src={tokenMap[state.data.assetOut].icon}
-                      name={tokenMap[state.data.assetOut].name}
-                      code={tokenMap[state.data.assetOut].code}
+                      src={combinedTokenMap[state.data.assetOut]?.icon}
+                      name={combinedTokenMap[state.data.assetOut]?.name}
+                      code={combinedTokenMap[state.data.assetOut]?.code}
                       size={32}
                     />
                     <p>
                       {formatUnits({ value: state.data.amountOut })}{" "}
-                      {tokenMap[state.data.assetOut].code}
+                      {combinedTokenMap[state.data.assetOut]?.code}
                     </p>
                   </div>
                 </div>
@@ -110,7 +120,7 @@ export const SwapModal = ({
                 <span className="font-medium">Token:</span>
                 <br />
                 <span className="font-mono break-all">
-                  {state.data.actionData.assetCode}
+                  {state.data.actionData.assetCode}:
                   {state.data.actionData.assetIssuer}
                 </span>
               </div>
@@ -125,7 +135,7 @@ export const SwapModal = ({
       </div>
     ),
     [SwapStep.SUCCESS]: (
-      <div>
+      <div className="flex flex-col gap-2">
         {transactionHash && (
           <a
             href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
@@ -155,7 +165,7 @@ export const SwapModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-page border-brand w/full flex min-h-72 max-w-md flex-col rounded-2xl border p-6 shadow-xl">
+      <div className="bg-surface-page border-brand w/full flex min-h-72 max-w-md min-w-96 flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">

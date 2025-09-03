@@ -3,33 +3,50 @@
 import { useState } from "react";
 import { useUserContext } from "@/contexts/UserContext";
 import { CopyAndPasteButton, TheButton } from "@/shared/components";
-import { network } from "@/shared/lib/environmentVars";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
-import { useVaultInfo } from "@/features/earn/hooks/useVaultInfo";
+import { useVaultInfo, useVaultBalance } from "@/features/earn/hooks";
+import {
+  useEarnVault,
+  EarnVaultStep,
+} from "@/features/earn/hooks/useEarnVault";
+import { EarnVaultModal } from "./EarnVaultModal";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const [amount, setAmount] = useState("0");
-  const { address, signTransaction } = useUserContext();
+  const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const { address } = useUserContext();
   const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
+  const { revalidate } = useVaultBalance({
+    vaultId: vaultAddress,
+    userAddress: address,
+  });
+
+  const { currentStep, executeWithdraw, reset, modalData } = useEarnVault({
+    onSuccess: () => {
+      revalidate(); // Revalidate vault balance after successful withdraw
+    },
+    onError: (error) => {
+      // Keep modal open to show error message to user
+      console.log("Withdraw error:", error);
+    },
+  });
 
   const handleWithdraw = async () => {
-    const withdrawData = await fetch("/api/earn/withdraw", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        amount: amount,
-        caller: address ?? "",
-        slippageBps: "100",
+    if (!address) return;
+    console.log("Setting modal open to true");
+    setIsOpenModal(true);
+    try {
+      console.log("Executing withdraw...");
+      await executeWithdraw({
         vaultId: vaultAddress,
-        network: network,
-      },
-    });
-    const withdrawDataJson = await withdrawData.json();
-    console.log("withdrawData", withdrawDataJson);
-    const xdr = withdrawDataJson.xdr;
-    console.log("xdr", xdr);
-    const txHash = await signTransaction(xdr, address ?? "");
-    console.log("txHash", txHash);
+        amount,
+        userAddress: address,
+        slippageBps: 100,
+      });
+    } catch (error) {
+      console.log("Withdraw error caught:", error);
+      // Keep modal open to show error - error handling is done in useEarnVault hook
+    }
   };
 
   return (
@@ -89,6 +106,16 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
           </TheButton>
         </div>
       </div>
+      {isOpenModal && currentStep !== EarnVaultStep.IDLE && modalData && (
+        <EarnVaultModal
+          modalData={modalData}
+          onClose={() => {
+            reset();
+            setIsOpenModal(false);
+          }}
+          operationType="withdraw"
+        />
+      )}
     </section>
   );
 };

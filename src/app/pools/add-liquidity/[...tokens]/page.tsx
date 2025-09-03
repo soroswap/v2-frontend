@@ -74,6 +74,7 @@ export default function PoolsAddLiquidityPage() {
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);
       setAddLiquidityResult(null);
+      setIsSwapModalOpen(true); // Open modal to show error
     },
     onStepChange: (step: PoolStep) => {
       if (step === PoolStep.WAITING_SIGNATURE) {
@@ -169,16 +170,21 @@ export default function PoolsAddLiquidityPage() {
             ) : (
               <TheButton
                 disabled={
-                  !TOKEN_A || !TOKEN_B || TOKEN_A.contract === TOKEN_B.contract
+                  !TOKEN_A ||
+                  !TOKEN_B ||
+                  TOKEN_A.contract === TOKEN_B.contract ||
+                  !typedValue
                 }
                 onClick={onAddLiquidityPool}
                 className="bg-brand hover:bg-brand/80 disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold text-white disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
               >
                 {!TOKEN_A || !TOKEN_B
                   ? "Select a token"
-                  : isSwapLoading
-                    ? getSwapButtonText(currentStep)
-                    : "Add liquidity"}
+                  : !typedValue
+                    ? "Enter an amount"
+                    : isSwapLoading
+                      ? getSwapButtonText(currentStep)
+                      : "Add liquidity"}
               </TheButton>
             )}
           </div>

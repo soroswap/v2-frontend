@@ -30,7 +30,17 @@ const fetchMultipleVaultInfos = async (
   vaultIds: string[],
 ): Promise<VaultInfoResponse[]> => {
   const promises = vaultIds.map((vaultId) => fetchVaultInfo(vaultId));
-  return Promise.all(promises);
+
+  const settled = await Promise.allSettled(promises);
+
+  const fulfilledValues = settled
+    .filter(
+      (result): result is PromiseFulfilledResult<VaultInfoResponse> =>
+        result.status === "fulfilled",
+    )
+    .map((result) => result.value);
+
+  return fulfilledValues;
 };
 
 export const useVaultInfo = ({

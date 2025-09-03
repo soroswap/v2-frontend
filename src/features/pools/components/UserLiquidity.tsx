@@ -5,7 +5,7 @@ import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPosition
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { ConnectWallet } from "@/shared/components/buttons";
 import { TheTable } from "@/shared/components";
-import { UserPosition } from "@soroswap/sdk";
+import { UserPositionResponse } from "@soroswap/sdk";
 import { ColumnDef } from "@tanstack/react-table";
 import { TokenIcon } from "@/shared/components";
 import { useState } from "react";
@@ -17,21 +17,22 @@ export const UserLiquidity = () => {
   const { positions: userPositions, isLoading: positionsLoading } =
     useUserPoolPositions(address);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [rowData, setRowData] = useState<UserPosition | null>(null);
+  const [rowData, setRowData] = useState<UserPositionResponse | null>(null);
 
-  const handleRowClick = (position: UserPosition) => {
+  const handleRowClick = (position: UserPositionResponse) => {
     setIsModalOpen(true);
     setRowData(position);
   };
 
-  const columns: ColumnDef<UserPosition, unknown>[] = [
+  const columns: ColumnDef<UserPositionResponse, unknown>[] = [
     {
       id: "pair",
       header: "Pool",
       cell: ({ row }) => {
         const pool = row.original;
+        console.log("pool = ", pool);
 
-        if (!pool.poolInfo.tokenA || !pool.poolInfo.tokenB) {
+        if (!pool.poolInformation.tokenA || !pool.poolInformation.tokenB) {
           return (
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -45,22 +46,22 @@ export const UserLiquidity = () => {
 
         // Convert contract addresses to human-readable token codes when possible
         const displayTokenA =
-          tokenMap[pool.poolInfo.tokenA]?.code ??
-          pool.poolInfo.tokenA.slice(0, 4);
+          tokenMap[pool.poolInformation.tokenA.address]?.code ??
+          pool.poolInformation.tokenA.address.slice(0, 4);
         const displayTokenB =
-          tokenMap[pool.poolInfo.tokenB]?.code ??
-          pool.poolInfo.tokenB.slice(0, 4);
+          tokenMap[pool.poolInformation.tokenB.address]?.code ??
+          pool.poolInformation.tokenB.address.slice(0, 4);
 
         return (
           <div className="flex w-full flex-col items-start gap-4 sm:flex-row sm:items-center">
             <div className="relative">
               <TokenIcon
-                src={tokenMap[pool.poolInfo.tokenA]?.icon}
+                src={tokenMap[pool.poolInformation.tokenA.address]?.icon}
                 alt={displayTokenA}
                 className="rounded-full border border-white bg-white"
               />
               <TokenIcon
-                src={tokenMap[pool.poolInfo.tokenB]?.icon}
+                src={tokenMap[pool.poolInformation.tokenB.address]?.icon}
                 alt={displayTokenB}
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
@@ -86,7 +87,7 @@ export const UserLiquidity = () => {
             {pool.userPosition ? (
               pool.userPosition.toString()
             ) : (
-              <div className="skeleton h-4 w-16" />
+              <span className="skeleton h-4 w-16" />
             )}
           </span>
         );
@@ -101,7 +102,7 @@ export const UserLiquidity = () => {
         // const pool = row.original;
         return (
           <span className="text-primary flex justify-end font-semibold">
-            <div className="skeleton h-4 w-12" />
+            <span className="skeleton h-4 w-12" />
           </span> //TODO: Calculate TVL correctly
         );
       },

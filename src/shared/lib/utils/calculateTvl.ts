@@ -26,12 +26,12 @@ export const calculateTvl = ({
   reserveB,
   tokenMap,
   priceMap,
-}: CalculateTvlParams): bigint => {
+}: CalculateTvlParams): bigint | undefined => {
   const tokenAData = tokenMap[tokenAContract];
   const tokenBData = tokenMap[tokenBContract];
 
-  const priceA = priceMap[tokenAContract] ?? 0;
-  const priceB = priceMap[tokenBContract] ?? 0;
+  const priceA = priceMap[tokenAContract];
+  const priceB = priceMap[tokenBContract];
 
   const decimalsA = tokenAData?.decimals ?? 0;
   const decimalsB = tokenBData?.decimals ?? 0;
@@ -39,7 +39,13 @@ export const calculateTvl = ({
   const amountA = Number(reserveA.toString()) / 10 ** decimalsA;
   const amountB = Number(reserveB.toString()) / 10 ** decimalsB;
 
-  const tvlUSD = priceA * amountA + priceB * amountB;
+  if (priceA == null && priceB == null) return undefined;
+
+  const valueA = priceA != null ? priceA * amountA : 0;
+  const valueB = priceB != null ? priceB * amountB : 0;
+  const tvlUSD = valueA + valueB;
+
+  if (!Number.isFinite(tvlUSD)) return undefined;
 
   return BigInt(Math.round(tvlUSD));
 };

@@ -61,15 +61,8 @@ export async function POST(request: NextRequest) {
       data: removeLiquidityResponse,
     });
   } catch (error: any) {
-    console.error("[API ERROR]", error?.message || error);
+    console.error("[API ERROR]", error);
 
-    return NextResponse.json(
-      {
-        code: "REMOVE_LIQUIDITY_ERROR",
-        message:
-          error?.response?.data?.message || error?.message || "Server Error",
-      },
-      { status: error?.response?.status || 500 },
-    );
+    return NextResponse.json(error, { status: error?.response?.status || 500 });
   }
 }

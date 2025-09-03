@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useVaultInfo } from "@/features/earn/hooks";
+import { useVaultInfo, useVaultBalance } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
@@ -13,15 +13,80 @@ import {
   useEarnVault,
 } from "@/features/earn/hooks/useEarnVault";
 
+const DepositVaultLoading = () => {
+  return (
+    <section className="w-full space-y-6">
+      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center">
+        {/* From wallet skeleton */}
+        <div className="flex flex-col gap-2 lg:flex-1">
+          <div className="h-5 w-20 animate-pulse rounded bg-gray-300" />
+          <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 animate-pulse rounded-full bg-gray-300" />
+              <div className="h-4 w-12 animate-pulse rounded bg-gray-300" />
+            </div>
+          </div>
+          <div className="h-3 w-24 animate-pulse rounded bg-gray-300" />
+        </div>
+
+        {/* Amount skeleton */}
+        <div className="flex h-full w-full flex-col gap-2 lg:flex-1">
+          <div className="h-5 w-16 animate-pulse rounded bg-gray-300" />
+          <div className="flex w-full gap-2">
+            <div className="bg-surface-alt border-surface-alt w-full animate-pulse rounded-lg border p-3">
+              <div className="h-8 w-20 rounded bg-gray-300" />
+            </div>
+          </div>
+          <div className="h-3 w-16 animate-pulse rounded bg-gray-300" />
+        </div>
+
+        {/* Arrow skeleton - Hidden on mobile */}
+        <div className="hidden items-center justify-center lg:flex">
+          <div className="h-6 w-6 animate-pulse rounded bg-gray-300" />
+        </div>
+
+        {/* To vault skeleton */}
+        <div className="flex flex-col gap-2 lg:flex-1">
+          <div className="h-5 w-16 animate-pulse rounded bg-gray-300" />
+          <div className="bg-surface-alt border-surface-alt rounded-lg border p-3">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 animate-pulse rounded-full bg-gray-300" />
+              <div className="h-4 w-12 animate-pulse rounded bg-gray-300" />
+            </div>
+          </div>
+          <div className="h-3 w-20 animate-pulse rounded bg-gray-300" />
+        </div>
+
+        {/* Deposit Button skeleton */}
+        <div className="flex">
+          <div className="h-10 w-full animate-pulse rounded bg-gray-300 lg:w-24" />
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
-  const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
+  const { vaultInfo, isLoading: isVaultInfoLoading, isError } = useVaultInfo({ vaultId: vaultAddress });
   const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
+  const { revalidate } = useVaultBalance({
+    vaultId: vaultAddress,
+    userAddress: address,
+  });
 
-  const { currentStep, transactionHash, executeDeposit, reset } =
-    useEarnVault();
+  const { currentStep, executeDeposit, reset, modalData } =
+    useEarnVault({
+      onSuccess: () => {
+        revalidate(); // Revalidate vault balance after successful deposit
+      },
+      onError: (error) => {
+        // Keep modal open to show error message to user
+        console.log("Deposit error:", error);
+      },
+    });
 
   const handleDeposit = async () => {
     if (!address) return;
@@ -34,11 +99,15 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
         slippageBps: 100,
       });
     } catch {
-      // noop; state handled in hook
+      // Keep modal open to show error - error handling is done in useEarnVault hook
     }
   };
 
-  if (!vaultInfo) {
+  if (isVaultInfoLoading) {
+    return <DepositVaultLoading />;
+  }
+
+  if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
       <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
         <div className="text-secondary text-center">Vault not found</div>
@@ -46,10 +115,12 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     );
   }
 
-  if (!vaultInfo.assets || vaultInfo.assets.length === 0) {
+  if (!vaultInfo?.assets || vaultInfo.assets.length === 0) {
     return (
       <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault assets not available</div>
+        <div className="text-secondary text-center">
+          Vault assets not available
+        </div>
       </div>
     );
   }
@@ -137,14 +208,13 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
           </TheButton>
         </div>
       </div>
-      {isOpenModal && currentStep !== EarnVaultStep.IDLE && (
+      {isOpenModal && currentStep !== EarnVaultStep.IDLE && modalData && (
         <EarnVaultModal
-          currentStep={currentStep}
+          modalData={modalData}
           onClose={() => {
             reset();
             setIsOpenModal(false);
           }}
-          transactionHash={transactionHash}
           operationType="deposit"
         />
       )}

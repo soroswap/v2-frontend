@@ -188,7 +188,7 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
             Array.from({ length: skeletonRows }).map((_, i) => (
               <tr key={`skeleton-${i}`} className={rowVariants({ variant })}>
                 <td colSpan={columns.length} className="p-4">
-                  <div className="skeleton h-4 w-full" />
+                  <span className="skeleton h-4 w-full" />
                 </td>
               </tr>
             ))}

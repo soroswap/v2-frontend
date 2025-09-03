@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { Modal } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
-import { UserPosition } from "@soroswap/sdk";
+import { UserPositionResponse } from "@soroswap/sdk";
 import { formatUnits } from "@/shared/lib/utils";
 
 export const UserPoolModal = ({
@@ -14,17 +14,17 @@ export const UserPoolModal = ({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  rowData: UserPosition;
+  rowData: UserPositionResponse;
 }) => {
   const { tokenMap } = useTokensList();
-  const displayTokenA = tokenMap[rowData.poolInfo.tokenA]?.icon;
-  const displayTokenB = tokenMap[rowData.poolInfo.tokenB]?.icon;
+  const displayTokenA = tokenMap[rowData.poolInformation.tokenA.address]?.icon;
+  const displayTokenB = tokenMap[rowData.poolInformation.tokenB.address]?.icon;
   const displayTokenAName =
-    tokenMap[rowData.poolInfo.tokenA]?.code ??
-    rowData.poolInfo.tokenA.slice(0, 4);
+    tokenMap[rowData.poolInformation.tokenA.address]?.code ??
+    rowData.poolInformation.tokenA.address.slice(0, 4);
   const displayTokenBName =
-    tokenMap[rowData.poolInfo.tokenB]?.code ??
-    rowData.poolInfo.tokenB.slice(0, 4);
+    tokenMap[rowData.poolInformation.tokenB.address]?.code ??
+    rowData.poolInformation.tokenB.address.slice(0, 4);
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -52,8 +52,12 @@ export const UserPoolModal = ({
           <p className="text-secondary text-sm">Liquidity Pool</p>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>Total LP</span>
-            {/* <span>{rowData.poolInfo.totalSupply || "0"}</span> */}
-            <span>0</span>
+            <span>
+              {formatUnits({
+                value: rowData.poolInformation.totalSupply || "0",
+                decimals: 7,
+              })}
+            </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -66,7 +70,7 @@ export const UserPoolModal = ({
             </div>
             <span>
               {formatUnits({
-                value: rowData.poolInfo.reserveA || "0",
+                value: rowData.poolInformation.reserveA || "0",
                 decimals: 7,
               })}
             </span>
@@ -82,7 +86,7 @@ export const UserPoolModal = ({
             </div>
             <span>
               {formatUnits({
-                value: rowData.poolInfo.reserveB || "0",
+                value: rowData.poolInformation.reserveB || "0",
                 decimals: 7,
               })}
             </span>
@@ -93,11 +97,16 @@ export const UserPoolModal = ({
           <p className="text-secondary text-sm">Your Liquidity</p>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>Share of pool</span>
-            <span>{rowData.poolInfo.reserveLp || "0"}</span>
+            <span>{rowData.userShares.toFixed(7)}%</span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>LP Balance</span>
-            <span>{rowData.userPosition}</span>
+            <span>
+              {formatUnits({
+                value: rowData.userPosition,
+                decimals: 7,
+              })}
+            </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -108,13 +117,12 @@ export const UserPoolModal = ({
               />
               {displayTokenAName}
             </div>
-            {/* <span>
+            <span>
               {formatUnits({
-                value: rowData.amountA || "0",
+                value: rowData.tokenAAmountEquivalent || "0",
                 decimals: 7,
               })}
-            </span> */}
-            <span>0</span>
+            </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <div className="flex items-center gap-2">
@@ -125,27 +133,26 @@ export const UserPoolModal = ({
               />
               {displayTokenBName}
             </div>
-            {/* <span>
+            <span>
               {formatUnits({
-                value: rowData.amountB || "0",
+                value: rowData.tokenBAmountEquivalent || "0",
                 decimals: 7,
               })}
-            </span> */}
-            <span>0</span>
+            </span>
           </div>
         </div>
         <div className="flex w-full gap-1">
           <div className="flex w-full">
             <Link
               className="btn text-md border-brand bg-brand hover:bg-brand/80 relative h-14 w-full rounded-2xl p-4 text-center font-bold text-[#ededed]"
-              href={`/pools/add-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
+              href={`/pools/add-liquidity/${rowData.poolInformation.tokenA.address}/${rowData.poolInformation.tokenB.address}`}
             >
               Add Liquidity
             </Link>
           </div>
           <div className="flex w-full">
             <Link
-              href={`/pools/remove-liquidity/${rowData.poolInfo.tokenA}/${rowData.poolInfo.tokenB}`}
+              href={`/pools/remove-liquidity/${rowData.poolInformation.tokenA.address}/${rowData.poolInformation.tokenB.address}`}
               className="btn text-md border-brand bg-brand/10 hover:bg-brand/80 text-primary relative h-14 w-full rounded-2xl p-4 text-center font-bold"
             >
               Remove Liquidity
