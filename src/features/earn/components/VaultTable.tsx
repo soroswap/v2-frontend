@@ -234,12 +234,12 @@ export const VaultTable = () => {
                   </div>
 
                   {/* Risk Level */}
-                  <div className="flex flex-col text-center">
+                  {/* <div className="flex flex-col text-center">
                     <p className="text-secondary text-md">Risk Level</p>
                     <div className="flex h-full items-center justify-center">
                       <ProgressBar level={vault.riskLevel} />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* TVL */}
                   <div className="flex flex-col text-center">
@@ -248,38 +248,37 @@ export const VaultTable = () => {
                       <TvlCell vault={vault} />
                     </div>
                   </div>
-                </div>
-
-                {/* Holdings Row */}
-                <div className="border-surface-alt border-t">
-                  <div className="flex flex-col gap-3 text-center">
-                    <p className="text-secondary text-md">Holdings</p>
-                    {!address ? (
-                      <div className="text-primary mx-auto w-fit">
-                        <TheButton
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            connectWallet();
-                          }}
-                          className="h-8 w-32 p-3 text-xs font-medium text-white"
-                        >
-                          Connect Wallet
-                        </TheButton>
-                      </div>
-                    ) : (
-                      <p className="text-primary text-sm">
-                        {Number(
-                          formatUnits({
-                            value:
-                              vaultBalances?.[vault.vaultAddress]?.dfTokens ||
-                              0,
-                            decimals: 7,
-                          }),
-                        ).toFixed(2)}{" "}
-                        {vault.assets[0].symbol}
-                      </p>
-                    )}
+                  {/* Holdings Row */}
+                  <div className="border-surface-alt border-t">
+                    <div className="flex flex-col gap-3 text-center">
+                      <p className="text-secondary text-md">Holdings</p>
+                      {!address ? (
+                        <div className="text-primary mx-auto w-fit">
+                          <TheButton
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              connectWallet();
+                            }}
+                            className="h-8 w-32 p-3 text-xs font-medium text-white"
+                          >
+                            Connect Wallet
+                          </TheButton>
+                        </div>
+                      ) : (
+                        <p className="text-primary text-sm">
+                          {Number(
+                            formatUnits({
+                              value:
+                                vaultBalances?.[vault.vaultAddress]?.dfTokens ||
+                                0,
+                              decimals: 7,
+                            }),
+                          ).toFixed(2)}{" "}
+                          {vault.assets[0].symbol}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

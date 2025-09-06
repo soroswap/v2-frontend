@@ -6,18 +6,18 @@ export const PortfolioCard = () => {
       <h2 className="text-primary text-xl font-bold">Portfolio</h2>
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex w-full gap-4">
-          <div className="flex w-full flex-col sm:w-fit">
+          {/* <div className="flex w-full flex-col sm:w-fit">
             <p className="text-secondary text-sm">Deposits</p>
             <p className="text-primary text-lg font-semibold">$0.00</p>
           </div>
           <div className="flex w-full flex-col sm:w-fit">
             <p className="text-secondary text-sm">Earnings</p>
             <p className="text-primary text-lg font-semibold">$0.00</p>
-          </div>
-          <div className="flex w-full flex-col sm:w-fit">
+          </div> */}
+          {/* <div className="flex w-full flex-col sm:w-fit">
             <p className="text-secondary text-sm">Realized APY</p>
             <p className="text-primary text-lg font-semibold">$0.00</p>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
