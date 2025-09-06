@@ -1,9 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/shared/lib/utils/cn";
 import { AssetInfo } from "@soroswap/sdk";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
-import { useState } from "react";
 import { QuoteResponse, TradeType } from "@soroswap/sdk";
 import { ChevronDownIcon } from "lucide-react";
 import { useTokensList } from "@/shared/hooks";
@@ -90,6 +90,7 @@ export const SwapQuoteDetails = ({
     };
 
     const formatProtocolName = (protocol: string): string => {
+      if (protocol === "sdex") return "SDEX";
       return protocol.charAt(0).toUpperCase() + protocol.slice(1).toLowerCase();
     };
 
@@ -213,12 +214,14 @@ export const SwapQuoteDetails = ({
           {/* Trading Path */}
           <div className="flex items-start justify-between">
             <p className="text-secondary text-sm">Path</p>
-            <div className="text-primary text-sm text-right">
-              {getTradingPath().split('\n').map((route, index) => (
-                <p key={index} className="whitespace-nowrap">
-                  {route}
-                </p>
-              ))}
+            <div className="text-primary text-right text-sm">
+              {getTradingPath()
+                .split("\n")
+                .map((route, index) => (
+                  <p key={index} className="whitespace-nowrap">
+                    {route}
+                  </p>
+                ))}
             </div>
           </div>
 
