@@ -86,7 +86,7 @@ export const SwapQuoteDetails = ({
         return tokenMap[left]?.code || left;
       }
       // Fallback to shortened identifier
-      return `${item.slice(0, 4)}…${item.slice(-4)}`;
+      return `${item.slice(0, 4)}`;
     };
 
     const formatProtocolName = (protocol: string): string => {
