@@ -5,7 +5,7 @@ import { TheButton } from "@/shared/components";
 
 export const VaultCard = () => {
   return (
-    <div className="bg-surface border-surface-alt relative overflow-hidden rounded-xl border p-4">
+    <div className="bg-surface border-surface-alt relative w-full overflow-hidden rounded-xl border p-4">
       <div className="absolute inset-0 opacity-20">
         <Image
           src="/earn/vault.svg"
