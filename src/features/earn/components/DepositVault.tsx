@@ -68,7 +68,11 @@ const DepositVaultLoading = () => {
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
-  const { vaultInfo, isLoading: isVaultInfoLoading, isError } = useVaultInfo({ vaultId: vaultAddress });
+  const {
+    vaultInfo,
+    isLoading: isVaultInfoLoading,
+    isError,
+  } = useVaultInfo({ vaultId: vaultAddress });
   const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
@@ -77,16 +81,15 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     userAddress: address,
   });
 
-  const { currentStep, executeDeposit, reset, modalData } =
-    useEarnVault({
-      onSuccess: () => {
-        revalidate(); // Revalidate vault balance after successful deposit
-      },
-      onError: (error) => {
-        // Keep modal open to show error message to user
-        console.log("Deposit error:", error);
-      },
-    });
+  const { currentStep, executeDeposit, reset, modalData } = useEarnVault({
+    onSuccess: () => {
+      revalidate(); // Revalidate vault balance after successful deposit
+    },
+    onError: (error) => {
+      // Keep modal open to show error message to user
+      console.log("Deposit error:", error);
+    },
+  });
 
   const handleDeposit = async () => {
     if (!address) return;
@@ -109,18 +112,16 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault not found</div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault not found
       </div>
     );
   }
 
   if (!vaultInfo?.assets || vaultInfo.assets.length === 0) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">
-          Vault assets not available
-        </div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault assets not available
       </div>
     );
   }

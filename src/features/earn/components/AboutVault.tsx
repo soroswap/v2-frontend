@@ -113,8 +113,8 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault not found</div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault not found
       </div>
     );
   }
