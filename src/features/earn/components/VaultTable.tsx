@@ -13,7 +13,7 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { TheButton } from "@/shared/components";
 import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
-import { ProgressBar } from "./ProgressBar";
+// import { ProgressBar } from "./ProgressBar";
 import { RiskLevel } from "../types/RiskLevel";
 import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
 

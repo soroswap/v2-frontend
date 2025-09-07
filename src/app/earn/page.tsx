@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { PlusIcon } from "lucide-react";
 import {
-  PortfolioCard,
+  // PortfolioCard,
   VaultCard,
   VaultTable,
 } from "@/features/earn/components";
