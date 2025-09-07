@@ -19,7 +19,7 @@ import {
   PoolStep,
 } from "@/features/pools/hooks/usePool";
 import { PoolModal } from "@/features/pools/components/PoolModal";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 
 const getSwapButtonText = (step: PoolStep): string => {
   switch (step) {
@@ -37,7 +37,6 @@ const getSwapButtonText = (step: PoolStep): string => {
 export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
   const params = useParams();
-  const router = useRouter();
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [addLiquidityResult, setAddLiquidityResult] =
@@ -83,18 +82,22 @@ export default function PoolsAddLiquidityPage() {
     },
   });
 
-  // Update URL when tokens change
+  // Update URL when tokens change without triggering re-renders
   useEffect(() => {
     if (TOKEN_A?.contract || TOKEN_B?.contract) {
       const newTokenA = TOKEN_A?.contract;
       const newTokenB = TOKEN_B?.contract;
 
+      let newUrl = "/pools/add-liquidity";
       if (newTokenA && newTokenB) {
-        const newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
-        router.replace(newUrl);
+        newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
       } else if (newTokenA) {
-        const newUrl = `/pools/add-liquidity/${newTokenA}`;
-        router.replace(newUrl);
+        newUrl = `/pools/add-liquidity/${newTokenA}`;
+      }
+
+      // Use window.history.replaceState to avoid re-renders
+      if (window.location.pathname !== newUrl) {
+        window.history.replaceState(null, "", newUrl);
       }
     }
   }, [TOKEN_A?.contract, TOKEN_B?.contract]);
