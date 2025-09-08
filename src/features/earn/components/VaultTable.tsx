@@ -179,23 +179,82 @@ export const VaultTable = () => {
       {/* Desktop Table */}
       <div className="hidden md:block">
         <div className="[&_tbody_tr]:!h-[84px] [&_tbody_tr]:!min-h-[84px] [&_tbody_tr_td]:!h-[84px]">
-          <TheTable
-            columns={columns}
-            data={vaultTableData}
-            isLoading={isLoading}
-            emptyLabel="No vaults available"
-            className="w-full"
-            onRowClick={(vault) => {
-              router.push(`/earn/${vault.vaultAddress}`);
-            }}
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={`skeleton-row-${i}`}
+                  className="bg-surface border-surface-alt flex h-[84px] min-h-[84px] items-center gap-4 rounded-xl border p-4"
+                >
+                  {/* Vault column */}
+                  <div className="flex w-full items-center gap-3">
+                    <div className="bg-surface-alt skeleton size-12 rounded-full" />
+                    <div className="flex flex-col gap-2">
+                      <div className="bg-surface-alt skeleton h-4 w-32 rounded" />
+                      <div className="bg-surface-alt skeleton h-3 w-24 rounded" />
+                    </div>
+                  </div>
+                  {/* APY column */}
+                  <div className="bg-surface-alt skeleton h-4 w-16 rounded" />
+                  {/* Holdings column */}
+                  <div className="bg-surface-alt skeleton h-4 w-20 rounded" />
+                  {/* TVL column */}
+                  <div className="flex flex-col gap-1">
+                    <div className="bg-surface-alt skeleton h-4 w-24 rounded" />
+                    <div className="bg-surface-alt skeleton h-3 w-16 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <TheTable
+              columns={columns}
+              data={vaultTableData}
+              // isLoading={isLoading}
+              emptyLabel="No vaults available"
+              className="w-full"
+              onRowClick={(vault) => {
+                router.push(`/earn/${vault.vaultAddress}`);
+              }}
+            />
+          )}
         </div>
       </div>
 
       {/* Mobile Cards */}
       <div className="space-y-4 md:hidden">
         {isLoading ? (
-          <div className="py-8 text-center">Loading...</div>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`mobile-skeleton-${i}`}
+                className="bg-surface border-surface-alt rounded-xl border p-4"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div className="bg-surface-alt skeleton size-12 rounded-full" />
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="bg-surface-alt skeleton h-4 w-32 rounded" />
+                    <div className="bg-surface-alt skeleton h-3 w-24 rounded" />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-4">
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-16 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-12 rounded" />
+                  </div>
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-20 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-16 rounded" />
+                  </div>
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-14 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-20 rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : vaultTableData.length === 0 ? (
           <div className="py-8 text-center">No vaults available</div>
         ) : (
