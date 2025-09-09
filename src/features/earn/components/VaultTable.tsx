@@ -15,7 +15,8 @@ import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
 // import { ProgressBar } from "./ProgressBar";
 import { RiskLevel } from "../types/RiskLevel";
-import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
+// import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
+import Link from "next/link";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
@@ -26,7 +27,7 @@ type VaultTableData = VaultInfoResponse & {
 const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   const tvl = vault.totalManagedFunds?.[0]?.total_amount;
   const symbol = vault.assets[0].symbol;
-  const { price, isLoading } = useTokenPrice(vault.assets[0].address);
+  // const { price, isLoading } = useTokenPrice(vault.assets[0].address);
 
   // Validate tvl before converting to BigInt
   if (!tvl || tvl === "0" || tvl === 0) {
@@ -36,13 +37,13 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   }
 
   return (
-    <div className="text-primary font-medium">
+    <div className="text-primary text-sm">
       {formatCurrency(
         formatUnits({ value: BigInt(tvl), decimals: 7 }),
         symbol,
         "",
       )}
-      <p className="text-secondary text-xs">
+      {/* <p className="text-secondary text-xs">
         {isLoading ? (
           <span className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
         ) : (
@@ -57,7 +58,7 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
             </span>
           )
         )}
-      </p>
+      </p> */}
     </div>
   );
 };
@@ -264,10 +265,11 @@ export const VaultTable = () => {
         ) : (
           vaultTableData.map((vault) => {
             return (
-              <div
+              <Link
                 key={vault.vaultAddress}
                 className="bg-surface border-surface-alt hover:bg-surface-alt/50 flex cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-colors"
-                onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
+                // onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
+                href={`/earn/${vault.vaultAddress}`}
               >
                 {/* Header with icon and title */}
                 <div className="flex flex-col items-center gap-3">
@@ -323,9 +325,9 @@ export const VaultTable = () => {
                               e.stopPropagation();
                               connectWallet();
                             }}
-                            className="h-8 w-32 p-3 text-xs font-medium text-white"
+                            className="h-8 w-20 p-3 text-xs font-medium text-white"
                           >
-                            Connect Wallet
+                            Connect
                           </TheButton>
                         </div>
                       ) : (
@@ -344,7 +346,7 @@ export const VaultTable = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })
         )}
