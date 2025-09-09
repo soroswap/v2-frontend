@@ -10,13 +10,20 @@ import {
   EarnVaultStep,
 } from "@/features/earn/hooks/useEarnVault";
 import { EarnVaultModal } from "./EarnVaultModal";
+import { formatUnits } from "@/shared/lib/utils";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const { address } = useUserContext();
-  const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
-  const { revalidate } = useVaultBalance({
+  const { vaultInfo, isLoading: isVaultInfoLoading } = useVaultInfo({
+    vaultId: vaultAddress,
+  });
+  const {
+    revalidate,
+    vaultBalance,
+    isLoading: isVaultBalanceLoading,
+  } = useVaultBalance({
     vaultId: vaultAddress,
     userAddress: address,
   });
@@ -71,9 +78,25 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
               className="absolute top-1/2 right-3 -translate-y-1/2 bg-transparent"
             />
           </div>
-          <p className="text-secondary text-xs">
-            Total value locked: $14,140.67
-          </p>
+          <div className="text-secondary flex w-full items-center text-xs">
+            {isVaultInfoLoading || isVaultBalanceLoading ? (
+              <div className="flex w-full items-center">
+                <div className="skeleton h-8 w-24" />
+              </div>
+            ) : (
+              <div className="flex w-full items-center">
+                Your holding:{" "}
+                {vaultBalance?.underlyingBalance[0] &&
+                  Number(
+                    formatUnits({
+                      value: vaultBalance?.underlyingBalance[0],
+                      decimals: 7,
+                    }),
+                  )}{" "}
+                {vaultInfo?.assets[0].symbol}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Amount to Withdraw */}
