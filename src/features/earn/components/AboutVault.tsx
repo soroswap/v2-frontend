@@ -113,8 +113,8 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault not found</div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault not found
       </div>
     );
   }
@@ -181,10 +181,17 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
                                   <p className="text-primary text-xs font-medium">
                                     {strategy.name}
                                   </p>
-                                  <p className="text-secondary font-mono text-xs">
-                                    {strategy.address.slice(0, 8)}...
-                                    {strategy.address.slice(-6)}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-secondary font-mono text-xs">
+                                      {strategy.address.slice(0, 8)}...
+                                      {strategy.address.slice(-6)}
+                                    </p>
+                                    <CopyAndPasteButton
+                                      textToCopy={strategy.address}
+                                      className="text-secondary bg-transparent font-mono text-xs break-all"
+                                      aria-label={`Copy ${strategy.name} address`}
+                                    />
+                                  </div>
                                 </div>
                                 <span
                                   className={`rounded-full px-2 py-1 text-xs font-medium ${

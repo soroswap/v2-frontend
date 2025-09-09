@@ -10,13 +10,20 @@ import {
   EarnVaultStep,
 } from "@/features/earn/hooks/useEarnVault";
 import { EarnVaultModal } from "./EarnVaultModal";
+import { formatUnits } from "@/shared/lib/utils";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const { address } = useUserContext();
-  const { vaultInfo } = useVaultInfo({ vaultId: vaultAddress });
-  const { revalidate } = useVaultBalance({
+  const { vaultInfo, isLoading: isVaultInfoLoading } = useVaultInfo({
+    vaultId: vaultAddress,
+  });
+  const {
+    revalidate,
+    vaultBalance,
+    isLoading: isVaultBalanceLoading,
+  } = useVaultBalance({
     vaultId: vaultAddress,
     userAddress: address,
   });
@@ -51,7 +58,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   return (
     <section className="w-full space-y-6">
-      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center">
+      <div className="flex h-full w-full flex-col gap-6 lg:flex-row lg:items-center">
         {/* Vault Address Field */}
         <div className="flex flex-col gap-2 lg:flex-1">
           <label className="text-secondary text-sm font-medium">
@@ -71,9 +78,26 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
               className="absolute top-1/2 right-3 -translate-y-1/2 bg-transparent"
             />
           </div>
-          <p className="text-secondary text-xs">
-            Total value locked: $14,140.67
-          </p>
+          <div className="text-secondary flex w-full items-center text-xs">
+            {isVaultInfoLoading || isVaultBalanceLoading ? (
+              <div className="flex w-full items-center">
+                <div className="skeleton h-8 w-24" />
+              </div>
+            ) : (
+              <div className="flex w-full items-center">
+                Your holding:{" "}
+                {vaultBalance?.underlyingBalance[0]
+                  ? Number(
+                      formatUnits({
+                        value: vaultBalance?.underlyingBalance[0],
+                        decimals: 7,
+                      }),
+                    )
+                  : "-"}{" "}
+                {vaultInfo?.assets[0].symbol}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Amount to Withdraw */}
@@ -82,23 +106,87 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             Amount to withdraw
           </label>
           <TokenAmountInput
+            disabled={
+              !vaultBalance?.underlyingBalance[0] ||
+              vaultBalance?.underlyingBalance[0] <= 0
+            }
             token={vaultInfo?.assets[0]}
             amount={amount}
-            setAmount={(v) => setAmount(v ?? "0")}
+            setAmount={(v) => {
+              const value = v ?? "0";
+              // Limit to 7 total digits (excluding decimal point)
+              const digitCount = value.replace(/[^\d]/g, "").length;
+              if (digitCount >= 9) {
+                return; // Don't update if total digits exceed 7
+              }
+              setAmount(value);
+            }}
             isLoading={false}
             className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
           />
 
-          <p id="amount-value" className="text-secondary text-xs">
-            ${parseFloat(amount) * 1 || "0.00"}
-          </p>
+          <div className="flex items-center gap-2">
+            <p id="amount-value" className="text-secondary text-xs">
+              ${parseFloat(amount) * 1 || "0.00"} |
+            </p>
+            {vaultBalance?.underlyingBalance[0] &&
+              vaultBalance?.underlyingBalance[0] > 0 && (
+                <>
+                  <p className="text-secondary text-xs">
+                    Available balance:{" "}
+                    {vaultBalance?.underlyingBalance[0] &&
+                      Number(
+                        formatUnits({
+                          value: vaultBalance?.underlyingBalance[0],
+                          decimals: 7,
+                        }),
+                      )}{" "}
+                    {vaultInfo?.assets[0].symbol}
+                  </p>
+                  <button
+                    className="text-brand cursor-pointer rounded-lg text-sm font-medium transition-colors"
+                    onClick={() => {
+                      const maxValue =
+                        formatUnits({
+                          value: vaultBalance?.underlyingBalance[0],
+                          decimals: 7,
+                        }) ?? "0";
+                      // Limit to 7 digits and ensure it's a clean number
+                      const cleanValue = parseFloat(maxValue)
+                        .toFixed(7)
+                        .replace(/\.?0+$/, "");
+                      setAmount(cleanValue);
+                    }}
+                    disabled={
+                      !vaultBalance?.underlyingBalance[0] ||
+                      vaultBalance?.underlyingBalance[0] <= 0
+                    }
+                  >
+                    Max
+                  </button>
+                </>
+              )}
+          </div>
         </div>
 
         {/* Withdraw Button */}
         <div className="flex">
           <TheButton
             onClick={handleWithdraw}
-            disabled={!amount || parseFloat(amount) <= 0 || !address}
+            disabled={
+              !amount ||
+              parseFloat(amount) <= 0 ||
+              !address ||
+              !vaultBalance?.underlyingBalance[0] ||
+              vaultBalance?.underlyingBalance[0] <= 0 ||
+              parseFloat(amount) >
+                Number(
+                  formatUnits({
+                    value: vaultBalance?.underlyingBalance[0],
+                    decimals: 7,
+                  }),
+                )
+            }
             className="w-full text-white lg:w-auto lg:px-8"
             type="submit"
           >

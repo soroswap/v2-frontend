@@ -4,7 +4,7 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { TheTable } from "@/shared/components";
 import { Pool } from "@soroswap/sdk";
 import { ArrowUp } from "lucide-react";
-import { cn } from "@/shared/lib/utils";
+import { cn, formatCurrency } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
 import { useRouter } from "next/navigation";
 
@@ -88,7 +88,7 @@ export const SoroSwapAllLiquidityPools = () => {
         return (
           <p className="flex justify-end">
             {typeof value === "bigint" ? (
-              value.toLocaleString("pt-BR")
+              formatCurrency(Number(value.toString()) / 100, " ", " ")
             ) : (
               <span className="skeleton h-4 w-16" />
             )}

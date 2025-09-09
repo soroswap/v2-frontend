@@ -91,7 +91,12 @@ export const VaultCardDetails = ({
     return <VaultCardDetailsLoading />;
   }
 
-  if (!vaultInfo) return;
+  if (!vaultInfo)
+    return (
+      <div className="bg-surface border-surface-alt text-secondary flex h-full min-h-[322px] flex-col items-center justify-center gap-4 rounded-2xl border p-8">
+        Vault not found
+      </div>
+    );
 
   return (
     <div className="bg-surface border-surface-alt flex flex-col gap-4 rounded-2xl border p-8 shadow-lg">
@@ -182,6 +187,7 @@ export const VaultCardDetails = ({
                   decimals: 7,
                 }),
                 vaultInfo.assets[0].symbol,
+                "",
               )}
             </p>
           </div>

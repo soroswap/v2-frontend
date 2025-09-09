@@ -19,7 +19,9 @@ import {
   PoolStep,
 } from "@/features/pools/hooks/usePool";
 import { PoolModal } from "@/features/pools/components/PoolModal";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import { usePools } from "@/features/pools/hooks/usePools";
+import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
 
 const getSwapButtonText = (step: PoolStep): string => {
   switch (step) {
@@ -37,7 +39,6 @@ const getSwapButtonText = (step: PoolStep): string => {
 export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
   const params = useParams();
-  const router = useRouter();
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [addLiquidityResult, setAddLiquidityResult] =
@@ -49,6 +50,10 @@ export default function PoolsAddLiquidityPage() {
   const tokenAddresses = params?.tokens as string[] | undefined;
   const tokenAAddress = tokenAddresses?.[0];
   const tokenBAddress = tokenAddresses?.[1];
+
+  // Add hooks for revalidation
+  const { revalidate: revalidatePools } = usePools();
+  const { revalidate: revalidateUserPositions } = useUserPoolPositions(userAddress);
 
   const {
     typedValue,
@@ -70,6 +75,9 @@ export default function PoolsAddLiquidityPage() {
     onSuccess: (result: PoolResult) => {
       setAddLiquidityResult(result);
       setIsSwapModalOpen(true);
+      // Revalidate pools and user positions after successful add liquidity
+      revalidatePools();
+      revalidateUserPositions();
     },
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);
@@ -83,18 +91,22 @@ export default function PoolsAddLiquidityPage() {
     },
   });
 
-  // Update URL when tokens change
+  // Update URL when tokens change without triggering re-renders
   useEffect(() => {
     if (TOKEN_A?.contract || TOKEN_B?.contract) {
       const newTokenA = TOKEN_A?.contract;
       const newTokenB = TOKEN_B?.contract;
 
+      let newUrl = "/pools/add-liquidity";
       if (newTokenA && newTokenB) {
-        const newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
-        router.replace(newUrl);
+        newUrl = `/pools/add-liquidity/${newTokenA}/${newTokenB}`;
       } else if (newTokenA) {
-        const newUrl = `/pools/add-liquidity/${newTokenA}`;
-        router.replace(newUrl);
+        newUrl = `/pools/add-liquidity/${newTokenA}`;
+      }
+
+      // Use window.history.replaceState to avoid re-renders
+      if (window.location.pathname !== newUrl) {
+        window.history.replaceState(null, "", newUrl);
       }
     }
   }, [TOKEN_A?.contract, TOKEN_B?.contract]);

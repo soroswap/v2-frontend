@@ -1,13 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "@/shared/lib/utils/cn";
 import { AssetInfo } from "@soroswap/sdk";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
-import { useState } from "react";
 import { QuoteResponse, TradeType } from "@soroswap/sdk";
 import { ChevronDownIcon } from "lucide-react";
-import { useTokensList } from "@/shared/hooks";
 import { TokenIcon } from "@/shared/components";
+import { useAllTokensList } from "@/shared/hooks/useAllTokensList";
 
 interface SwapQuoteDetailsProps {
   quote: QuoteResponse | undefined;
@@ -23,7 +23,7 @@ export const SwapQuoteDetails = ({
   className,
 }: SwapQuoteDetailsProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const { tokenMap } = useTokensList();
+  const { tokenMapAllTokens } = useAllTokensList();
 
   if (!quote || !sellToken || !buyToken || !quote.amountIn) {
     return null;
@@ -79,17 +79,18 @@ export const SwapQuoteDetails = ({
 
     const formatPathToken = (item: string) => {
       // Try contract lookup first
-      if (tokenMap[item]?.code) return tokenMap[item].code;
+      if (tokenMapAllTokens[item]?.code) return tokenMapAllTokens[item].code;
       // If string contains a separator, prefer the left part (could be contract or CODE)
       if (item.includes(":")) {
         const left = item.split(":")[0];
-        return tokenMap[left]?.code || left;
+        return tokenMapAllTokens[left]?.code || left;
       }
       // Fallback to shortened identifier
-      return `${item.slice(0, 4)}…${item.slice(-4)}`;
+      return `${item.slice(0, 4)}`;
     };
 
     const formatProtocolName = (protocol: string): string => {
+      if (protocol === "sdex") return "SDEX";
       return protocol.charAt(0).toUpperCase() + protocol.slice(1).toLowerCase();
     };
 
@@ -192,17 +193,17 @@ export const SwapQuoteDetails = ({
               <p className="text-primary text-sm">{getExpectedOutput()}</p>
               {buyToken.contract ? (
                 <TokenIcon
-                  src={tokenMap[buyToken.contract]?.icon}
-                  name={tokenMap[buyToken.contract]?.name}
-                  code={tokenMap[buyToken.contract]?.code}
+                  src={tokenMapAllTokens[buyToken.contract]?.icon}
+                  name={tokenMapAllTokens[buyToken.contract]?.name}
+                  code={tokenMapAllTokens[buyToken.contract]?.code}
                   size={20}
                 />
               ) : (
                 sellToken.contract && (
                   <TokenIcon
-                    src={tokenMap[sellToken.contract]?.icon}
-                    name={tokenMap[sellToken.contract]?.name}
-                    code={tokenMap[sellToken.contract]?.code}
+                    src={tokenMapAllTokens[sellToken.contract]?.icon}
+                    name={tokenMapAllTokens[sellToken.contract]?.name}
+                    code={tokenMapAllTokens[sellToken.contract]?.code}
                     size={20}
                   />
                 )
@@ -213,12 +214,14 @@ export const SwapQuoteDetails = ({
           {/* Trading Path */}
           <div className="flex items-start justify-between">
             <p className="text-secondary text-sm">Path</p>
-            <div className="text-primary text-sm text-right">
-              {getTradingPath().split('\n').map((route, index) => (
-                <p key={index} className="whitespace-nowrap">
-                  {route}
-                </p>
-              ))}
+            <div className="text-primary text-right text-sm">
+              {getTradingPath()
+                .split("\n")
+                .map((route, index) => (
+                  <p key={index} className="whitespace-nowrap">
+                    {route}
+                  </p>
+                ))}
             </div>
           </div>
 

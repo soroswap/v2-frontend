@@ -5,7 +5,7 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { Modal } from "@/shared/components";
 import { TokenIcon } from "@/shared/components";
 import { UserPositionResponse } from "@soroswap/sdk";
-import { formatUnits } from "@/shared/lib/utils";
+import { formatUnits, formatNumber } from "@/shared/lib/utils";
 
 export const UserPoolModal = ({
   isOpen,
@@ -53,10 +53,12 @@ export const UserPoolModal = ({
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>Total LP</span>
             <span>
-              {formatUnits({
-                value: rowData.poolInformation.totalSupply || "0",
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.poolInformation.totalSupply || "0",
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
@@ -69,10 +71,12 @@ export const UserPoolModal = ({
               {displayTokenAName}
             </div>
             <span>
-              {formatUnits({
-                value: rowData.poolInformation.reserveA || "0",
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.poolInformation.reserveA || "0",
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
@@ -85,10 +89,12 @@ export const UserPoolModal = ({
               {displayTokenBName}
             </div>
             <span>
-              {formatUnits({
-                value: rowData.poolInformation.reserveB || "0",
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.poolInformation.reserveB || "0",
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
         </div>
@@ -102,10 +108,12 @@ export const UserPoolModal = ({
           <div className="text-primary flex w-full items-center justify-between text-sm">
             <span>LP Balance</span>
             <span>
-              {formatUnits({
-                value: rowData.userPosition,
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.userPosition,
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
@@ -118,10 +126,12 @@ export const UserPoolModal = ({
               {displayTokenAName}
             </div>
             <span>
-              {formatUnits({
-                value: rowData.tokenAAmountEquivalent || "0",
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.tokenAAmountEquivalent || "0",
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
           <div className="text-primary flex w-full items-center justify-between text-sm">
@@ -134,10 +144,12 @@ export const UserPoolModal = ({
               {displayTokenBName}
             </div>
             <span>
-              {formatUnits({
-                value: rowData.tokenBAmountEquivalent || "0",
-                decimals: 7,
-              })}
+              {formatNumber(
+                formatUnits({
+                  value: rowData.tokenBAmountEquivalent || "0",
+                  decimals: 7,
+                }),
+              )}
             </span>
           </div>
         </div>

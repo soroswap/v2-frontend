@@ -43,6 +43,7 @@ export function usePools() {
     data: remotePools,
     isLoading: remotePoolsLoading,
     error,
+    mutate: mutatePools,
   } = useSWR<Pool[]>(
     ["/api/pools", "soroswap"] as [string, string],
     ([url, asset]: [string, string]) => fetchPools(url, asset),
@@ -129,10 +130,15 @@ export function usePools() {
     });
   }, [remotePools, tokenMap, priceMap, pools]);
 
+  const revalidate = () => {
+    mutatePools();
+  };
+
   return {
     pools: enrichedPools,
     rawPools: remotePools ?? [],
     isLoading: remotePoolsLoading || tokenListLoading || pricesLoading || false,
     isError: error || pricesError,
+    revalidate,
   } as const;
 }

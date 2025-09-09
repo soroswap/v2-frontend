@@ -10,12 +10,14 @@ export const TokenAmountInput = ({
   isLoading,
   token,
   className,
+  disabled,
 }: {
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
   isLoading: boolean;
   token: AssetInfo | null | undefined;
   className?: string;
+  disabled?: boolean;
 }) => {
   // Remove all non-numeric characters except decimal point
   const cleanValue = (value: string): string => {
@@ -45,7 +47,7 @@ export const TokenAmountInput = ({
       }}
       placeholder="0"
       readOnly={isLoading}
-      disabled={!token}
+      disabled={!token || disabled}
     />
   );
 };

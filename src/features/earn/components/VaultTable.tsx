@@ -13,9 +13,10 @@ import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
 import { TheButton } from "@/shared/components";
 import { formatUnits } from "@/shared/lib/utils";
 import { VAULT_MOCK } from "../constants/vault";
-import { ProgressBar } from "./ProgressBar";
+// import { ProgressBar } from "./ProgressBar";
 import { RiskLevel } from "../types/RiskLevel";
-import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
+// import { useTokenPrice } from "@/features/swap/hooks/useTokenPrice";
+import Link from "next/link";
 
 type VaultTableData = VaultInfoResponse & {
   vaultAddress: string;
@@ -26,7 +27,7 @@ type VaultTableData = VaultInfoResponse & {
 const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   const tvl = vault.totalManagedFunds?.[0]?.total_amount;
   const symbol = vault.assets[0].symbol;
-  const { price, isLoading } = useTokenPrice(vault.assets[0].address);
+  // const { price, isLoading } = useTokenPrice(vault.assets[0].address);
 
   // Validate tvl before converting to BigInt
   if (!tvl || tvl === "0" || tvl === 0) {
@@ -36,9 +37,13 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   }
 
   return (
-    <div className="text-primary font-medium">
-      {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }), symbol)}
-      <p className="text-secondary text-xs">
+    <div className="text-primary text-sm">
+      {formatCurrency(
+        formatUnits({ value: BigInt(tvl), decimals: 7 }),
+        symbol,
+        "",
+      )}
+      {/* <p className="text-secondary text-xs">
         {isLoading ? (
           <span className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
         ) : (
@@ -53,7 +58,7 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
             </span>
           )
         )}
-      </p>
+      </p> */}
     </div>
   );
 };
@@ -179,32 +184,92 @@ export const VaultTable = () => {
       {/* Desktop Table */}
       <div className="hidden md:block">
         <div className="[&_tbody_tr]:!h-[84px] [&_tbody_tr]:!min-h-[84px] [&_tbody_tr_td]:!h-[84px]">
-          <TheTable
-            columns={columns}
-            data={vaultTableData}
-            isLoading={isLoading}
-            emptyLabel="No vaults available"
-            className="w-full"
-            onRowClick={(vault) => {
-              router.push(`/earn/${vault.vaultAddress}`);
-            }}
-          />
+          {isLoading ? (
+            <div className="space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={`skeleton-row-${i}`}
+                  className="bg-surface border-surface-alt flex h-[84px] min-h-[84px] items-center gap-4 rounded-xl border p-4"
+                >
+                  {/* Vault column */}
+                  <div className="flex w-full items-center gap-3">
+                    <div className="bg-surface-alt skeleton size-12 rounded-full" />
+                    <div className="flex flex-col gap-2">
+                      <div className="bg-surface-alt skeleton h-4 w-32 rounded" />
+                      <div className="bg-surface-alt skeleton h-3 w-24 rounded" />
+                    </div>
+                  </div>
+                  {/* APY column */}
+                  <div className="bg-surface-alt skeleton h-4 w-16 rounded" />
+                  {/* Holdings column */}
+                  <div className="bg-surface-alt skeleton h-4 w-20 rounded" />
+                  {/* TVL column */}
+                  <div className="flex flex-col gap-1">
+                    <div className="bg-surface-alt skeleton h-4 w-24 rounded" />
+                    <div className="bg-surface-alt skeleton h-3 w-16 rounded" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <TheTable
+              columns={columns}
+              data={vaultTableData}
+              // isLoading={isLoading}
+              emptyLabel="No vaults available"
+              className="w-full"
+              onRowClick={(vault) => {
+                router.push(`/earn/${vault.vaultAddress}`);
+              }}
+            />
+          )}
         </div>
       </div>
 
       {/* Mobile Cards */}
       <div className="space-y-4 md:hidden">
         {isLoading ? (
-          <div className="py-8 text-center">Loading...</div>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div
+                key={`mobile-skeleton-${i}`}
+                className="bg-surface border-surface-alt rounded-xl border p-4"
+              >
+                <div className="flex flex-col items-center gap-3">
+                  <div className="bg-surface-alt skeleton size-12 rounded-full" />
+                  <div className="flex flex-col items-center gap-1">
+                    <div className="bg-surface-alt skeleton h-4 w-32 rounded" />
+                    <div className="bg-surface-alt skeleton h-3 w-24 rounded" />
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-3 gap-4">
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-16 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-12 rounded" />
+                  </div>
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-20 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-16 rounded" />
+                  </div>
+                  <div className="flex flex-col text-center">
+                    <div className="bg-surface-alt skeleton mb-2 h-3 w-14 rounded" />
+                    <div className="bg-surface-alt skeleton h-4 w-20 rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : vaultTableData.length === 0 ? (
           <div className="py-8 text-center">No vaults available</div>
         ) : (
           vaultTableData.map((vault) => {
             return (
-              <div
+              <Link
                 key={vault.vaultAddress}
                 className="bg-surface border-surface-alt hover:bg-surface-alt/50 flex cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-colors"
-                onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
+                // onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
+                href={`/earn/${vault.vaultAddress}`}
               >
                 {/* Header with icon and title */}
                 <div className="flex flex-col items-center gap-3">
@@ -234,12 +299,12 @@ export const VaultTable = () => {
                   </div>
 
                   {/* Risk Level */}
-                  <div className="flex flex-col text-center">
+                  {/* <div className="flex flex-col text-center">
                     <p className="text-secondary text-md">Risk Level</p>
                     <div className="flex h-full items-center justify-center">
                       <ProgressBar level={vault.riskLevel} />
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* TVL */}
                   <div className="flex flex-col text-center">
@@ -248,41 +313,40 @@ export const VaultTable = () => {
                       <TvlCell vault={vault} />
                     </div>
                   </div>
-                </div>
-
-                {/* Holdings Row */}
-                <div className="border-surface-alt border-t">
-                  <div className="flex flex-col gap-3 text-center">
-                    <p className="text-secondary text-md">Holdings</p>
-                    {!address ? (
-                      <div className="text-primary mx-auto w-fit">
-                        <TheButton
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            connectWallet();
-                          }}
-                          className="h-8 w-32 p-3 text-xs font-medium text-white"
-                        >
-                          Connect Wallet
-                        </TheButton>
-                      </div>
-                    ) : (
-                      <p className="text-primary text-sm">
-                        {Number(
-                          formatUnits({
-                            value:
-                              vaultBalances?.[vault.vaultAddress]?.dfTokens ||
-                              0,
-                            decimals: 7,
-                          }),
-                        ).toFixed(2)}{" "}
-                        {vault.assets[0].symbol}
-                      </p>
-                    )}
+                  {/* Holdings Row */}
+                  <div className="border-surface-alt border-t">
+                    <div className="flex flex-col gap-3 text-center">
+                      <p className="text-secondary text-md">Holdings</p>
+                      {!address ? (
+                        <div className="text-primary mx-auto w-fit">
+                          <TheButton
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              connectWallet();
+                            }}
+                            className="h-8 w-20 p-3 text-xs font-medium text-white"
+                          >
+                            Connect
+                          </TheButton>
+                        </div>
+                      ) : (
+                        <p className="text-primary text-sm">
+                          {Number(
+                            formatUnits({
+                              value:
+                                vaultBalances?.[vault.vaultAddress]?.dfTokens ||
+                                0,
+                              decimals: 7,
+                            }),
+                          ).toFixed(2)}{" "}
+                          {vault.assets[0].symbol}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             );
           })
         )}

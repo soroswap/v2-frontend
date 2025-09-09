@@ -9,7 +9,6 @@ import {
 } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
-import { mutate } from "swr";
 
 interface AddLiquidityResponseData {
   code: string;
@@ -196,11 +195,6 @@ export function usePool(options?: UsePoolOptions) {
           success: sendResult.data.status === "success" ? true : false,
         };
 
-        // Revalidate user positions after successful add liquidity
-        if (result.success && userAddress) {
-          mutate(["user-pools-positions", userAddress]);
-        }
-
         options?.onSuccess?.(result);
         return result;
       } catch (err: any) {
@@ -252,11 +246,6 @@ export function usePool(options?: UsePoolOptions) {
           txHash: sendResult.data.txHash,
           success: sendResult.data.status === "success" ? true : false,
         };
-
-        // Revalidate user positions after successful remove liquidity
-        if (result.success && userAddress) {
-          mutate(["user-pools-positions", userAddress]);
-        }
 
         options?.onSuccess?.(result);
         return result;

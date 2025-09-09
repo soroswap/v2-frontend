@@ -68,7 +68,11 @@ const DepositVaultLoading = () => {
 
 export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
   const { tokenMap } = useTokensList();
-  const { vaultInfo, isLoading: isVaultInfoLoading, isError } = useVaultInfo({ vaultId: vaultAddress });
+  const {
+    vaultInfo,
+    isLoading: isVaultInfoLoading,
+    isError,
+  } = useVaultInfo({ vaultId: vaultAddress });
   const { address } = useUserContext();
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
@@ -77,16 +81,15 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     userAddress: address,
   });
 
-  const { currentStep, executeDeposit, reset, modalData } =
-    useEarnVault({
-      onSuccess: () => {
-        revalidate(); // Revalidate vault balance after successful deposit
-      },
-      onError: (error) => {
-        // Keep modal open to show error message to user
-        console.log("Deposit error:", error);
-      },
-    });
+  const { currentStep, executeDeposit, reset, modalData } = useEarnVault({
+    onSuccess: () => {
+      revalidate(); // Revalidate vault balance after successful deposit
+    },
+    onError: (error) => {
+      // Keep modal open to show error message to user
+      console.log("Deposit error:", error);
+    },
+  });
 
   const handleDeposit = async () => {
     if (!address) return;
@@ -109,18 +112,16 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   if (!isVaultInfoLoading && (!vaultInfo || isError)) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">Vault not found</div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault not found
       </div>
     );
   }
 
   if (!vaultInfo?.assets || vaultInfo.assets.length === 0) {
     return (
-      <div className="mt-[100px] flex min-h-[calc(100vh-100px)] items-center justify-center">
-        <div className="text-secondary text-center">
-          Vault assets not available
-        </div>
+      <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
+        Vault assets not available
       </div>
     );
   }
@@ -148,9 +149,9 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </span>
             </div>
           </div>
-          <span className="text-secondary text-xs">
+          <span className="text-secondary h-4 text-xs">
             {/* TODO: Add balance from the user APi */}
-            You have - {firstAsset.symbol}
+            {/* You have - {firstAsset.symbol} */}
           </span>
         </div>
 
@@ -161,13 +162,23 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
             <TokenAmountInput
               token={firstAsset}
               amount={amount}
-              setAmount={(v) => setAmount(v ?? "0")}
+              setAmount={(v) => {
+                const value = v ?? "0";
+                // Limit to 7 total digits (excluding decimal point)
+                const digitCount = value.replace(/[^\d]/g, "").length;
+                if (digitCount >= 9) {
+                  return; // Don't update if total digits exceed 7
+                }
+                setAmount(value);
+              }}
               isLoading={false}
               className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
             />
           </div>
           <span className="text-secondary text-xs">
-            ${parseFloat(amount) * 1 || "0.00"}
+            {(parseFloat(amount) < 0.01
+              ? "<$0.01"
+              : "$" + parseFloat(amount) * 1) || "0.00"}
           </span>
         </div>
 
