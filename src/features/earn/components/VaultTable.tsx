@@ -37,7 +37,11 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
 
   return (
     <div className="text-primary font-medium">
-      {formatCurrency(formatUnits({ value: BigInt(tvl), decimals: 7 }), symbol)}
+      {formatCurrency(
+        formatUnits({ value: BigInt(tvl), decimals: 7 }),
+        symbol,
+        "",
+      )}
       <p className="text-secondary text-xs">
         {isLoading ? (
           <span className="border-surface-page bg-surface-alt skeleton h-4 w-16 rounded border" />
