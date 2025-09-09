@@ -1,3 +1,5 @@
+//eslint-disable-next-line react-hooks/exhaustive-deps
+
 import { AssetInfo } from "@soroswap/sdk";
 import { useTokensList } from "./useTokensList";
 import { useUserAssetList } from "./useUserAssetList";

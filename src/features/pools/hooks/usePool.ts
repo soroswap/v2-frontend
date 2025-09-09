@@ -9,7 +9,6 @@ import {
 } from "@soroswap/sdk";
 import { useCallback, useState } from "react";
 import { SendTransactionResponseData } from "@/app/api/send/route";
-import { mutate } from "swr";
 
 interface AddLiquidityResponseData {
   code: string;
