@@ -181,10 +181,17 @@ export const AboutVault = ({ vaultAddress }: { vaultAddress: string }) => {
                                   <p className="text-primary text-xs font-medium">
                                     {strategy.name}
                                   </p>
-                                  <p className="text-secondary font-mono text-xs">
-                                    {strategy.address.slice(0, 8)}...
-                                    {strategy.address.slice(-6)}
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-secondary font-mono text-xs">
+                                      {strategy.address.slice(0, 8)}...
+                                      {strategy.address.slice(-6)}
+                                    </p>
+                                    <CopyAndPasteButton
+                                      textToCopy={strategy.address}
+                                      className="text-secondary bg-transparent font-mono text-xs break-all"
+                                      aria-label={`Copy ${strategy.name} address`}
+                                    />
+                                  </div>
                                 </div>
                                 <span
                                   className={`rounded-full px-2 py-1 text-xs font-medium ${
