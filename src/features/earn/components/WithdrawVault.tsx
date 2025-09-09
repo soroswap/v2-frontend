@@ -127,7 +127,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
           <div className="flex items-center gap-2">
             <p id="amount-value" className="text-secondary text-xs">
-              ${parseFloat(amount) * 1 || "0.00"}
+              ${parseFloat(amount) * 1 || "0.00"} |
             </p>
             {vaultBalance?.underlyingBalance[0] &&
               vaultBalance?.underlyingBalance[0] > 0 && (
