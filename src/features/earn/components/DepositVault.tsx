@@ -149,9 +149,9 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </span>
             </div>
           </div>
-          <span className="text-secondary text-xs">
+          <span className="text-secondary h-4 text-xs">
             {/* TODO: Add balance from the user APi */}
-            You have - {firstAsset.symbol}
+            {/* You have - {firstAsset.symbol} */}
           </span>
         </div>
 
