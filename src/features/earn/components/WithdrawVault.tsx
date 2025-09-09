@@ -111,7 +111,13 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             }
             token={vaultInfo?.assets[0]}
             amount={amount}
-            setAmount={(v) => setAmount(v ?? "0")}
+            setAmount={(v) => {
+              const value = v ?? "0";
+              if (value.length >= 7) {
+                return;
+              }
+              setAmount(value);
+            }}
             isLoading={false}
             className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
           />
