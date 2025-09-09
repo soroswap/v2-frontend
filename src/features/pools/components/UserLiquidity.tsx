@@ -8,8 +8,10 @@ import { TheTable } from "@/shared/components";
 import { UserPositionResponse } from "@soroswap/sdk";
 import { ColumnDef } from "@tanstack/react-table";
 import { TokenIcon } from "@/shared/components";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { UserPoolModal } from "@/features/pools/components";
+import { useBatchTokenPrices } from "@/features/swap/hooks/useBatchTokenPrices";
+import { calculateIndividualTvl } from "@/shared/lib/utils";
 
 export const UserLiquidity = () => {
   const { address } = useUserContext();
@@ -18,6 +20,23 @@ export const UserLiquidity = () => {
     useUserPoolPositions(address);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [rowData, setRowData] = useState<UserPositionResponse | null>(null);
+
+  // Collect unique token addresses from user positions to get prices
+  const tokenAddresses = useMemo(() => {
+    if (!userPositions || userPositions.length === 0) return [] as string[];
+    
+    const set = new Set<string>();
+    userPositions.forEach((position) => {
+      if (position.poolInformation.tokenA?.address) set.add(position.poolInformation.tokenA.address);
+      if (position.poolInformation.tokenB?.address) set.add(position.poolInformation.tokenB.address);
+    });
+    return Array.from(set);
+  }, [userPositions]);
+
+  const {
+    priceMap,
+    isLoading: pricesLoading,
+  } = useBatchTokenPrices(tokenAddresses);
 
   const handleRowClick = (position: UserPositionResponse) => {
     setIsModalOpen(true);
@@ -98,12 +117,54 @@ export const UserLiquidity = () => {
       header: () => (
         <span className="text-primary flex justify-end font-semibold">TVL</span>
       ),
-      cell: () => {
-        // const pool = row.original;
+      cell: ({ row }) => {
+        const position = row.original;
+        
+        if (!position.poolInformation || !tokenMap || !priceMap || pricesLoading) {
+          return (
+            <span className="text-primary flex justify-end font-semibold">
+              <span className="skeleton h-4 w-12" />
+            </span>
+          );
+        }
+
+        // Calculate user's share of the pool
+        const userLPBalance = BigInt(position.userPosition || 0);
+        const totalLPSupply = BigInt(position.poolInformation.totalSupply || 1);
+        
+        if (totalLPSupply === BigInt(0)) {
+          return (
+            <span className="text-primary flex justify-end font-semibold">
+              $0.00
+            </span>
+          );
+        }
+
+        // Calculate user's proportional token amounts
+        const reserveA = BigInt(position.poolInformation.reserveA || 0);
+        const reserveB = BigInt(position.poolInformation.reserveB || 0);
+        
+        const userPositionA = (userLPBalance * reserveA) / totalLPSupply;
+        const userPositionB = (userLPBalance * reserveB) / totalLPSupply;
+
+        const individualTvl = calculateIndividualTvl({
+          tokenAContract: position.poolInformation.tokenA.address,
+          tokenBContract: position.poolInformation.tokenB.address,
+          userPositionA,
+          userPositionB,
+          tokenMap,
+          priceMap,
+        });
+
         return (
           <span className="text-primary flex justify-end font-semibold">
-            <span className="skeleton h-4 w-12" />
-          </span> //TODO: Calculate TVL correctly
+            {individualTvl !== undefined 
+              ? `$${(Number(individualTvl.toString()) / 100).toLocaleString('en-US', { 
+                  minimumFractionDigits: 2, 
+                  maximumFractionDigits: 2 
+                })}` 
+              : '—'}
+          </span>
         );
       },
     },
