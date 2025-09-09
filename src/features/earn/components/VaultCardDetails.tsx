@@ -186,7 +186,7 @@ export const VaultCardDetails = ({
                   value: BigInt(vaultInfo.totalManagedFunds?.[0]?.total_amount),
                   decimals: 7,
                 }),
-                vaultInfo.assets[0].symbol,
+                "",
               )}
             </p>
           </div>
