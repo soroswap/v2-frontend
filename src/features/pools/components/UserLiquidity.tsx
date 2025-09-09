@@ -24,19 +24,19 @@ export const UserLiquidity = () => {
   // Collect unique token addresses from user positions to get prices
   const tokenAddresses = useMemo(() => {
     if (!userPositions || userPositions.length === 0) return [] as string[];
-    
+
     const set = new Set<string>();
     userPositions.forEach((position) => {
-      if (position.poolInformation.tokenA?.address) set.add(position.poolInformation.tokenA.address);
-      if (position.poolInformation.tokenB?.address) set.add(position.poolInformation.tokenB.address);
+      if (position.poolInformation.tokenA?.address)
+        set.add(position.poolInformation.tokenA.address);
+      if (position.poolInformation.tokenB?.address)
+        set.add(position.poolInformation.tokenB.address);
     });
     return Array.from(set);
   }, [userPositions]);
 
-  const {
-    priceMap,
-    isLoading: pricesLoading,
-  } = useBatchTokenPrices(tokenAddresses);
+  const { priceMap, isLoading: pricesLoading } =
+    useBatchTokenPrices(tokenAddresses);
 
   const handleRowClick = (position: UserPositionResponse) => {
     setIsModalOpen(true);
@@ -96,7 +96,7 @@ export const UserLiquidity = () => {
       accessorKey: "userPosition",
       header: () => (
         <span className="text-primary flex justify-end font-semibold">
-          Position
+          Your Position
         </span>
       ),
       cell: ({ row }) => {
@@ -104,7 +104,13 @@ export const UserLiquidity = () => {
         return (
           <span className="text-primary flex justify-end font-semibold">
             {pool.userPosition ? (
-              pool.userPosition.toString()
+              `${(Number(pool.userPosition.toString()) / 100).toLocaleString(
+                "en-US",
+                {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                },
+              )}`
             ) : (
               <span className="skeleton h-4 w-16" />
             )}
@@ -115,12 +121,19 @@ export const UserLiquidity = () => {
     {
       accessorKey: "tvl",
       header: () => (
-        <span className="text-primary flex justify-end font-semibold">TVL</span>
+        <span className="text-primary flex justify-end font-semibold">
+          Your TVL
+        </span>
       ),
       cell: ({ row }) => {
         const position = row.original;
-        
-        if (!position.poolInformation || !tokenMap || !priceMap || pricesLoading) {
+
+        if (
+          !position.poolInformation ||
+          !tokenMap ||
+          !priceMap ||
+          pricesLoading
+        ) {
           return (
             <span className="text-primary flex justify-end font-semibold">
               <span className="skeleton h-4 w-12" />
@@ -131,7 +144,7 @@ export const UserLiquidity = () => {
         // Calculate user's share of the pool
         const userLPBalance = BigInt(position.userPosition || 0);
         const totalLPSupply = BigInt(position.poolInformation.totalSupply || 1);
-        
+
         if (totalLPSupply === BigInt(0)) {
           return (
             <span className="text-primary flex justify-end font-semibold">
@@ -143,7 +156,7 @@ export const UserLiquidity = () => {
         // Calculate user's proportional token amounts
         const reserveA = BigInt(position.poolInformation.reserveA || 0);
         const reserveB = BigInt(position.poolInformation.reserveB || 0);
-        
+
         const userPositionA = (userLPBalance * reserveA) / totalLPSupply;
         const userPositionB = (userLPBalance * reserveB) / totalLPSupply;
 
@@ -158,12 +171,15 @@ export const UserLiquidity = () => {
 
         return (
           <span className="text-primary flex justify-end font-semibold">
-            {individualTvl !== undefined 
-              ? `$${(Number(individualTvl.toString()) / 100).toLocaleString('en-US', { 
-                  minimumFractionDigits: 2, 
-                  maximumFractionDigits: 2 
-                })}` 
-              : '—'}
+            {individualTvl !== undefined
+              ? `$${(Number(individualTvl.toString()) / 100).toLocaleString(
+                  "en-US",
+                  {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  },
+                )}`
+              : "—"}
           </span>
         );
       },
