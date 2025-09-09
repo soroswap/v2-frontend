@@ -20,6 +20,8 @@ import {
 } from "@/features/pools/hooks/usePool";
 import { PoolModal } from "@/features/pools/components/PoolModal";
 import { useParams } from "next/navigation";
+import { usePools } from "@/features/pools/hooks/usePools";
+import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
 
 const getSwapButtonText = (step: PoolStep): string => {
   switch (step) {
@@ -49,6 +51,10 @@ export default function PoolsAddLiquidityPage() {
   const tokenAAddress = tokenAddresses?.[0];
   const tokenBAddress = tokenAddresses?.[1];
 
+  // Add hooks for revalidation
+  const { revalidate: revalidatePools } = usePools();
+  const { revalidate: revalidateUserPositions } = useUserPoolPositions(userAddress);
+
   const {
     typedValue,
     independentField,
@@ -69,6 +75,9 @@ export default function PoolsAddLiquidityPage() {
     onSuccess: (result: PoolResult) => {
       setAddLiquidityResult(result);
       setIsSwapModalOpen(true);
+      // Revalidate pools and user positions after successful add liquidity
+      revalidatePools();
+      revalidateUserPositions();
     },
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);

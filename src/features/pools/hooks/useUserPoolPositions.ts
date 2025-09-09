@@ -31,10 +31,15 @@ export function useUserPoolPositions(address: string | null) {
     },
   );
 
+  const revalidate = () => {
+    mutate();
+  };
+
   return {
     positions: data || [],
     isLoading,
     isError: error,
     mutate,
+    revalidate,
   } as const;
 }
