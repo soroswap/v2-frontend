@@ -58,7 +58,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   return (
     <section className="w-full space-y-6">
-      <div className="flex w-full flex-col gap-6 lg:flex-row lg:items-center">
+      <div className="flex h-full w-full flex-col gap-6 lg:flex-row lg:items-center">
         {/* Vault Address Field */}
         <div className="flex flex-col gap-2 lg:flex-1">
           <label className="text-secondary text-sm font-medium">
@@ -105,6 +105,10 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             Amount to withdraw
           </label>
           <TokenAmountInput
+            disabled={
+              !vaultBalance?.underlyingBalance[0] ||
+              vaultBalance?.underlyingBalance[0] <= 0
+            }
             token={vaultInfo?.assets[0]}
             amount={amount}
             setAmount={(v) => setAmount(v ?? "0")}
@@ -112,16 +116,64 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
           />
 
-          <p id="amount-value" className="text-secondary text-xs">
-            ${parseFloat(amount) * 1 || "0.00"}
-          </p>
+          <div className="flex items-center gap-2">
+            <p id="amount-value" className="text-secondary text-xs">
+              ${parseFloat(amount) * 1 || "0.00"}
+            </p>
+            {vaultBalance?.underlyingBalance[0] &&
+              vaultBalance?.underlyingBalance[0] > 0 && (
+                <>
+                  <p className="text-secondary text-xs">
+                    Available balance:{" "}
+                    {vaultBalance?.underlyingBalance[0] &&
+                      Number(
+                        formatUnits({
+                          value: vaultBalance?.underlyingBalance[0],
+                          decimals: 7,
+                        }),
+                      )}{" "}
+                    {vaultInfo?.assets[0].symbol}
+                  </p>
+                  <button
+                    className="text-brand cursor-pointer rounded-lg text-sm font-medium transition-colors"
+                    onClick={() =>
+                      setAmount(
+                        formatUnits({
+                          value: vaultBalance?.underlyingBalance[0],
+                          decimals: 7,
+                        }) ?? "0",
+                      )
+                    }
+                    disabled={
+                      !vaultBalance?.underlyingBalance[0] ||
+                      vaultBalance?.underlyingBalance[0] <= 0
+                    }
+                  >
+                    Max
+                  </button>
+                </>
+              )}
+          </div>
         </div>
 
         {/* Withdraw Button */}
         <div className="flex">
           <TheButton
             onClick={handleWithdraw}
-            disabled={!amount || parseFloat(amount) <= 0 || !address}
+            disabled={
+              !amount ||
+              parseFloat(amount) <= 0 ||
+              !address ||
+              !vaultBalance?.underlyingBalance[0] ||
+              vaultBalance?.underlyingBalance[0] <= 0 ||
+              parseFloat(amount) >
+                Number(
+                  formatUnits({
+                    value: vaultBalance?.underlyingBalance[0],
+                    decimals: 7,
+                  }),
+                )
+            }
             className="w-full text-white lg:w-auto lg:px-8"
             type="submit"
           >
