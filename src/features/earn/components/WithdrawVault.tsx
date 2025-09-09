@@ -113,8 +113,10 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             amount={amount}
             setAmount={(v) => {
               const value = v ?? "0";
-              if (value.length >= 7) {
-                return;
+              // Limit to 7 total digits (excluding decimal point)
+              const digitCount = value.replace(/[^\d]/g, "").length;
+              if (digitCount >= 9) {
+                return; // Don't update if total digits exceed 7
               }
               setAmount(value);
             }}
@@ -142,14 +144,18 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
                   </p>
                   <button
                     className="text-brand cursor-pointer rounded-lg text-sm font-medium transition-colors"
-                    onClick={() =>
-                      setAmount(
+                    onClick={() => {
+                      const maxValue =
                         formatUnits({
                           value: vaultBalance?.underlyingBalance[0],
                           decimals: 7,
-                        }) ?? "0",
-                      )
-                    }
+                        }) ?? "0";
+                      // Limit to 7 digits and ensure it's a clean number
+                      const cleanValue = parseFloat(maxValue)
+                        .toFixed(7)
+                        .replace(/\.?0+$/, "");
+                      setAmount(cleanValue);
+                    }}
                     disabled={
                       !vaultBalance?.underlyingBalance[0] ||
                       vaultBalance?.underlyingBalance[0] <= 0
