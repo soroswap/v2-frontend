@@ -168,7 +168,9 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
             />
           </div>
           <span className="text-secondary text-xs">
-            ${parseFloat(amount) * 1 || "0.00"}
+            {(parseFloat(amount) < 0.01
+              ? "<$0.01"
+              : "$" + parseFloat(amount) * 1) || "0.00"}
           </span>
         </div>
 
