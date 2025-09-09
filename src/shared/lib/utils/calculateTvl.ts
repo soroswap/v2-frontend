@@ -83,8 +83,8 @@ export const calculateIndividualTvl = ({
   const priceA = priceMap[tokenAContract];
   const priceB = priceMap[tokenBContract];
 
-  const decimalsA = tokenAData?.decimals ?? 7; // Default to 7 like other Stellar assets
-  const decimalsB = tokenBData?.decimals ?? 7;
+  const decimalsA = tokenAData?.decimals ?? 0;
+  const decimalsB = tokenBData?.decimals ?? 0;
 
   const amountA = Number(userPositionA.toString()) / 10 ** decimalsA;
   const amountB = Number(userPositionB.toString()) / 10 ** decimalsB;
