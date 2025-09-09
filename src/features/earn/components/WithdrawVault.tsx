@@ -86,13 +86,14 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             ) : (
               <div className="flex w-full items-center">
                 Your holding:{" "}
-                {vaultBalance?.underlyingBalance[0] &&
-                  Number(
-                    formatUnits({
-                      value: vaultBalance?.underlyingBalance[0],
-                      decimals: 7,
-                    }),
-                  )}{" "}
+                {vaultBalance?.underlyingBalance[0]
+                  ? Number(
+                      formatUnits({
+                        value: vaultBalance?.underlyingBalance[0],
+                        decimals: 7,
+                      }),
+                    )
+                  : "-"}{" "}
                 {vaultInfo?.assets[0].symbol}
               </div>
             )}
