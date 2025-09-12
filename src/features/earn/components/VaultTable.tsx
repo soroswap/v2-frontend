@@ -287,19 +287,25 @@ export const VaultTable = () => {
                 </div>
                 <div className="flex min-h-[50px] items-center justify-between gap-2">
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-secondary text-md">Est APY</p>
-                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium">
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Est APY
+                    </p>
+                    <p className="text-primary flex h-full min-h-[30px] items-center justify-center text-sm font-medium">
                       {vault.apy.toFixed(2)} %
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-secondary text-md">Total Supplied</p>
-                    <div className="flex h-full items-center justify-center">
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Total Supplied
+                    </p>
+                    <div className="flex h-full min-h-[30px] items-center justify-center">
                       <TvlCell vault={vault} />
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-secondary text-md">Holdings</p>
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Holdings
+                    </p>
                     {!address ? (
                       <div className="text-primary mx-auto w-fit">
                         <TheButton
@@ -308,7 +314,7 @@ export const VaultTable = () => {
                             e.stopPropagation();
                             connectWallet();
                           }}
-                          className="h-8 w-20 p-3 text-xs font-medium text-white"
+                          className="h-8 min-h-[30px] w-20 p-3 text-xs font-medium text-white"
                         >
                           Connect
                         </TheButton>
