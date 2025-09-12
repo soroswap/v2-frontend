@@ -49,7 +49,6 @@ export const UserLiquidity = () => {
       header: "Pool",
       cell: ({ row }) => {
         const pool = row.original;
-        console.log("pool = ", pool);
 
         if (!pool.poolInformation.tokenA || !pool.poolInformation.tokenB) {
           return (

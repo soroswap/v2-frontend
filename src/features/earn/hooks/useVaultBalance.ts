@@ -36,7 +36,6 @@ interface VaultBalance {
   [key: string]: VaultBalanceResponse;
 }
 
-
 const fetchMultipleVaultBalances = async (
   vaultIds: string[],
   userAddress: string,
@@ -92,8 +91,6 @@ export const useVaultBalance = ({
       dedupingInterval: 300000, // 5 min
     },
   );
-
-  console.log("multipleVaultBalances", multipleVaultBalances);
 
   const revalidate = () => {
     if (vaultId && userAddress) {

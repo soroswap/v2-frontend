@@ -93,11 +93,6 @@ export const TokenSelectorModal = ({
   });
 
   const handleSelectToken = (token: AssetInfo | null) => {
-    console.log("handleSelectToken TokenSelector", {
-      token,
-      current,
-      opposite,
-    });
     if (!token) {
       return;
     }
@@ -120,14 +115,12 @@ export const TokenSelectorModal = ({
 
     // Handle custom asset found via search (only for new assets not yet added)
     const isCustomToken = userCustomAsset?.contract === token.contract;
-    console.log("isCustomToken", isCustomToken);
     const isInTokensList = tokensList.some(
       (t) => t.contract === token.contract,
     );
 
     // If it's a new custom asset (found via search) and not in any list, show confirmation modal
     if (isCustomToken && !isInTokensList && !isInUserTokens) {
-      console.log("opening custom asset modal");
       onOpenCustomAssetModal?.(token);
       return;
     }

@@ -46,9 +46,12 @@ export default function RemoveLiquidityPage() {
   const tokenBAddress = tokenAddresses?.[1];
 
   // Get user positions to find the specific pool
-  const { positions: userPositions, isLoading: positionsLoading, revalidate: revalidateUserPositions } =
-    useUserPoolPositions(userAddress);
-  
+  const {
+    positions: userPositions,
+    isLoading: positionsLoading,
+    revalidate: revalidateUserPositions,
+  } = useUserPoolPositions(userAddress);
+
   // Get pools data for revalidation
   const { revalidate: revalidatePools } = usePools();
 
@@ -69,7 +72,6 @@ export default function RemoveLiquidityPage() {
       initialTokenAAddress: tokenAAddress,
       initialTokenBAddress: tokenBAddress,
       onSuccess: (result: PoolResult) => {
-        console.log("Remove liquidity success", result);
         setRemoveLiquidityResult(result);
         setIsPoolModalOpen(true);
         // Revalidate pools and user positions after successful remove liquidity

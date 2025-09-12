@@ -76,7 +76,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
         const { address } = await kit.getAddress();
-        console.log("🚀 | connectWallet | address:", address);
         setAddress(address);
       },
     });
@@ -93,7 +92,6 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     xdr: string,
     userAddress: string,
   ): Promise<string> => {
-    console.log("🚀 | signTransaction | userAddress:", userAddress);
     if (!kit) throw new Error("Wallet kit not initialized");
 
     const { signedTxXdr } = await kit.signTransaction(xdr, {

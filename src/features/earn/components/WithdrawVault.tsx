@@ -40,10 +40,8 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   const handleWithdraw = async () => {
     if (!address) return;
-    console.log("Setting modal open to true");
     setIsOpenModal(true);
     try {
-      console.log("Executing withdraw...");
       await executeWithdraw({
         vaultId: vaultAddress,
         amount,
