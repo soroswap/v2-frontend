@@ -13,12 +13,12 @@ export const VAULT_MOCK: { vaultAddress: string; riskLevel: RiskLevel }[] = [
     vaultAddress: "CCKTLDG6I2MMJCKFWXXBXMA42LJ3XN2IOW6M7TK6EWNPJTS736ETFF2N", // EURC Soroswap Earn BLEND
     riskLevel: "low",
   },
-  // {
-  //   vaultAddress: "CBHB2G4TMSVWE4YFDTFYRYNCP5KUT6RQVWQGIM4LQO2IKKHVDB7N5JJQ", // CETES Soroswap Earn BLEND
-  //   riskLevel: "low",
-  // },
-  // {
-  //   vaultAddress: "CCV43DIK4TLUHFKNE3XL4QMNU6P7EGKMYNCDFRIB4HX4FTRM2IBDQEPS", // USTRY Soroswap Earn BLEND
-  //   riskLevel: "low",
-  // },
+  {
+    vaultAddress: "CC24OISYJHWXZIFZBRJHFLVO5CNN3PQSKZE5BBBZLSSI5Z23TKC6GQY2", // CETES Soroswap Earn BLEND
+    riskLevel: "low",
+  },
+  {
+    vaultAddress: "CDI7QVDTNDFEHB25VFQGMNFALGCXXKAWUSHOTQR2D4O44CATQJ5ZQMN6", // USTRY Soroswap Earn BLEND
+    riskLevel: "low",
+  },
 ];
