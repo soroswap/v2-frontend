@@ -101,7 +101,7 @@ export const VaultTable = () => {
               code={vault.assets[0].symbol}
             />
             <div className="flex flex-col">
-              <p className="text-primary font-medium">{vault.name}</p>
+              <p className="text-primary font-medium">{vault.name.slice(15)}</p>
               <p className="text-primary text-xs font-medium">{vault.symbol}</p>
             </div>
           </div>
@@ -113,7 +113,7 @@ export const VaultTable = () => {
       header: "Est APY",
       cell: ({ row }) => {
         const vault = row.original;
-        return <div className="text-primary">{vault.apy.toFixed(2)} %</div>;
+        return <div className="text-primary">{vault.apy ? `${vault.apy.toFixed(2)}`: "0"} %</div>;
       },
     },
     // {
@@ -291,7 +291,7 @@ export const VaultTable = () => {
                       Est APY
                     </p>
                     <p className="text-primary flex h-full min-h-[30px] items-center justify-center text-sm font-medium">
-                      {vault.apy.toFixed(2)} %
+                      {vault.apy ? `${vault.apy.toFixed(2)}`: "0"} %
                     </p>
                   </div>
                   <div className="flex flex-col items-center gap-1">

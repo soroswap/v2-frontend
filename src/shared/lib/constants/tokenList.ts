@@ -13,7 +13,7 @@ export const xlmTokenList = [
         contract: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA",
         name: "StellarLumens",
         code: "XLM",
-        icon: "https://assets.coingecko.com/coins/images/100/standard/Stellar_symbol_black_RGB.png",
+        icon: "/xlmlogo.png",
         decimals: 7,
       },
     ],

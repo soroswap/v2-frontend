@@ -2,15 +2,23 @@ import { RiskLevel } from "@/features/earn/types/RiskLevel";
 
 export const VAULT_MOCK: { vaultAddress: string; riskLevel: RiskLevel }[] = [
   {
-    vaultAddress: "CAIZ3NMNPEN5SQISJV7PD2YY6NI6DIPFA4PCRUBOGDE4I7A3DXDLK5OI",
+    vaultAddress: "CDONBLOOTYZ7QN62ZLJFHK7CT3JCP3JEZDCRSG3VLGAP73QAXS7HF6HU",
     riskLevel: "low",
   },
   {
-    vaultAddress: "CBNKCU3HGFKHFOF7JTGXQCNKE3G3DXS5RDBQUKQMIIECYKXPIOUGB2S3",
-    riskLevel: "medium",
+    vaultAddress: "CA2FIPJ7U6BG3N7EOZFI74XPJZOEOD4TYWXFVCIO5VDCHTVAGS6F4UKK",
+    riskLevel: "low",
   },
   {
-    vaultAddress: "CDRSZ4OGRVUU5ONTI6C6UNF5QFJ3OGGQCNTC5UXXTZQFVRTILJFSVG5D",
-    riskLevel: "high",
+    vaultAddress: "CCKTLDG6I2MMJCKFWXXBXMA42LJ3XN2IOW6M7TK6EWNPJTS736ETFF2N",
+    riskLevel: "low",
+  },
+  {
+    vaultAddress: "CBHB2G4TMSVWE4YFDTFYRYNCP5KUT6RQVWQGIM4LQO2IKKHVDB7N5JJQ",
+    riskLevel: "low",
+  },
+  {
+    vaultAddress: "CCV43DIK4TLUHFKNE3XL4QMNU6P7EGKMYNCDFRIB4HX4FTRM2IBDQEPS",
+    riskLevel: "low",
   },
 ];

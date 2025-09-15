@@ -204,7 +204,7 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
             </div>
           </div>
           <span className="text-secondary text-xs">
-            APY {vaultInfo.apy.toFixed(2)}%
+            APY {vaultInfo.apy ? `${vaultInfo.apy.toFixed(2)}`: "0"} %
           </span>
         </div>
 

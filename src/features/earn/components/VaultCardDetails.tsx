@@ -118,7 +118,7 @@ export const VaultCardDetails = ({
           size={64}
         />
         <div>
-          <h3 className="text-primary text-2xl font-bold">{vaultInfo.name}</h3>
+          <h3 className="text-primary text-2xl font-bold">{vaultInfo.name.slice(15)}</h3>
         </div>
       </div>
 
@@ -131,7 +131,7 @@ export const VaultCardDetails = ({
           </p>
           <div className="flex h-full items-center">
             <p className="text-primary text-lg font-semibold">
-              {vaultInfo.apy.toFixed(2)}%
+              {vaultInfo.apy ? `${vaultInfo.apy.toFixed(2)}`: "0"} %
             </p>
           </div>
         </div>
