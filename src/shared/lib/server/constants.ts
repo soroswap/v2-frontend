@@ -4,4 +4,5 @@ export const ALLOWED_ORIGINS = [
   "http://localhost:3001",
   "paltalabs.vercel.app",
   "v2.soroswap.finance",
+  "app.soroswap.finance",
 ];

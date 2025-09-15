@@ -51,7 +51,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
               url:
                 typeof window !== "undefined"
                   ? window.location.origin
-                  : "https://v2.soroswap.finance",
+                  : "https://app.soroswap.finance",
               projectId: "4ee1d28f1fe3c70aa8ebc4677e623e1d",
               method: WalletConnectAllowedMethods.SIGN,
               description: `Soroswap`,
