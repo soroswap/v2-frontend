@@ -198,9 +198,9 @@ export function useSwap(options?: UseSwapOptions) {
         body: JSON.stringify(signedXdr),
       });
 
-      // if (!response.ok) {
-      //   throw new Error(`Failed to send transaction: ${response.status}`);
-      // }
+      if (!response.ok) {
+        throw new Error(`Failed to send transaction`);
+      }
 
       return await response.json();
     },

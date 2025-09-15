@@ -13,6 +13,7 @@ import { EarnVaultModal } from "./EarnVaultModal";
 import { formatUnits } from "@/shared/lib/utils";
 
 export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
+  const [isMaxWithdrawal, setIsMaxWithdrawal] = useState(false);
   const [amount, setAmount] = useState("0");
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
   const { address } = useUserContext();
@@ -28,7 +29,13 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
     userAddress: address,
   });
 
-  const { currentStep, executeWithdraw, reset, modalData } = useEarnVault({
+  const {
+    currentStep,
+    executeWithdraw,
+    executeWithdrawShares,
+    reset,
+    modalData,
+  } = useEarnVault({
     onSuccess: () => {
       revalidate(); // Revalidate vault balance after successful withdraw
     },
@@ -40,16 +47,36 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
   const handleWithdraw = async () => {
     if (!address) return;
-    console.log("Setting modal open to true");
     setIsOpenModal(true);
     try {
-      console.log("Executing withdraw...");
-      await executeWithdraw({
-        vaultId: vaultAddress,
-        amount,
-        userAddress: address,
-        slippageBps: 100,
-      });
+      if (
+        (isMaxWithdrawal && vaultBalance?.dfTokens) ||
+        (vaultBalance &&
+          amount ===
+            formatUnits({
+              value: vaultBalance.underlyingBalance[0],
+              decimals: 7,
+            }))
+      ) {
+        const dfTokensFormatted = formatUnits({
+          value: vaultBalance.dfTokens,
+          decimals: 7,
+        });
+
+        await executeWithdrawShares({
+          vaultId: vaultAddress,
+          shares: dfTokensFormatted,
+          userAddress: address,
+          slippageBps: 100,
+        });
+      } else {
+        await executeWithdraw({
+          vaultId: vaultAddress,
+          amount,
+          userAddress: address,
+          slippageBps: 100,
+        });
+      }
     } catch (error) {
       console.log("Withdraw error caught:", error);
       // Keep modal open to show error - error handling is done in useEarnVault hook
@@ -113,6 +140,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
             token={vaultInfo?.assets[0]}
             amount={amount}
             setAmount={(v) => {
+              setIsMaxWithdrawal(false);
               const value = v ?? "0";
               // Limit to 7 total digits (excluding decimal point)
               const digitCount = value.replace(/[^\d]/g, "").length;
@@ -127,11 +155,12 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
 
           <div className="flex items-center gap-2">
             <p id="amount-value" className="text-secondary text-xs">
-              ${parseFloat(amount) * 1 || "0.00"} |
+              ${parseFloat(amount) * 1 || "0.00"}
             </p>
             {vaultBalance?.underlyingBalance[0] &&
               vaultBalance?.underlyingBalance[0] > 0 && (
                 <>
+                  <p>| </p>
                   <p className="text-secondary text-xs">
                     Available balance:{" "}
                     {vaultBalance?.underlyingBalance[0] &&
@@ -146,6 +175,7 @@ export const WithdrawVault = ({ vaultAddress }: { vaultAddress: string }) => {
                   <button
                     className="text-brand cursor-pointer rounded-lg text-sm font-medium transition-colors"
                     onClick={() => {
+                      setIsMaxWithdrawal(true);
                       const maxValue =
                         formatUnits({
                           value: vaultBalance?.underlyingBalance[0],

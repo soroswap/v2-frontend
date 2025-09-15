@@ -17,7 +17,7 @@ export const VaultCard = () => {
 
       <div className="flex flex-col gap-2">
         <h2 className="text-primary flex text-xl font-bold">
-          Powered by Defindex
+          Learn more - Defindex
         </h2>
         <p className="text-secondary text-sm">
           Take control of your finances by creating your own Vault
@@ -27,7 +27,7 @@ export const VaultCard = () => {
           className="w-full items-center gap-4 text-white"
           onClick={() => {
             window.open(
-              "https://app.defindex.io",
+              "https://defindex.io/",
               "_blank",
               "noopener,noreferrer",
             );

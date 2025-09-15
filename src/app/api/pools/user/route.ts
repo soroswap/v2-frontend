@@ -47,8 +47,6 @@ export async function GET(request: NextRequest) {
       SOROSWAP.NETWORK,
     );
 
-    console.log("userPoolsPositions", userPoolsPositions);
-
     return NextResponse.json({
       code: "USER_POOLS_POSITIONS_SUCCESS",
       data: userPoolsPositions,

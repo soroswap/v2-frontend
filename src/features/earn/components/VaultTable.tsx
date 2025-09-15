@@ -215,7 +215,6 @@ export const VaultTable = () => {
             <TheTable
               columns={columns}
               data={vaultTableData}
-              // isLoading={isLoading}
               emptyLabel="No vaults available"
               className="w-full"
               onRowClick={(vault) => {
@@ -267,8 +266,7 @@ export const VaultTable = () => {
             return (
               <Link
                 key={vault.vaultAddress}
-                className="bg-surface border-surface-alt hover:bg-surface-alt/50 flex cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-colors"
-                // onClick={() => router.push(`/earn/${vault.vaultAddress}`)}
+                className="bg-surface border-surface-alt hover:bg-surface-alt/50 flex min-h-[84px] cursor-pointer flex-col gap-2 rounded-xl border p-4 transition-colors"
                 href={`/earn/${vault.vaultAddress}`}
               >
                 {/* Header with icon and title */}
@@ -279,7 +277,7 @@ export const VaultTable = () => {
                     code={vault.assets[0].symbol}
                   />
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-primary flex font-medium">
+                    <p className="text-primary flex text-center font-medium">
                       {vault.name}
                     </p>
                     <p className="text-primary flex text-xs font-medium">
@@ -287,63 +285,53 @@ export const VaultTable = () => {
                     </p>
                   </div>
                 </div>
-
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-3 gap-4">
-                  {/* Est APY */}
-                  <div className="flex flex-col text-center">
-                    <p className="text-secondary text-md">Est APY</p>
-                    <p className="text-primary flex h-full items-center justify-center text-sm font-medium">
+                <div className="flex min-h-[50px] items-center justify-between gap-2">
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Est APY
+                    </p>
+                    <p className="text-primary flex h-full min-h-[30px] items-center justify-center text-sm font-medium">
                       {vault.apy.toFixed(2)} %
                     </p>
                   </div>
-
-                  {/* Risk Level */}
-                  {/* <div className="flex flex-col text-center">
-                    <p className="text-secondary text-md">Risk Level</p>
-                    <div className="flex h-full items-center justify-center">
-                      <ProgressBar level={vault.riskLevel} />
-                    </div>
-                  </div> */}
-
-                  {/* TVL */}
-                  <div className="flex flex-col text-center">
-                    <p className="text-secondary text-md">Total Supplied</p>
-                    <div className="flex h-full items-center justify-center">
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Total Supplied
+                    </p>
+                    <div className="flex h-full min-h-[30px] items-center justify-center">
                       <TvlCell vault={vault} />
                     </div>
                   </div>
-                  {/* Holdings Row */}
-                  <div className="border-surface-alt border-t">
-                    <div className="flex flex-col gap-3 text-center">
-                      <p className="text-secondary text-md">Holdings</p>
-                      {!address ? (
-                        <div className="text-primary mx-auto w-fit">
-                          <TheButton
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              connectWallet();
-                            }}
-                            className="h-8 w-20 p-3 text-xs font-medium text-white"
-                          >
-                            Connect
-                          </TheButton>
-                        </div>
-                      ) : (
-                        <p className="text-primary text-sm">
-                          {Number(
-                            formatUnits({
-                              value:
-                                vaultBalances?.[vault.vaultAddress]?.dfTokens ||
-                                0,
-                              decimals: 7,
-                            }),
-                          ).toFixed(2)}{" "}
-                          {vault.assets[0].symbol}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <p className="text-secondary text-md flex min-h-[30px] items-center text-center">
+                      Holdings
+                    </p>
+                    {!address ? (
+                      <div className="text-primary mx-auto w-fit">
+                        <TheButton
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            connectWallet();
+                          }}
+                          className="h-8 min-h-[30px] w-20 p-3 text-xs font-medium text-white"
+                        >
+                          Connect
+                        </TheButton>
+                      </div>
+                    ) : (
+                      <p className="text-primary text-sm">
+                        {Number(
+                          formatUnits({
+                            value:
+                              vaultBalances?.[vault.vaultAddress]?.dfTokens ||
+                              0,
+                            decimals: 7,
+                          }),
+                        ).toFixed(2)}{" "}
+                        {vault.assets[0].symbol}
+                      </p>
+                    )}
                   </div>
                 </div>
               </Link>

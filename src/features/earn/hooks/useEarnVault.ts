@@ -49,12 +49,22 @@ export type EarnVaultModalState = {
 export interface UseEarnVaultOptions {
   onSuccess?: (result: EarnVaultResult) => void;
   onError?: (error: EarnVaultError) => void;
-  onStepChange?: <T extends EarnVaultStep>(step: T, data?: EarnVaultModalState) => void;
+  onStepChange?: <T extends EarnVaultStep>(
+    step: T,
+    data?: EarnVaultModalState,
+  ) => void;
 }
 
 interface ExecuteParamsBase {
   vaultId: string;
   amount: string; // decimal string
+  userAddress: string;
+  slippageBps: number;
+}
+
+interface ExecuteSharesParams {
+  vaultId: string;
+  shares: string; // shares amount as decimal string
   userAddress: string;
   slippageBps: number;
 }
@@ -105,12 +115,12 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
       },
       body: JSON.stringify(signedXdr),
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Transaction failed: ${response.status} - ${errorText}`);
     }
-    
+
     return await response.json();
   }, []);
 
@@ -142,13 +152,17 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
           },
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
           // Handle API errors before they reach the modal
-          handleError(EarnVaultStep.DEPOSITING, data.message || `Deposit failed: ${res.status}`, data);
+          handleError(
+            EarnVaultStep.DEPOSITING,
+            data.message || `Deposit failed: ${res.status}`,
+            data,
+          );
           throw new Error(data.message || `Deposit failed: ${res.status}`);
         }
-        
+
         const xdr: string | undefined = data?.xdr;
         if (!xdr) {
           throw new Error("Missing XDR from deposit response");
@@ -232,13 +246,17 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
           },
         });
         const data = await res.json();
-        
+
         if (!res.ok) {
           // Handle API errors before they reach the modal
-          handleError(EarnVaultStep.WITHDRAWING, data.message || `Withdraw failed: ${res.status}`, data);
+          handleError(
+            EarnVaultStep.WITHDRAWING,
+            data.message || `Withdraw failed: ${res.status}`,
+            data,
+          );
           throw new Error(data.message || `Withdraw failed: ${res.status}`);
         }
-        
+
         const xdr: string | undefined = data?.xdr;
         if (!xdr) {
           throw new Error("Missing XDR from withdraw response");
@@ -294,6 +312,102 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
     ],
   );
 
+  const executeWithdrawShares = useCallback(
+    async (params: ExecuteSharesParams) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        setTransactionHash(undefined);
+
+        updateStep(EarnVaultStep.WITHDRAWING, {
+          currentStep: EarnVaultStep.WITHDRAWING,
+          data: { operation: "withdraw", vaultId: params.vaultId },
+        });
+
+        const sharesSmallest = parseUnits({
+          value: params.shares,
+          decimals: 7,
+        }).toString();
+        const res = await fetch("/api/earn/withdraw/share", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            amount: sharesSmallest,
+            caller: params.userAddress,
+            slippageBps: String(params.slippageBps),
+            vaultId: params.vaultId,
+            network: network,
+          },
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          // Handle API errors before they reach the modal
+          handleError(
+            EarnVaultStep.WITHDRAWING,
+            data.message || `Withdraw shares failed: ${res.status}`,
+            data,
+          );
+          throw new Error(
+            data.message || `Withdraw shares failed: ${res.status}`,
+          );
+        }
+
+        const xdr: string | undefined = data?.xdr;
+        if (!xdr) {
+          throw new Error("Missing XDR from withdraw shares response");
+        }
+
+        updateStep(EarnVaultStep.WAITING_SIGNATURE, {
+          currentStep: EarnVaultStep.WAITING_SIGNATURE,
+          data: { xdr },
+        });
+        const signedXdr = await signTransaction(xdr, params.userAddress);
+
+        updateStep(EarnVaultStep.SENDING_TRANSACTION, {
+          currentStep: EarnVaultStep.SENDING_TRANSACTION,
+          data: { signedXdr },
+        });
+        const sendResult = await sendTransaction(signedXdr);
+
+        const txHash =
+          sendResult?.data?.txHash ||
+          sendResult?.data?.hash ||
+          sendResult?.txHash ||
+          sendResult?.hash;
+
+        const result: EarnVaultResult = {
+          txHash,
+          hash: txHash,
+          success: true,
+        };
+
+        setTransactionHash(txHash);
+        updateStep(EarnVaultStep.SUCCESS, {
+          currentStep: EarnVaultStep.SUCCESS,
+          data: result,
+        });
+        setIsLoading(false);
+
+        // Revalidate vault balance after successful withdraw
+        await mutate(["vault-balance", params.vaultId, params.userAddress]);
+
+        options?.onSuccess?.(result);
+      } catch (e: any) {
+        handleError(currentStep, e?.message || "Withdraw shares failed", e);
+        throw e;
+      }
+    },
+    [
+      currentStep,
+      handleError,
+      sendTransaction,
+      signTransaction,
+      updateStep,
+      options,
+    ],
+  );
+
   const reset = useCallback(() => {
     setCurrentStep(EarnVaultStep.IDLE);
     setIsLoading(false);
@@ -309,6 +423,7 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
     modalData,
     executeDeposit,
     executeWithdraw,
+    executeWithdrawShares,
     reset,
   } as const;
 }
