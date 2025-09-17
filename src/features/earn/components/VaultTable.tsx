@@ -180,7 +180,7 @@ export const VaultTable = () => {
   ];
 
   return (
-    <div className="max-h-96 overflow-y-auto">
+    <div className="overflow-y-auto">
       {/* Desktop Table */}
       <div className="hidden md:block">
         <div className="[&_tbody_tr]:!h-[84px] [&_tbody_tr]:!min-h-[84px] [&_tbody_tr_td]:!h-[84px]">
