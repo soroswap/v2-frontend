@@ -2,7 +2,7 @@ import { RiskLevel } from "@/features/earn/types/RiskLevel";
 
 export const VAULT_MOCK: { vaultAddress: string; riskLevel: RiskLevel }[] = [
   {
-    vaultAddress: "CDONBLOOTYZ7QN62ZLJFHK7CT3JCP3JEZDCRSG3VLGAP73QAXS7HF6HU", // XLM-BORING
+    vaultAddress: "CC24OISYJHWXZIFZBRJHFLVO5CNN3PQSKZE5BBBZLSSI5Z23TKC6GQY2", // CETES Soroswap Earn BLEND
     riskLevel: "low",
   },
   {
@@ -14,7 +14,7 @@ export const VAULT_MOCK: { vaultAddress: string; riskLevel: RiskLevel }[] = [
     riskLevel: "low",
   },
   {
-    vaultAddress: "CC24OISYJHWXZIFZBRJHFLVO5CNN3PQSKZE5BBBZLSSI5Z23TKC6GQY2", // CETES Soroswap Earn BLEND
+    vaultAddress: "CDONBLOOTYZ7QN62ZLJFHK7CT3JCP3JEZDCRSG3VLGAP73QAXS7HF6HU", // XLM-BORING
     riskLevel: "low",
   },
   {
