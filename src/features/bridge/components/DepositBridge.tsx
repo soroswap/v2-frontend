@@ -14,10 +14,14 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
-import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
+import { UseUSDCTrustlineReturn } from "../types";
 import ChainsStacked from "./ChainsStacked";
 
-export const DepositBridge = () => {
+interface DepositBridgeProps {
+  trustlineData: UseUSDCTrustlineReturn;
+}
+
+export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const { address: userAddress } = useUserContext();
   const [selectedAmount, setSelectedAmount] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<string>("");
@@ -30,7 +34,7 @@ export const DepositBridge = () => {
     checkAccountAndTrustline,
     createTrustline,
     isCreating,
-  } = useUSDCTrustline();
+  } = trustlineData;
 
   const isConnected = !!userAddress;
 
