@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/shared/lib/utils/cn";
-import { ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { BridgeMode } from "../types";
 
 interface BridgeToggleProps {

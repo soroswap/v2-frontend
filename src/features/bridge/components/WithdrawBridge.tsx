@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useUserContext } from "@/contexts";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
-import { Lock, Clock, WalletIcon, Fuel } from "lucide-react";
+import { Clock, WalletIcon, Fuel } from "lucide-react";
 import { getAddress, isAddress } from "viem";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
@@ -110,7 +110,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
 
       setEvmAddressError("");
       return true;
-    } catch (error) {
+    } catch {
       setEvmAddressError("Invalid Base network address format");
       return false;
     }

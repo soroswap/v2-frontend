@@ -1,6 +1,5 @@
 "use client";
 
-import { HelpCircleIcon } from "lucide-react";
 import { useState } from "react";
 
 export function ContactSupport() {

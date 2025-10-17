@@ -1,15 +1,10 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import Image from "next/image";
 import { SupportedBy } from "./SupportedBy";
 import { ContactSupport } from "./ContactSupport";
 
 export const BridgeFooter = () => {
-  const { theme } = useTheme();
-
-  const isDark = theme === "dark";
-
   return (
     <div className="mt-12 flex w-full max-w-md flex-col items-center gap-6 text-center">
       {/* Powered By */}

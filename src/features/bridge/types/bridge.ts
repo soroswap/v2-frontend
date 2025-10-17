@@ -5,11 +5,6 @@ export interface BridgeAmount {
   value: string;
 }
 
-export interface BridgeSettings {
-  // Future bridge-specific settings can be added here
-  // e.g., destination chain, bridge provider, etc.
-}
-
 export interface TrustlineStatus {
   exists: boolean;
   balance: string;

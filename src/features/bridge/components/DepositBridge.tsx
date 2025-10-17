@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useUserContext } from "@/contexts";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import {
-  Lock,
   Clock,
   WalletIcon,
   Fuel,
@@ -53,14 +52,6 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
     // Check for amount warning when custom amount changes
     const amount = parseFloat(value);
     setShowAmountWarning(amount > 1000);
-  };
-
-  // Get current deposit amount
-  const getCurrentAmount = () => {
-    if (selectedAmount === "custom") {
-      return parseFloat(customAmount) || 0;
-    }
-    return parseFloat(selectedAmount) || 0;
   };
 
   // Check if amount exceeds $1000 limit

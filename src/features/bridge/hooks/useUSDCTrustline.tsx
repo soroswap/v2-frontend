@@ -146,7 +146,7 @@ export function useUSDCTrustline(): UseUSDCTrustlineReturn {
       } else {
         throw new Error("Transaction failed");
       }
-    } catch (error) {
+    } catch {
       throw new Error("Failed to create trustline");
     } finally {
       setIsCreating(false);
