@@ -1,27 +1,30 @@
 "use client";
 
 import { useUserContext } from "@/contexts/UserContext";
-import { envVars } from "@/shared/lib/environmentVars";
+import { envVars, STELLAR } from "@/shared/lib/environmentVars";
 import {
   Asset,
-  BASE_FEE,
   Horizon,
   Operation,
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
 import { useCallback, useEffect, useState } from "react";
-import { USDC_ASSET } from "../constants/bridge";
+import { USDC_ASSET_MAINNET, USDC_ASSET_TESTNET } from "../constants/bridge";
 import {
   AccountStatus,
   TrustlineStatus,
   UseUSDCTrustlineReturn,
 } from "../types/bridge";
 import { fetchAccountAndTrustlineData } from "../utils/bridge";
+import { WalletNetwork } from "@creit.tech/stellar-wallets-kit";
 
 /**
  * Hook for managing USDC trustline operations
+ * @param autoCheck - Whether to automatically check account/trustline when wallet connects (default: true)
  */
-export function useUSDCTrustline(): UseUSDCTrustlineReturn {
+export function useUSDCTrustline(
+  autoCheck: boolean = true,
+): UseUSDCTrustlineReturn {
   const {
     address: stellarAddress,
     kit,
@@ -116,17 +119,24 @@ export function useUSDCTrustline(): UseUSDCTrustlineReturn {
     try {
       const server = new Horizon.Server("https://horizon.stellar.org");
 
+      const usdcAsset =
+        STELLAR.WALLET_NETWORK === WalletNetwork.PUBLIC
+          ? USDC_ASSET_MAINNET
+          : USDC_ASSET_TESTNET;
+
       // Refresh account info to get latest sequence number
       const freshAccount = await server.loadAccount(stellarAddress);
 
+      const baseFee = await server.fetchBaseFee();
+
       // Build transaction with fresh account data
       const transactionBuilder = new TransactionBuilder(freshAccount, {
-        fee: BASE_FEE,
+        fee: String(baseFee),
         networkPassphrase: envVars.STELLAR.WALLET_NETWORK,
       })
         .addOperation(
           Operation.changeTrust({
-            asset: new Asset(USDC_ASSET.code, USDC_ASSET.issuer),
+            asset: new Asset(usdcAsset.code, usdcAsset.issuer),
           }),
         )
         .setTimeout(300)
@@ -139,6 +149,7 @@ export function useUSDCTrustline(): UseUSDCTrustlineReturn {
 
       // Send transaction
       const result = await sendTransaction(signedXdr);
+      console.log("result = ", result);
 
       if (result.data?.status === "success" || result.data?.successful) {
         // Refresh account and trustline status after successful creation
@@ -153,17 +164,17 @@ export function useUSDCTrustline(): UseUSDCTrustlineReturn {
     }
   }, [kit, stellarAddress]);
 
-  // Auto-check account and trustline when wallet connects
+  // Auto-check account and trustline when wallet connects (only if autoCheck is enabled)
   useEffect(() => {
-    if (stellarAddress) {
+    if (stellarAddress && autoCheck) {
       checkAccountAndTrustline();
-    } else {
+    } else if (!stellarAddress) {
       // Reset status when disconnected - show disconnected state, not loading
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
       setAccountStatus({ exists: false, xlmBalance: "0", checking: false });
       setHasCheckedOnce(false);
     }
-  }, [stellarAddress, checkAccountAndTrustline]);
+  }, [stellarAddress, checkAccountAndTrustline, autoCheck]);
 
   return {
     trustlineStatus,

@@ -1,6 +1,8 @@
 import { Horizon } from "@stellar/stellar-sdk";
-import { USDC_ASSET } from "../constants/bridge";
+import { USDC_ASSET_MAINNET, USDC_ASSET_TESTNET } from "../constants/bridge";
 import { AccountAndTrustlineData } from "../types/bridge";
+import { STELLAR } from "@/shared/lib/environmentVars";
+import { WalletNetwork } from "@creit.tech/stellar-wallets-kit";
 
 /**
  * Combined utility function to check account status, XLM balance, and USDC trustline in one request
@@ -18,14 +20,19 @@ export async function fetchAccountAndTrustlineData(
       (balance) => balance.asset_type === "native",
     );
 
+    const usdcAsset =
+      STELLAR.WALLET_NETWORK === WalletNetwork.PUBLIC
+        ? USDC_ASSET_MAINNET
+        : USDC_ASSET_TESTNET;
+
     // Look for USDC trustline in account balances
     const usdcBalance = accountData.balances.find(
       (balance) =>
         balance.asset_type !== "native" &&
         "asset_code" in balance &&
         "asset_issuer" in balance &&
-        balance.asset_code === USDC_ASSET.code &&
-        balance.asset_issuer === USDC_ASSET.issuer,
+        balance.asset_code === usdcAsset.code &&
+        balance.asset_issuer === usdcAsset.issuer,
     );
 
     return {

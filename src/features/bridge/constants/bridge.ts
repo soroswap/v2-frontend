@@ -1,13 +1,21 @@
 import { BridgeAmount } from "../types/bridge";
 
-export const USDC_ASSET_CODE = "USDC";
-export const USDC_ASSET_ISSUER =
-  "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN";
-
 // USDC Asset configuration
-export const USDC_ASSET = {
-  code: USDC_ASSET_CODE,
-  issuer: USDC_ASSET_ISSUER,
+export const USDC_ASSET_MAINNET = {
+  code: "USDC",
+  issuer: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+};
+
+export const USDC_ASSET_TESTNET = {
+  code: "USDC",
+  issuer: "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5",
+};
+
+// Base Bridge Configuration
+export const BASE_CONFIG = {
+  chainId: "8453",
+  tokenSymbol: "USDC",
+  tokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
 };
 
 export const PREDEFINED_AMOUNTS: BridgeAmount[] = [

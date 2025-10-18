@@ -15,6 +15,7 @@ import {
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
 import ChainsStacked from "./ChainsStacked";
+import { useBridgeState } from "../hooks/useBridgeState";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -29,11 +30,12 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const {
     trustlineStatus,
     accountStatus,
-    hasCheckedOnce,
     checkAccountAndTrustline,
     createTrustline,
     isCreating,
   } = trustlineData;
+
+  const { bridgeStateType, bridgeStateMessage } = useBridgeState(trustlineData);
 
   const isConnected = !!userAddress;
 
@@ -59,60 +61,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
     setShowAmountWarning(amount > 1000);
   };
 
-  // Determine the current state and what action is needed
-  const getBridgeState = () => {
-    if (!isConnected) {
-      return {
-        type: "disconnected",
-        message: "Connect your wallet to start bridging",
-      };
-    }
-
-    // Show loading state if either status is being checked
-    if (accountStatus.checking || trustlineStatus.checking) {
-      return { type: "loading", message: "Checking account status..." };
-    }
-
-    // Only show warnings after we've checked the account at least once
-    if (!hasCheckedOnce) {
-      return { type: "loading", message: "Checking account status..." };
-    }
-
-    // Account doesn't exist - user needs XLM to create account
-    if (!accountStatus.exists) {
-      return {
-        type: "account_creation_needed",
-        message:
-          "Your Stellar account doesn't exist yet. You need XLM to create it first.",
-      };
-    }
-
-    // Account exists but no XLM - user needs XLM
-    const xlmBalance = parseFloat(accountStatus.xlmBalance);
-    if (xlmBalance < 1.5) {
-      return {
-        type: "insufficient_xlm",
-        message: `You need at least 1.5 XLM to create a USDC trustline. Current balance: ${xlmBalance.toFixed(2)} XLM`,
-      };
-    }
-
-    // Has XLM but no USDC trustline - can create trustline
-    if (!trustlineStatus.exists) {
-      return {
-        type: "trustline_needed",
-        message: "Create a USDC trustline to start bridging",
-      };
-    }
-
-    // Everything is ready for deposit
-    return { type: "ready", message: "Ready to deposit" };
-  };
-
-  const bridgeState = getBridgeState();
-
   const getActionButtonDisabled = () => {
     if (!isConnected) return true;
-    if (bridgeState.type !== "ready") return true;
+    if (bridgeStateType !== "ready") return true;
     if (selectedAmount === "custom") {
       return !customAmount || parseFloat(customAmount) <= 0;
     }
@@ -138,16 +89,16 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
       {isConnected ? (
         <>
           {/* Status Messages */}
-          {bridgeState.type === "loading" && (
+          {bridgeStateType === "loading" && (
             <div className="flex items-center justify-center gap-2 py-4">
               <div className="border-brand h-4 w-4 animate-spin rounded-full border-b-2"></div>
               <span className="text-secondary text-sm">
-                {bridgeState.message}
+                {bridgeStateMessage}
               </span>
             </div>
           )}
 
-          {bridgeState.type === "account_creation_needed" && (
+          {bridgeStateType === "account_creation_needed" && (
             <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
               <AlertTriangle className="size-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
               <div className="flex-1">
@@ -155,7 +106,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                   Account Creation Required
                 </p>
                 <p className="text-xs text-orange-700 dark:text-orange-300">
-                  {bridgeState.message}
+                  {bridgeStateMessage}
                 </p>
               </div>
               <button
@@ -176,7 +127,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
             </div>
           )}
 
-          {bridgeState.type === "insufficient_xlm" && (
+          {bridgeStateType === "insufficient_xlm" && (
             <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
               <AlertTriangle className="size-5 flex-shrink-0 text-orange-600 dark:text-orange-400" />
               <div className="flex-1">
@@ -184,7 +135,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                   Insufficient XLM Balance
                 </p>
                 <p className="text-xs text-orange-700 dark:text-orange-300">
-                  {bridgeState.message}
+                  {bridgeStateMessage}
                 </p>
               </div>
               <button
@@ -205,7 +156,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
             </div>
           )}
 
-          {bridgeState.type === "trustline_needed" && (
+          {bridgeStateType === "trustline_needed" && (
             <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
               <CheckCircle className="size-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
               <div className="flex-1">
@@ -213,14 +164,14 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                   Ready to Create USDC Trustline
                 </p>
                 <p className="text-xs text-blue-700 dark:text-blue-300">
-                  {bridgeState.message}
+                  {bridgeStateMessage}
                 </p>
               </div>
             </div>
           )}
 
           {/* Amount Selection - Only show when ready */}
-          {bridgeState.type === "ready" && (
+          {bridgeStateType === "ready" && (
             <div className="flex flex-col gap-3">
               <label className="text-primary text-sm font-medium">
                 Choose an amount
@@ -273,7 +224,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeState.type === "ready" && (
+          {bridgeStateType === "ready" && (
             <div className="flex items-center justify-center gap-2 text-sm">
               <div className="flex items-center gap-1">
                 <Fuel size={14} className="text-secondary" />
@@ -287,11 +238,15 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
           )}
 
           {/* Action Button */}
-          {bridgeState.type === "trustline_needed" ? (
-            <TheButton disabled={isCreating} onClick={createTrustline}>
+          {bridgeStateType === "trustline_needed" ? (
+            <TheButton
+              disabled={isCreating}
+              onClick={createTrustline}
+              className="bg-brand hover:bg-brand/80 disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center gap-2 rounded-2xl p-4 text-[16px] font-bold text-white disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
+            >
               {isCreating ? "Adding USDC Trustline..." : "Add USDC Trustline"}
             </TheButton>
-          ) : bridgeState.type === "ready" ? (
+          ) : bridgeStateType === "ready" ? (
             <TheButton
               disabled={getActionButtonDisabled()}
               onClick={() => {
