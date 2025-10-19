@@ -15,7 +15,10 @@ import {
   TrustlineStatus,
   UseUSDCTrustlineReturn,
 } from "../types/bridge";
-import { fetchAccountAndTrustlineData } from "../utils/bridge";
+import {
+  fetchAccountAndTrustlineData,
+  fetchUSDCBalance,
+} from "../utils/bridge";
 import { WalletNetwork } from "@creit.tech/stellar-wallets-kit";
 
 /**
@@ -87,6 +90,21 @@ export function useUSDCTrustline(
         checking: false,
       });
       setHasCheckedOnce(true);
+    }
+  }, [stellarAddress]);
+
+  // Refresh only the USDC balance without checking account status
+  const refreshBalance = useCallback(async () => {
+    if (!stellarAddress) return;
+
+    try {
+      const balance = await fetchUSDCBalance(stellarAddress);
+      setTrustlineStatus((prev) => ({
+        ...prev,
+        balance,
+      }));
+    } catch (error) {
+      console.error("Failed to refresh balance:", error);
     }
   }, [stellarAddress]);
 
@@ -162,7 +180,7 @@ export function useUSDCTrustline(
     } finally {
       setIsCreating(false);
     }
-  }, [kit, stellarAddress]);
+  }, [kit, stellarAddress]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-check account and trustline when wallet connects (only if autoCheck is enabled)
   useEffect(() => {
@@ -174,13 +192,14 @@ export function useUSDCTrustline(
       setAccountStatus({ exists: false, xlmBalance: "0", checking: false });
       setHasCheckedOnce(false);
     }
-  }, [stellarAddress, checkAccountAndTrustline, autoCheck]);
+  }, [stellarAddress, autoCheck]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     trustlineStatus,
     accountStatus,
     hasCheckedOnce,
     checkAccountAndTrustline,
+    refreshBalance,
     createTrustline,
     isCreating,
   };

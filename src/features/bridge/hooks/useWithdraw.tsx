@@ -44,7 +44,6 @@ type RozoPaymentResponse = {
 
 export function useWithdraw() {
   const { address, signTransaction } = useUserContext();
-  const server = new Horizon.Server("https://horizon.stellar.org");
 
   const [state, setState] = useState<WithdrawState>({
     isLoading: false,
@@ -52,15 +51,6 @@ export function useWithdraw() {
     error: null,
     result: null,
   });
-
-  const resetState = useCallback(() => {
-    setState({
-      isLoading: false,
-      step: "idle",
-      error: null,
-      result: null,
-    });
-  }, []);
 
   const withdraw = useCallback(
     async (params: WithdrawParams): Promise<WithdrawResult> => {
@@ -136,6 +126,9 @@ export function useWithdraw() {
         // Step 2: Sign transaction
         setState((prev) => ({ ...prev, step: "signing-transaction" }));
 
+        // Create server instance inside the callback
+        const server = new Horizon.Server("https://horizon.stellar.org");
+
         const xdr = await StellarPay({
           server,
           publicKey: address,
@@ -202,7 +195,7 @@ export function useWithdraw() {
         throw error;
       }
     },
-    [address, signTransaction, server],
+    [address], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   return {
@@ -214,6 +207,5 @@ export function useWithdraw() {
 
     // Actions
     withdraw,
-    reset: resetState,
   };
 }

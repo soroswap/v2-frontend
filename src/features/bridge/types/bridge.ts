@@ -29,6 +29,7 @@ export interface UseUSDCTrustlineReturn {
   accountStatus: AccountStatus;
   hasCheckedOnce: boolean;
   checkAccountAndTrustline: () => Promise<void>;
+  refreshBalance: () => Promise<void>;
   createTrustline: () => Promise<void>;
   isCreating: boolean;
 }

@@ -5,7 +5,6 @@ import { useUserContext } from "@/contexts";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import {
-  Clock,
   WalletIcon,
   Fuel,
   Loader2,
@@ -13,13 +12,16 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
+  ChevronDown,
 } from "lucide-react";
 import { getAddress, isAddress } from "viem";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
 import { Base } from "./icons/chains";
+import { BalanceDisplay } from "./BalanceDisplay";
 import { useWithdraw, WithdrawResult } from "../hooks/useWithdraw";
 import { useBridgeState } from "../hooks/useBridgeState";
+import Image from "next/image";
 
 interface WithdrawBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -38,11 +40,13 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
   const [withdrawResult, setWithdrawResult] = useState<WithdrawResult | null>(
     null,
   );
+  const [showGasFreeInfo, setShowGasFreeInfo] = useState(false);
 
   const {
     trustlineStatus,
     accountStatus,
     checkAccountAndTrustline,
+    refreshBalance,
     createTrustline,
     isCreating,
   } = trustlineData;
@@ -51,6 +55,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
 
   const isConnected = !!userAddress;
   const availableBalance = parseFloat(trustlineStatus.balance) || 0;
+  const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
   const stepToLabel = useMemo(() => {
     switch (step) {
@@ -185,11 +190,6 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
     validateEvmAddress(value);
   };
 
-  // Handle refresh button click
-  const handleRefresh = () => {
-    checkAccountAndTrustline();
-  };
-
   const getActionButtonDisabled = () => {
     if (!isConnected) return true;
     if (bridgeStateType !== "ready") return true;
@@ -253,7 +253,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
                 </p>
               </div>
               <button
-                onClick={handleRefresh}
+                onClick={checkAccountAndTrustline}
                 disabled={accountStatus.checking || trustlineStatus.checking}
                 className="text-orange-600 hover:text-orange-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400 dark:hover:text-orange-300"
                 title="Refresh account status"
@@ -282,7 +282,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
                 </p>
               </div>
               <button
-                onClick={handleRefresh}
+                onClick={checkAccountAndTrustline}
                 disabled={accountStatus.checking || trustlineStatus.checking}
                 className="text-orange-600 hover:text-orange-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400 dark:hover:text-orange-300"
                 title="Refresh account status"
@@ -315,12 +315,11 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
 
           {/* Balance Display - Only show when ready */}
           {bridgeStateType === "ready" && (
-            <div className="bg-surface-subtle border-surface-alt flex items-center justify-between rounded-lg border p-3">
-              <span className="text-secondary text-sm">Available Balance</span>
-              <span className="text-primary text-sm font-medium">
-                {availableBalance.toFixed(2)} USDC
-              </span>
-            </div>
+            <BalanceDisplay
+              balance={availableBalance}
+              currency="USDC"
+              onRefresh={refreshBalance}
+            />
           )}
 
           {/* Amount Selection - Only show when ready */}
@@ -410,16 +409,34 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeStateType === "ready" && (
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <Fuel size={14} className="text-secondary" />
-                <span className="text-secondary">Limited time free</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock size={14} className="text-secondary" />
-                <span className="text-secondary">&lt;10s</span>
-              </div>
+          {bridgeStateType === "ready" && !!amount && (
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => setShowGasFreeInfo(!showGasFreeInfo)}
+                className="flex cursor-pointer items-center justify-center gap-2 font-mono text-sm transition-opacity hover:opacity-80"
+              >
+                <div className="flex items-center gap-1">
+                  <Image
+                    src="/bridge/usdc.svg"
+                    alt="USDC"
+                    width={14}
+                    height={14}
+                  />
+                  <span>{amount} USDC</span>
+                  <span className="text-secondary">in</span>
+                  <span>~10s</span>
+                </div>
+                <ChevronDown
+                  size={14}
+                  className={`text-secondary transition-transform ${showGasFreeInfo ? "rotate-180" : ""}`}
+                />
+              </button>
+              {showGasFreeInfo && (
+                <div className="text-secondary flex items-center gap-1 text-xs">
+                  <Fuel size={14} />
+                  Limited time free
+                </div>
+              )}
             </div>
           )}
 

@@ -5,6 +5,37 @@ import { STELLAR } from "@/shared/lib/environmentVars";
 import { WalletNetwork } from "@creit.tech/stellar-wallets-kit";
 
 /**
+ * Fetch only USDC balance for a given address
+ */
+export async function fetchUSDCBalance(address: string): Promise<string> {
+  const server = new Horizon.Server("https://horizon.stellar.org");
+
+  try {
+    const accountData = await server.accounts().accountId(address).call();
+
+    const usdcAsset =
+      STELLAR.WALLET_NETWORK === WalletNetwork.PUBLIC
+        ? USDC_ASSET_MAINNET
+        : USDC_ASSET_TESTNET;
+
+    // Look for USDC trustline in account balances
+    const usdcBalance = accountData.balances.find(
+      (balance) =>
+        balance.asset_type !== "native" &&
+        "asset_code" in balance &&
+        "asset_issuer" in balance &&
+        balance.asset_code === usdcAsset.code &&
+        balance.asset_issuer === usdcAsset.issuer,
+    );
+
+    return usdcBalance?.balance || "0";
+  } catch (error) {
+    console.error("Error fetching USDC balance:", error);
+    return "0";
+  }
+}
+
+/**
  * Combined utility function to check account status, XLM balance, and USDC trustline in one request
  */
 export async function fetchAccountAndTrustlineData(

@@ -1,3 +1,4 @@
+export * from "./BalanceDisplay";
 export * from "./BridgeContainer";
 export * from "./BridgeToggle";
 export * from "./BridgeFooter";

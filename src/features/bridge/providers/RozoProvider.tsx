@@ -1,9 +1,12 @@
 "use client";
 
+import { useUserContext } from "@/contexts";
 import { getDefaultConfig, RozoPayProvider } from "@rozoai/intent-pay";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useTheme } from "next-themes";
 import { type ReactNode } from "react";
 import { createConfig, WagmiProvider } from "wagmi";
+import BridgeLoading from "../components/BridgeLoading";
 
 export const wagmiConfig = createConfig(
   getDefaultConfig({
@@ -14,10 +17,20 @@ export const wagmiConfig = createConfig(
 const queryClient = new QueryClient();
 
 export function RozoProvider({ children }: { children: ReactNode }) {
+  const { kit } = useUserContext();
+  const { theme } = useTheme();
+
+  if (!kit) return <BridgeLoading />;
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RozoPayProvider>{children}</RozoPayProvider>
+        <RozoPayProvider
+          stellarKit={kit}
+          mode={theme === "dark" ? "dark" : "light"}
+        >
+          {children}
+        </RozoPayProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

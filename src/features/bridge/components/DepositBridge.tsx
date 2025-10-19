@@ -1,25 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useUserContext } from "@/contexts";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import {
-  Clock,
   WalletIcon,
-  Fuel,
   AlertTriangle,
   CheckCircle,
   RefreshCw,
   Wallet,
+  ChevronDown,
+  Fuel,
 } from "lucide-react";
 import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
 import ChainsStacked from "./ChainsStacked";
+import { BalanceDisplay } from "./BalanceDisplay";
 import { useBridgeState } from "../hooks/useBridgeState";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { IntentPayConfig } from "../types/rozo";
 import { getAddress } from "viem";
+import Image from "next/image";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -33,11 +35,13 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const [intentConfig, setIntentConfig] = useState<IntentPayConfig | null>(
     null,
   );
+  const [showGasFreeInfo, setShowGasFreeInfo] = useState(false);
 
   const {
     trustlineStatus,
     accountStatus,
     checkAccountAndTrustline,
+    refreshBalance,
     createTrustline,
     isCreating,
   } = trustlineData;
@@ -47,6 +51,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const { resetPayment } = useRozoPayUI();
 
   const isConnected = !!userAddress;
+  const availableBalance = parseFloat(trustlineStatus.balance) || 0;
+
+  const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
   const handleAmountSelect = (value: string) => {
     if (value === "custom") {
@@ -88,41 +95,42 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
     }
   };
 
-  // Handle refresh button click
-  const handleRefresh = () => {
-    checkAccountAndTrustline();
-  };
+  // Create config function to avoid duplication
+  const createPaymentConfig = useCallback(async () => {
+    if (!getActionButtonDisabled() && userAddress) {
+      const amount =
+        selectedAmount === "custom" ? customAmount : selectedAmount;
 
+      const config = {
+        appId: "rozoSoroswapDeposit",
+        toChain: Number(BASE_CONFIG.chainId),
+        toAddress: getAddress("0x0000000000000000000000000000000000000000"),
+        toToken: getAddress(BASE_CONFIG.tokenAddress),
+        toStellarAddress: userAddress,
+        toUnits: amount,
+        metadata: {
+          items: [
+            {
+              name: "Soroswap Deposit",
+              description: `Deposit ${amount} USDC to Stellar`,
+            },
+          ],
+        },
+      };
+
+      await resetPayment(config as never);
+      setIntentConfig(config);
+    }
+  }, [selectedAmount, customAmount, userAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Debounced effect for amount changes
   useEffect(() => {
-    const fetchConfig = async () => {
-      if (!getActionButtonDisabled() && userAddress) {
-        const amount =
-          selectedAmount === "custom" ? customAmount : selectedAmount;
+    const timeoutId = setTimeout(() => {
+      createPaymentConfig();
+    }, 500); // 500ms debounce delay
 
-        const config = {
-          appId: "rozoSoroswapDeposit",
-          toChain: Number(BASE_CONFIG.chainId),
-          toAddress: getAddress("0x0000000000000000000000000000000000000000"),
-          toToken: getAddress(BASE_CONFIG.tokenAddress),
-          toStellarAddress: userAddress,
-          toUnits: amount,
-          metadata: {
-            items: [
-              {
-                name: "Soroswap Deposit",
-                description: `Deposit ${amount} USDC to Stellar`,
-              },
-            ],
-          },
-        };
-
-        await resetPayment(config as never);
-        setIntentConfig(config);
-      }
-    };
-
-    fetchConfig();
-  }, [trustlineStatus.exists, selectedAmount, customAmount, userAddress]);
+    return () => clearTimeout(timeoutId);
+  }, [selectedAmount, customAmount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="flex flex-col gap-4">
@@ -150,7 +158,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                 </p>
               </div>
               <button
-                onClick={handleRefresh}
+                onClick={checkAccountAndTrustline}
                 disabled={accountStatus.checking || trustlineStatus.checking}
                 className="text-orange-600 hover:text-orange-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400 dark:hover:text-orange-300"
                 title="Refresh account status"
@@ -179,7 +187,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                 </p>
               </div>
               <button
-                onClick={handleRefresh}
+                onClick={checkAccountAndTrustline}
                 disabled={accountStatus.checking || trustlineStatus.checking}
                 className="text-orange-600 hover:text-orange-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-orange-400 dark:hover:text-orange-300"
                 title="Refresh account status"
@@ -212,68 +220,94 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
 
           {/* Amount Selection - Only show when ready */}
           {bridgeStateType === "ready" && (
-            <div className="flex flex-col gap-3">
-              <label className="text-primary text-sm font-medium">
-                Choose an amount
-              </label>
+            <>
+              <BalanceDisplay
+                balance={availableBalance}
+                currency="USDC"
+                onRefresh={refreshBalance}
+              />
 
-              {/* Amount Grid */}
-              <div className="grid grid-cols-3 gap-2">
-                {PREDEFINED_AMOUNTS.map((amount) => (
-                  <button
-                    key={amount.value}
-                    onClick={() =>
-                      handleAmountSelectWithValidation(amount.value)
-                    }
-                    className={cn(
-                      "bg-surface-subtle hover:bg-surface-hover text-primary flex h-12 items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition-colors",
-                      selectedAmount === amount.value
-                        ? "border-brand bg-brand/10"
-                        : "hover:border-brand/20",
-                    )}
-                  >
-                    {amount.label}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-3">
+                <label className="text-primary text-sm font-medium">
+                  Choose an amount
+                </label>
+
+                {/* Amount Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  {PREDEFINED_AMOUNTS.map((amount) => (
+                    <button
+                      key={amount.value}
+                      onClick={() =>
+                        handleAmountSelectWithValidation(amount.value)
+                      }
+                      className={cn(
+                        "bg-surface-subtle hover:bg-surface-hover text-primary flex h-12 items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition-colors",
+                        selectedAmount === amount.value
+                          ? "border-brand bg-brand/10"
+                          : "hover:border-brand/20",
+                      )}
+                    >
+                      {amount.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom Amount Input */}
+                {selectedAmount === "custom" && (
+                  <div className="flex flex-col gap-2">
+                    <input
+                      type="number"
+                      placeholder="Enter amount"
+                      value={customAmount}
+                      onChange={(e) => handleCustomAmountChange(e.target.value)}
+                      className="bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
+                    />
+                  </div>
+                )}
+
+                {/* Amount Warning */}
+                {showAmountWarning && (
+                  <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
+                    <AlertTriangle className="size-4 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
+                    <p className="text-xs text-yellow-800 dark:text-yellow-200">
+                      Bridge amount is limited to $1,000 for alpha. Join our
+                      Discord for updates to unlock higher limits.
+                    </p>
+                  </div>
+                )}
               </div>
-
-              {/* Custom Amount Input */}
-              {selectedAmount === "custom" && (
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="number"
-                    placeholder="Enter amount"
-                    value={customAmount}
-                    onChange={(e) => handleCustomAmountChange(e.target.value)}
-                    className="bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
-                  />
-                </div>
-              )}
-
-              {/* Amount Warning */}
-              {showAmountWarning && (
-                <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
-                  <AlertTriangle className="size-4 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
-                  <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                    Bridge amount is limited to $1000 for alpha. Join our
-                    Discord for updates to unlock higher limits.
-                  </p>
-                </div>
-              )}
-            </div>
+            </>
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeStateType === "ready" && (
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <div className="flex items-center gap-1">
-                <Fuel size={14} className="text-secondary" />
-                <span className="text-secondary">Limited time free</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock size={14} className="text-secondary" />
-                <span className="text-secondary">&lt;10s</span>
-              </div>
+          {bridgeStateType === "ready" && !!amount && (
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => setShowGasFreeInfo(!showGasFreeInfo)}
+                className="flex cursor-pointer items-center justify-center gap-2 font-mono text-sm transition-opacity hover:opacity-80"
+              >
+                <div className="flex items-center gap-1">
+                  <Image
+                    src="/bridge/usdc.svg"
+                    alt="USDC"
+                    width={14}
+                    height={14}
+                  />
+                  <span>{amount} USDC</span>
+                  <span className="text-secondary">in</span>
+                  <span>~10s</span>
+                </div>
+                <ChevronDown
+                  size={14}
+                  className={`text-secondary transition-transform ${showGasFreeInfo ? "rotate-180" : ""}`}
+                />
+              </button>
+              {showGasFreeInfo && (
+                <div className="text-secondary flex items-center gap-1 text-xs">
+                  <Fuel size={14} />
+                  Limited time free
+                </div>
+              )}
             </div>
           )}
 
@@ -298,13 +332,13 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                 toStellarAddress={intentConfig.toStellarAddress}
                 toUnits={intentConfig.toUnits}
                 metadata={intentConfig.metadata as never}
-                // onPaymentCompleted={() => {
-                //   setIsPaymentCompleted(true);
-                // }}
                 showProcessingPayout
               >
                 {({ show }) => (
-                  <TheButton onClick={show} className="w-full py-6 text-base">
+                  <TheButton
+                    onClick={show}
+                    className="w-full gap-2 py-6 text-base text-white"
+                  >
                     <Wallet className="size-5" />
                     Pay with USDC <ChainsStacked excludeChains={["stellar"]} />
                   </TheButton>
@@ -313,7 +347,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
             </div>
           ) : trustlineStatus.checking && !intentConfig ? null : (
             <TheButton
-              className="flex w-full items-center justify-center gap-2 py-6 text-base"
+              className="flex w-full items-center justify-center gap-2 py-6 text-base text-white"
               disabled={getActionButtonDisabled()}
             >
               <Wallet className="size-4" />
