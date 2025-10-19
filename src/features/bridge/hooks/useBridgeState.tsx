@@ -1,4 +1,5 @@
 import { UseUSDCTrustlineReturn } from "../types";
+import { useMemo } from "react";
 
 export const useBridgeState = (trustlineData: UseUSDCTrustlineReturn) => {
   const { trustlineStatus, accountStatus, hasCheckedOnce } = trustlineData;
@@ -6,7 +7,8 @@ export const useBridgeState = (trustlineData: UseUSDCTrustlineReturn) => {
   /**
    * Logic based on getBridgeState from DepositBridge.
    */
-  const getBridgeState = () => {
+
+  const bridgeState = useMemo(() => {
     if (accountStatus.checking || trustlineStatus.checking) {
       return { type: "loading", message: "Checking account status..." };
     }
@@ -39,11 +41,18 @@ export const useBridgeState = (trustlineData: UseUSDCTrustlineReturn) => {
     }
 
     return { type: "ready", message: "Ready" };
-  };
+  }, [
+    accountStatus.checking,
+    accountStatus.exists,
+    accountStatus.xlmBalance,
+    trustlineStatus.checking,
+    trustlineStatus.exists,
+    hasCheckedOnce,
+  ]);
 
   return {
-    bridgeStateType: getBridgeState().type,
-    bridgeStateMessage: getBridgeState().message,
-    bridgeStateData: getBridgeState(),
+    bridgeStateType: bridgeState.type,
+    bridgeStateMessage: bridgeState.message,
+    bridgeStateData: bridgeState,
   };
 };

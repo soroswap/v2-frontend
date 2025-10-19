@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserContext } from "@/contexts";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
@@ -11,11 +11,15 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
+  Wallet,
 } from "lucide-react";
-import { PREDEFINED_AMOUNTS } from "../constants/bridge";
+import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
 import ChainsStacked from "./ChainsStacked";
 import { useBridgeState } from "../hooks/useBridgeState";
+import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
+import { IntentPayConfig } from "../types/rozo";
+import { getAddress } from "viem";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -26,6 +30,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const [selectedAmount, setSelectedAmount] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<string>("");
   const [showAmountWarning, setShowAmountWarning] = useState(false);
+  const [intentConfig, setIntentConfig] = useState<IntentPayConfig | null>(
+    null,
+  );
 
   const {
     trustlineStatus,
@@ -36,6 +43,8 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   } = trustlineData;
 
   const { bridgeStateType, bridgeStateMessage } = useBridgeState(trustlineData);
+
+  const { resetPayment } = useRozoPayUI();
 
   const isConnected = !!userAddress;
 
@@ -83,6 +92,37 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const handleRefresh = () => {
     checkAccountAndTrustline();
   };
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      if (!getActionButtonDisabled() && userAddress) {
+        const amount =
+          selectedAmount === "custom" ? customAmount : selectedAmount;
+
+        const config = {
+          appId: "rozoSoroswapDeposit",
+          toChain: Number(BASE_CONFIG.chainId),
+          toAddress: getAddress("0x0000000000000000000000000000000000000000"),
+          toToken: getAddress(BASE_CONFIG.tokenAddress),
+          toStellarAddress: userAddress,
+          toUnits: amount,
+          metadata: {
+            items: [
+              {
+                name: "Soroswap Deposit",
+                description: `Deposit ${amount} USDC to Stellar`,
+              },
+            ],
+          },
+        };
+
+        await resetPayment(config as never);
+        setIntentConfig(config);
+      }
+    };
+
+    fetchConfig();
+  }, [trustlineStatus.exists, selectedAmount, customAmount, userAddress]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -246,23 +286,40 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
             >
               {isCreating ? "Adding USDC Trustline..." : "Add USDC Trustline"}
             </TheButton>
-          ) : bridgeStateType === "ready" ? (
-            <TheButton
-              disabled={getActionButtonDisabled()}
-              onClick={() => {
-                // TODO: Implement deposit bridge logic
-                console.log(
-                  "Deposit bridge action:",
-                  selectedAmount,
-                  customAmount,
-                );
-              }}
-              className="bg-brand hover:bg-brand/80 disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center gap-2 rounded-2xl p-4 text-[16px] font-bold text-white disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
-            >
-              Pay with USDC
-              <ChainsStacked />
-            </TheButton>
           ) : null}
+
+          {!getActionButtonDisabled() && intentConfig ? (
+            <div className="space-y-3">
+              <RozoPayButton.Custom
+                appId={"rozoSoroswapDeposit"}
+                toChain={intentConfig.toChain}
+                toToken={intentConfig.toToken}
+                toAddress={intentConfig.toAddress as `0x${string}`}
+                toStellarAddress={intentConfig.toStellarAddress}
+                toUnits={intentConfig.toUnits}
+                metadata={intentConfig.metadata as never}
+                // onPaymentCompleted={() => {
+                //   setIsPaymentCompleted(true);
+                // }}
+                showProcessingPayout
+              >
+                {({ show }) => (
+                  <TheButton onClick={show} className="w-full py-6 text-base">
+                    <Wallet className="size-5" />
+                    Pay with USDC <ChainsStacked excludeChains={["stellar"]} />
+                  </TheButton>
+                )}
+              </RozoPayButton.Custom>
+            </div>
+          ) : trustlineStatus.checking && !intentConfig ? null : (
+            <TheButton
+              className="flex w-full items-center justify-center gap-2 py-6 text-base"
+              disabled={getActionButtonDisabled()}
+            >
+              <Wallet className="size-4" />
+              Pay with USDC <ChainsStacked excludeChains={["stellar"]} />
+            </TheButton>
+          )}
         </>
       ) : (
         <div className="flex flex-col items-center gap-4 py-8">
