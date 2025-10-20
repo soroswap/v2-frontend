@@ -7,15 +7,15 @@ import { cn } from "@/shared/lib/utils/cn";
 import { WalletIcon, Wallet } from "lucide-react";
 import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
-import ChainsStacked from "./ChainsStacked";
-import { TrustlineSection } from "./TrustlineSection";
-import { BalanceDisplay } from "./BalanceDisplay";
+import { TrustlineSection } from "./BridgeTrustlineSection";
+import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { useBridgeState } from "../hooks/useBridgeState";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { IntentPayConfig } from "../types/rozo";
 import { getAddress } from "viem";
 import Image from "next/image";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { BridgeChainsStacked } from "./BridgeChainsStacked";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -124,7 +124,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
           {/* Amount Selection - Only show when ready */}
           {bridgeStateType === "ready" && (
             <>
-              <BalanceDisplay
+              <BridgeBalanceDisplay
                 balance={availableBalance}
                 currency="USDC"
                 onRefresh={refreshBalance}
@@ -214,7 +214,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                       >
                         <Wallet className="size-5" />
                         Pay with USDC{" "}
-                        <ChainsStacked excludeChains={["stellar"]} />
+                        <BridgeChainsStacked excludeChains={["stellar"]} />
                       </TheButton>
                     )}
                   </RozoPayButton.Custom>
@@ -225,7 +225,8 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                   disabled={true}
                 >
                   <Wallet className="size-4" />
-                  Pay with USDC <ChainsStacked excludeChains={["stellar"]} />
+                  Pay with USDC{" "}
+                  <BridgeChainsStacked excludeChains={["stellar"]} />
                 </TheButton>
               )}
             </>

@@ -1,6 +1,7 @@
 "use client";
 
-import { BridgeContainer, BridgeFooter } from "@/features/bridge";
+import { BridgeFooter } from "@/features/bridge/components/BridgeFooter";
+import { BridgeContainer } from "@/features/bridge/components/BridgeLayout";
 import { RozoProvider } from "@/features/bridge/providers/RozoProvider";
 
 export default function BridgePage() {

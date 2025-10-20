@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { BridgeToggle } from "./BridgeToggle";
 
-const BridgeLoading = () => {
+export const BridgeLoader = () => {
   return (
     <div className="flex w-full flex-col gap-6">
       <BridgeToggle disabled bridgeMode="deposit" onModeChange={() => {}} />
@@ -14,5 +14,3 @@ const BridgeLoading = () => {
     </div>
   );
 };
-
-export default BridgeLoading;

@@ -47,10 +47,5 @@
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4",
     "typescript": "^5"
-  },
-  "pnpm": {
-    "overrides": {
-      "@creit.tech/stellar-wallets-kit": "1.9.5"
-    }
   }
 }

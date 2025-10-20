@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { BridgeToggle } from "./BridgeToggle";
-import { DepositBridge } from "./DepositBridge";
-import { WithdrawBridge } from "./WithdrawBridge";
+import { DepositBridge } from "./BridgeDeposit";
+import { WithdrawBridge } from "./BridgeWithdraw";
 import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
 import { BridgeMode } from "../types";
 import { useUserContext } from "@/contexts";

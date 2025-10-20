@@ -10,7 +10,7 @@ interface BalanceDisplayProps {
   className?: string;
 }
 
-export const BalanceDisplay = ({
+export const BridgeBalanceDisplay = ({
   balance,
   currency = "USDC",
   onRefresh,

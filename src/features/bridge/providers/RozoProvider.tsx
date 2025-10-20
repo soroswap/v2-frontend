@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { type ReactNode } from "react";
 import { createConfig, WagmiProvider } from "wagmi";
-import BridgeLoading from "../components/BridgeLoading";
+import { BridgeLoader } from "../components/BridgeLoader";
 
 export const wagmiConfig = createConfig(
   getDefaultConfig({
@@ -20,7 +20,7 @@ export function RozoProvider({ children }: { children: ReactNode }) {
   const { kit } = useUserContext();
   const { theme } = useTheme();
 
-  if (!kit) return <BridgeLoading />;
+  if (!kit) return <BridgeLoader />;
 
   return (
     <WagmiProvider config={wagmiConfig}>

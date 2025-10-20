@@ -5,11 +5,11 @@ interface ChainLogo {
   component: React.ReactNode;
 }
 
-export default function ChainsStacked({
+export const BridgeChainsStacked = ({
   excludeChains,
 }: {
   excludeChains?: string[];
-}) {
+}) => {
   // CSS classes for logo container
   const logoContainerClasses =
     "border overflow-hidden rounded-full border-background";
@@ -22,7 +22,7 @@ export default function ChainsStacked({
   ];
 
   return (
-    <div className="-space-x-2 flex *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:ring-background">
+    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
       {chainLogos
         .filter((logo) => !excludeChains?.includes(logo.type))
         .map((logo, index) => (
@@ -36,4 +36,4 @@ export default function ChainsStacked({
         ))}
     </div>
   );
-}
+};

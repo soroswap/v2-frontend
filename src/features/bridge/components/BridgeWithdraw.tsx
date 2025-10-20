@@ -9,8 +9,8 @@ import { getAddress, isAddress } from "viem";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
 import { Base } from "./icons/chains";
-import { BalanceDisplay } from "./BalanceDisplay";
-import { TrustlineSection } from "./TrustlineSection";
+import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
+import { TrustlineSection } from "./BridgeTrustlineSection";
 import { useWithdraw, WithdrawResult } from "../hooks/useWithdraw";
 import { useBridgeState } from "../hooks/useBridgeState";
 import Image from "next/image";
@@ -242,7 +242,7 @@ export const WithdrawBridge = ({
 
           {/* Balance Display - Only show when ready */}
           {bridgeStateType === "ready" && (
-            <BalanceDisplay
+            <BridgeBalanceDisplay
               balance={availableBalance}
               currency="USDC"
               onRefresh={refreshBalance}
