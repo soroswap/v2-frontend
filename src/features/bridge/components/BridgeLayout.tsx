@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { BridgeToggle } from "./BridgeToggle";
-import { DepositBridge } from "./BridgeDeposit";
-import { WithdrawBridge } from "./BridgeWithdraw";
-import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
-import { BridgeMode } from "../types";
 import { useUserContext } from "@/contexts";
+import { ArrowRight } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
+import { BridgeChainsStacked } from "./BridgeChainsStacked";
+import { DepositBridge } from "./BridgeDeposit";
+import { Stellar } from "./icons/chains";
 
-export const BridgeContainer = () => {
-  const [bridgeMode, setBridgeMode] = useState<BridgeMode>("deposit");
-  const [isWithdrawInProgress, setIsWithdrawInProgress] = useState(false);
-  const hasInitialized = useRef(false);
+export const BridgeLayout = () => {
   const { address: userAddress } = useUserContext();
+
+  const hasInitialized = useRef(false);
 
   const trustlineData = useUSDCTrustline(false);
 
@@ -24,31 +23,37 @@ export const BridgeContainer = () => {
       hasInitialized.current = false;
     }
   }, [userAddress, trustlineData]);
-
-  const handleModeChange = (mode: BridgeMode) => {
-    setBridgeMode(mode);
-  };
-
-  const handleWithdrawStateChange = (isInProgress: boolean) => {
-    setIsWithdrawInProgress(isInProgress);
-  };
-
   return (
     <div className="flex flex-col gap-6">
-      <BridgeToggle
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-primary text-xl sm:text-2xl">Bridge</p>
+        <div className="flex items-center gap-4">
+          <BridgeChainsStacked excludeChains={["stellar"]} />
+
+          <div className="m-auto flex items-center justify-center">
+            <ArrowRight size={20} />
+          </div>
+
+          <Stellar width={24} height={24} />
+        </div>
+      </div>
+
+      <DepositBridge trustlineData={trustlineData} />
+
+      {/* <BridgeToggle
         bridgeMode={bridgeMode}
         onModeChange={handleModeChange}
         disabled={isWithdrawInProgress}
-      />
+      /> */}
 
-      {bridgeMode === "deposit" ? (
+      {/* {bridgeMode === "deposit" ? (
         <DepositBridge trustlineData={trustlineData} />
       ) : (
         <WithdrawBridge
           trustlineData={trustlineData}
           onWithdrawStateChange={handleWithdrawStateChange}
         />
-      )}
+      )} */}
     </div>
   );
 };

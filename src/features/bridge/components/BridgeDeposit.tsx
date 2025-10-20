@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
 import { useUserContext } from "@/contexts";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
-import { WalletIcon, Wallet } from "lucide-react";
-import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
-import { UseUSDCTrustlineReturn } from "../types";
-import { TrustlineSection } from "./BridgeTrustlineSection";
-import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
-import { useBridgeState } from "../hooks/useBridgeState";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
-import { IntentPayConfig } from "../types/rozo";
-import { getAddress } from "viem";
+import { WalletIcon } from "lucide-react";
 import Image from "next/image";
-import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { useCallback, useEffect, useState } from "react";
+import { getAddress } from "viem";
+import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
+import { useBridgeState } from "../hooks/useBridgeState";
+import { UseUSDCTrustlineReturn } from "../types";
+import { IntentPayConfig } from "../types/rozo";
+import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { BridgeChainsStacked } from "./BridgeChainsStacked";
+import { TrustlineSection } from "./BridgeTrustlineSection";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -97,6 +97,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
               description: `Deposit ${amount} USDC to Stellar`,
             },
           ],
+          payer: {
+            paymentOptions: ["solana", "ethereum"],
+          },
         },
       };
 
@@ -212,7 +215,6 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                         onClick={show}
                         className="w-full gap-2 py-6 text-base text-white"
                       >
-                        <Wallet className="size-5" />
                         Pay with USDC{" "}
                         <BridgeChainsStacked excludeChains={["stellar"]} />
                       </TheButton>
@@ -224,7 +226,6 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                   className="flex w-full items-center justify-center gap-2 py-6 text-base text-white"
                   disabled={true}
                 >
-                  <Wallet className="size-4" />
                   Pay with USDC{" "}
                   <BridgeChainsStacked excludeChains={["stellar"]} />
                 </TheButton>

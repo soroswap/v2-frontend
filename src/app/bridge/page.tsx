@@ -1,7 +1,7 @@
 "use client";
 
 import { BridgeFooter } from "@/features/bridge/components/BridgeFooter";
-import { BridgeContainer } from "@/features/bridge/components/BridgeLayout";
+import { BridgeLayout } from "@/features/bridge/components/BridgeLayout";
 import { RozoProvider } from "@/features/bridge/providers/RozoProvider";
 
 export default function BridgePage() {
@@ -11,7 +11,7 @@ export default function BridgePage() {
       <div className="bg-surface border-brand m-auto flex w-full max-w-xl flex-col gap-6 rounded-2xl border p-4 shadow-xl sm:p-8">
         {/* Bridge Container with Toggle and Content */}
         <RozoProvider>
-          <BridgeContainer />
+          <BridgeLayout />
         </RozoProvider>
       </div>
 
