@@ -5,10 +5,12 @@ interface ChainLogo {
   component: React.ReactNode;
 }
 
+type ChainType = "base" | "polygon" | "solana" | "stellar";
+
 export const BridgeChainsStacked = ({
   excludeChains,
 }: {
-  excludeChains?: string[];
+  excludeChains?: ChainType[];
 }) => {
   // CSS classes for logo container
   const logoContainerClasses =
@@ -24,7 +26,7 @@ export const BridgeChainsStacked = ({
   return (
     <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
       {chainLogos
-        .filter((logo) => !excludeChains?.includes(logo.type))
+        .filter((logo) => !excludeChains?.includes(logo.type as ChainType))
         .map((logo, index) => (
           <div
             key={logo.type}

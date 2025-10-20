@@ -6,7 +6,6 @@ import { useEffect, useRef } from "react";
 import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
 import { BridgeChainsStacked } from "./BridgeChainsStacked";
 import { DepositBridge } from "./BridgeDeposit";
-import { Stellar } from "./icons/chains";
 
 export const BridgeLayout = () => {
   const { address: userAddress } = useUserContext();
@@ -34,7 +33,7 @@ export const BridgeLayout = () => {
             <ArrowRight size={20} />
           </div>
 
-          <Stellar width={24} height={24} />
+          <BridgeChainsStacked excludeChains={["base", "polygon", "solana"]} />
         </div>
       </div>
 

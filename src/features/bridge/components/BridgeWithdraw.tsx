@@ -1,20 +1,20 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
 import { useUserContext } from "@/contexts";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
-import { WalletIcon, Loader2, ReceiptText } from "lucide-react";
+import { Loader2, ReceiptText, WalletIcon } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { getAddress, isAddress } from "viem";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
+import { useBridgeState } from "../hooks/useBridgeState";
+import { useWithdraw, WithdrawResult } from "../hooks/useWithdraw";
 import { UseUSDCTrustlineReturn } from "../types";
-import { Base } from "./icons/chains";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { TrustlineSection } from "./BridgeTrustlineSection";
-import { useWithdraw, WithdrawResult } from "../hooks/useWithdraw";
-import { useBridgeState } from "../hooks/useBridgeState";
-import Image from "next/image";
-import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
+import { Base } from "./icons/chains";
 
 interface WithdrawBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -344,7 +344,7 @@ export const WithdrawBridge = ({
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Image
-                    src="/bridge/usdc.svg"
+                    src="https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy"
                     alt="USDC"
                     width={14}
                     height={14}

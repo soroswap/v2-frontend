@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
 
 export const BridgeFooter = () => {
   const { theme } = useTheme();
@@ -20,7 +20,7 @@ export const BridgeFooter = () => {
               className="group relative"
             >
               <Image
-                src="/bridge/scf.svg"
+                src="https://bridge.rozo.ai/scf.svg"
                 alt="Stellar"
                 width={20}
                 height={20}
@@ -40,7 +40,7 @@ export const BridgeFooter = () => {
               className="group relative"
             >
               <Image
-                src="/bridge/base.svg"
+                src="https://bridge.rozo.ai/base.svg"
                 alt="Base"
                 width={20}
                 height={20}
@@ -60,7 +60,7 @@ export const BridgeFooter = () => {
               className="group relative"
             >
               <Image
-                src="/bridge/draper.webp"
+                src="https://bridge.rozo.ai/draper.webp"
                 alt="Draper University"
                 width={20}
                 height={20}
@@ -80,7 +80,7 @@ export const BridgeFooter = () => {
               className="group relative"
             >
               <Image
-                src="/bridge/circle.svg"
+                src="https://bridge.rozo.ai/circle.svg"
                 alt="Circle"
                 width={20}
                 height={20}
@@ -158,8 +158,8 @@ export const BridgeFooter = () => {
               <Image
                 src={
                   theme === "dark"
-                    ? "/bridge/rozo-white-transparent.png"
-                    : "/bridge/rozo-transparent.png"
+                    ? "https://bridge.rozo.ai/rozo-white-transparent.png"
+                    : "https://bridge.rozo.ai/rozo-transparent.png"
                 }
                 alt="Rozo"
                 width={20}

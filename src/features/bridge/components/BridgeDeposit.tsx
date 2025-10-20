@@ -181,7 +181,7 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Image
-                    src="/bridge/usdc.svg"
+                    src="https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy"
                     alt="USDC"
                     width={14}
                     height={14}
