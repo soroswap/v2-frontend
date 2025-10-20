@@ -10,8 +10,6 @@ import {
   CheckCircle,
   RefreshCw,
   Wallet,
-  ChevronDown,
-  Fuel,
 } from "lucide-react";
 import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { UseUSDCTrustlineReturn } from "../types";
@@ -22,6 +20,7 @@ import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { IntentPayConfig } from "../types/rozo";
 import { getAddress } from "viem";
 import Image from "next/image";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 
 interface DepositBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -31,11 +30,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   const { address: userAddress } = useUserContext();
   const [selectedAmount, setSelectedAmount] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<string>("");
-  const [showAmountWarning, setShowAmountWarning] = useState(false);
   const [intentConfig, setIntentConfig] = useState<IntentPayConfig | null>(
     null,
   );
-  const [showGasFreeInfo, setShowGasFreeInfo] = useState(false);
 
   const {
     trustlineStatus,
@@ -55,6 +52,14 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
 
   const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
+  // Mock USDC token for TokenAmountInput
+  const usdcToken = {
+    address: "USDC",
+    symbol: "USDC",
+    decimals: 6,
+    name: "USD Coin",
+  };
+
   const handleAmountSelect = (value: string) => {
     if (value === "custom") {
       setSelectedAmount("custom");
@@ -65,16 +70,9 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
     }
   };
 
-  const handleCustomAmountChange = (value: string) => {
-    setCustomAmount(value);
-    // Check for amount warning when custom amount changes
-    const amount = parseFloat(value);
-    setShowAmountWarning(amount > 1000);
-  };
-
-  // Check if amount exceeds $1000 limit
-  const checkAmountLimit = (amount: number) => {
-    setShowAmountWarning(amount > 1000);
+  const handleCustomAmountChange = (value: string | undefined) => {
+    const stringValue = value || "";
+    setCustomAmount(stringValue);
   };
 
   const getActionButtonDisabled = () => {
@@ -89,10 +87,6 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
   // Handle amount selection with validation
   const handleAmountSelectWithValidation = (value: string) => {
     handleAmountSelect(value);
-    if (value !== "custom") {
-      const amount = parseFloat(value);
-      checkAmountLimit(amount);
-    }
   };
 
   // Create config function to avoid duplication
@@ -255,24 +249,13 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                 {/* Custom Amount Input */}
                 {selectedAmount === "custom" && (
                   <div className="flex flex-col gap-2">
-                    <input
-                      type="number"
-                      placeholder="Enter amount"
-                      value={customAmount}
-                      onChange={(e) => handleCustomAmountChange(e.target.value)}
+                    <TokenAmountInput
+                      amount={customAmount}
+                      setAmount={handleCustomAmountChange}
+                      isLoading={false}
+                      token={usdcToken}
                       className="bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                     />
-                  </div>
-                )}
-
-                {/* Amount Warning */}
-                {showAmountWarning && (
-                  <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
-                    <AlertTriangle className="size-4 flex-shrink-0 text-yellow-600 dark:text-yellow-400" />
-                    <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                      Bridge amount is limited to $1,000 for alpha. Join our
-                      Discord for updates to unlock higher limits.
-                    </p>
                   </div>
                 )}
               </div>
@@ -280,12 +263,10 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeStateType === "ready" && !!amount && (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={() => setShowGasFreeInfo(!showGasFreeInfo)}
-                className="flex cursor-pointer items-center justify-center gap-2 font-mono text-sm transition-opacity hover:opacity-80"
-              >
+          {bridgeStateType === "ready" &&
+            !!amount &&
+            parseFloat(amount) > 0 && (
+              <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Image
                     src="/bridge/usdc.svg"
@@ -293,23 +274,15 @@ export const DepositBridge = ({ trustlineData }: DepositBridgeProps) => {
                     width={14}
                     height={14}
                   />
-                  <span>{amount} USDC</span>
+                  <span>
+                    {new Intl.NumberFormat("en-US").format(parseFloat(amount))}{" "}
+                    USDC
+                  </span>
                   <span className="text-secondary">in</span>
-                  <span>~10s</span>
+                  <span>a minute</span>
                 </div>
-                <ChevronDown
-                  size={14}
-                  className={`text-secondary transition-transform ${showGasFreeInfo ? "rotate-180" : ""}`}
-                />
-              </button>
-              {showGasFreeInfo && (
-                <div className="text-secondary flex items-center gap-1 text-xs">
-                  <Fuel size={14} />
-                  Limited time free
-                </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
           {/* Action Button */}
           {bridgeStateType === "trustline_needed" ? (

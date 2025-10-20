@@ -2,6 +2,7 @@
 
 import { cn } from "@/shared/lib/utils/cn";
 import { BridgeMode } from "../types";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 interface BridgeToggleProps {
   bridgeMode: BridgeMode;
@@ -27,7 +28,7 @@ export const BridgeToggle = ({
           disabled && "!cursor-not-allowed opacity-60",
         )}
       >
-        {/* <ArrowUpRight size={16} /> */}
+        <ArrowUpRight size={16} />
         Deposit from any chains
       </button>
       <button
@@ -41,7 +42,7 @@ export const BridgeToggle = ({
           disabled && "!cursor-not-allowed opacity-60",
         )}
       >
-        {/* <ArrowDownLeft size={16} /> */}
+        <ArrowDownLeft size={16} />
         Withdraw to Base
       </button>
     </div>

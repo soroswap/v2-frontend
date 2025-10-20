@@ -11,14 +11,6 @@ export const BridgeFooter = () => {
     <div className="container mx-auto mt-auto w-full">
       <div className="flex flex-col items-center gap-4 py-6 md:flex-row md:justify-between">
         <div className="flex flex-row items-center gap-4">
-          <a
-            href="https://bridge.rozo.ai/faq"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
-          >
-            FAQ
-          </a>
           <div className="flex">
             <a
               href="https://x.com/i/broadcasts/1djGXWBqdVdKZ"
@@ -99,11 +91,22 @@ export const BridgeFooter = () => {
               </div>
             </a>
           </div>
+
+          <span className="text-muted-foreground mx-2 select-none">·</span>
+
+          <Link
+            href="https://bridge.rozo.ai/faq"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary/80 transition-colors"
+          >
+            FAQs
+          </Link>
           <a
             href="https://discord.com/invite/EfWejgTbuU"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className="hover:text-primary/80 transition-colors"
           >
             <svg
               className="h-[20px] w-4"
@@ -117,7 +120,7 @@ export const BridgeFooter = () => {
             href="https://x.com/rozoai"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            className="hover:text-primary/80 transition-colors"
           >
             <svg
               className="size-4"
@@ -133,38 +136,38 @@ export const BridgeFooter = () => {
             </svg>
           </a>
           <Link
-            href="/terms"
-            className="text-muted-foreground hover:text-foreground text-sm transition-colors"
+            href="https://bridge.rozo.ai/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary/80 transition-colors"
           >
             Terms of Service
           </Link>
         </div>
 
-        <div className="flex items-center justify-center gap-1.5">
-          <span className="text-muted-foreground text-sm">Powered by</span>
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6">
-            <div className="flex">
-              <a
-                href="https://rozo.ai"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Rozo"
-                className="flex items-center"
-              >
-                <Image
-                  src={
-                    theme === "dark"
-                      ? "/bridge/rozo-white-transparent.png"
-                      : "/bridge/rozo-transparent.png"
-                  }
-                  alt="Rozo"
-                  width={20}
-                  height={20}
-                  className="h-[20px] w-auto transition-opacity group-hover:opacity-80"
-                />
-                <span className="text-base font-bold">ROZO</span>
-              </a>
-            </div>
+        <div className="bg-surface-subtle text-primary flex items-center gap-1 rounded px-2 py-1 text-xs font-medium">
+          <span>Powered by</span>
+          <div className="flex">
+            <a
+              href="https://rozo.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Rozo"
+              className="flex items-center"
+            >
+              <Image
+                src={
+                  theme === "dark"
+                    ? "/bridge/rozo-white-transparent.png"
+                    : "/bridge/rozo-transparent.png"
+                }
+                alt="Rozo"
+                width={20}
+                height={20}
+                className="h-[20px] w-auto transition-opacity group-hover:opacity-80"
+              />
+              <span className="text-base font-bold">ROZO</span>
+            </a>
           </div>
         </div>
       </div>

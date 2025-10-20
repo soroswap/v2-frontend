@@ -10,14 +10,12 @@ import { useUserContext } from "@/contexts";
 
 export const BridgeContainer = () => {
   const [bridgeMode, setBridgeMode] = useState<BridgeMode>("deposit");
+  const [isWithdrawInProgress, setIsWithdrawInProgress] = useState(false);
   const hasInitialized = useRef(false);
   const { address: userAddress } = useUserContext();
 
-  // Move the hook to this level so it persists across mode switches
-  // Disable auto-checking to prevent checks on mode switches
   const trustlineData = useUSDCTrustline(false);
 
-  // Manually trigger initial check when wallet connects (only once)
   useEffect(() => {
     if (userAddress && !hasInitialized.current) {
       hasInitialized.current = true;
@@ -31,14 +29,25 @@ export const BridgeContainer = () => {
     setBridgeMode(mode);
   };
 
+  const handleWithdrawStateChange = (isInProgress: boolean) => {
+    setIsWithdrawInProgress(isInProgress);
+  };
+
   return (
     <div className="flex flex-col gap-6">
-      <BridgeToggle bridgeMode={bridgeMode} onModeChange={handleModeChange} />
+      <BridgeToggle
+        bridgeMode={bridgeMode}
+        onModeChange={handleModeChange}
+        disabled={isWithdrawInProgress}
+      />
 
       {bridgeMode === "deposit" ? (
         <DepositBridge trustlineData={trustlineData} />
       ) : (
-        <WithdrawBridge trustlineData={trustlineData} />
+        <WithdrawBridge
+          trustlineData={trustlineData}
+          onWithdrawStateChange={handleWithdrawStateChange}
+        />
       )}
     </div>
   );

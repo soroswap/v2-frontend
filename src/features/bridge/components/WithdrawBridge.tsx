@@ -6,13 +6,11 @@ import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import {
   WalletIcon,
-  Fuel,
   Loader2,
   ReceiptText,
   AlertTriangle,
   CheckCircle,
   RefreshCw,
-  ChevronDown,
 } from "lucide-react";
 import { getAddress, isAddress } from "viem";
 import { PREDEFINED_AMOUNTS } from "../constants/bridge";
@@ -22,12 +20,17 @@ import { BalanceDisplay } from "./BalanceDisplay";
 import { useWithdraw, WithdrawResult } from "../hooks/useWithdraw";
 import { useBridgeState } from "../hooks/useBridgeState";
 import Image from "next/image";
+import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 
 interface WithdrawBridgeProps {
   trustlineData: UseUSDCTrustlineReturn;
+  onWithdrawStateChange?: (isInProgress: boolean) => void;
 }
 
-export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
+export const WithdrawBridge = ({
+  trustlineData,
+  onWithdrawStateChange,
+}: WithdrawBridgeProps) => {
   const { address: userAddress } = useUserContext();
   const { withdraw, step } = useWithdraw();
 
@@ -40,7 +43,6 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
   const [withdrawResult, setWithdrawResult] = useState<WithdrawResult | null>(
     null,
   );
-  const [showGasFreeInfo, setShowGasFreeInfo] = useState(false);
 
   const {
     trustlineStatus,
@@ -56,6 +58,14 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
   const isConnected = !!userAddress;
   const availableBalance = parseFloat(trustlineStatus.balance) || 0;
   const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
+
+  // Mock USDC token for TokenAmountInput
+  const usdcToken = {
+    address: "USDC",
+    symbol: "USDC",
+    decimals: 6,
+    name: "USD Coin",
+  };
 
   const stepToLabel = useMemo(() => {
     switch (step) {
@@ -84,6 +94,13 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
       setEvmAddressError("");
     }
   }, [isConnected]);
+
+  // Notify parent component about withdrawal state changes
+  useEffect(() => {
+    if (onWithdrawStateChange) {
+      onWithdrawStateChange(isWithdrawLoading);
+    }
+  }, [isWithdrawLoading, onWithdrawStateChange]);
 
   // Clear custom selection and EVM address if balance becomes 0
   useEffect(() => {
@@ -142,7 +159,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
     try {
       // Use viem's isAddress for robust validation
       if (!isAddress(address)) {
-        setEvmAddressError("Invalid Base network address format");
+        setEvmAddressError("Invalid EVM address format");
         return false;
       }
 
@@ -157,7 +174,7 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
       setEvmAddressError("");
       return true;
     } catch {
-      setEvmAddressError("Invalid Base network address format");
+      setEvmAddressError("Invalid EVM address format");
       return false;
     }
   };
@@ -180,9 +197,10 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
     }
   };
 
-  const handleCustomAmountChange = (value: string) => {
-    setCustomAmount(value);
-    validateCustomAmount(value);
+  const handleCustomAmountChange = (value: string | undefined) => {
+    const stringValue = value || "";
+    setCustomAmount(stringValue);
+    validateCustomAmount(stringValue);
   };
 
   const handleEvmAddressChange = (value: string) => {
@@ -339,10 +357,10 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
                     <button
                       key={amount.value}
                       onClick={() => handleAmountSelect(amount.value)}
-                      disabled={!isAvailable}
+                      disabled={!isAvailable || isWithdrawLoading}
                       className={cn(
                         "flex h-12 items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition-colors",
-                        isAvailable
+                        isAvailable && !isWithdrawLoading
                           ? cn(
                               "bg-surface-subtle hover:bg-surface-hover text-primary",
                               isSelected
@@ -361,16 +379,18 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
               {/* Custom Amount Input */}
               {selectedAmount === "custom" && (
                 <div className="flex flex-col gap-2">
-                  <input
-                    type="number"
-                    placeholder="Enter amount"
-                    value={customAmount}
-                    onChange={(e) => handleCustomAmountChange(e.target.value)}
+                  <TokenAmountInput
+                    amount={customAmount}
+                    setAmount={handleCustomAmountChange}
+                    isLoading={isWithdrawLoading}
+                    token={usdcToken}
                     className={cn(
                       "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none",
-                      customAmountError
-                        ? "border-red-500 bg-red-50 text-red-500 placeholder:text-red-400 focus:border-red-500 dark:bg-red-900/20"
-                        : "bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand",
+                      isWithdrawLoading
+                        ? "bg-surface-alt text-secondary cursor-not-allowed opacity-50"
+                        : customAmountError
+                          ? "border-red-500 bg-red-50 text-red-500 placeholder:text-red-400 focus:border-red-500 dark:bg-red-900/20"
+                          : "bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand",
                     )}
                   />
                   {customAmountError && (
@@ -385,17 +405,17 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
           {bridgeStateType === "ready" && (
             <div className="flex flex-col gap-2">
               <label className="text-primary text-sm font-medium">
-                Base Network Address
+                EVM Address
               </label>
               <input
                 type="text"
                 placeholder="0x..."
                 value={evmAddress}
                 onChange={(e) => handleEvmAddressChange(e.target.value)}
-                disabled={availableBalance === 0}
+                disabled={availableBalance === 0 || isWithdrawLoading}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 text-sm focus:outline-none",
-                  availableBalance === 0
+                  availableBalance === 0 || isWithdrawLoading
                     ? "bg-surface-alt text-secondary cursor-not-allowed opacity-50"
                     : evmAddressError
                       ? "border-red-500 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500"
@@ -409,12 +429,10 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeStateType === "ready" && !!amount && (
-            <div className="flex flex-col items-center gap-2">
-              <button
-                onClick={() => setShowGasFreeInfo(!showGasFreeInfo)}
-                className="flex cursor-pointer items-center justify-center gap-2 font-mono text-sm transition-opacity hover:opacity-80"
-              >
+          {bridgeStateType === "ready" &&
+            !!amount &&
+            parseFloat(amount) > 0 && (
+              <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center gap-1">
                   <Image
                     src="/bridge/usdc.svg"
@@ -422,23 +440,15 @@ export const WithdrawBridge = ({ trustlineData }: WithdrawBridgeProps) => {
                     width={14}
                     height={14}
                   />
-                  <span>{amount} USDC</span>
+                  <span>
+                    {new Intl.NumberFormat("en-US").format(parseFloat(amount))}{" "}
+                    USDC
+                  </span>
                   <span className="text-secondary">in</span>
-                  <span>~10s</span>
+                  <span>a minute</span>
                 </div>
-                <ChevronDown
-                  size={14}
-                  className={`text-secondary transition-transform ${showGasFreeInfo ? "rotate-180" : ""}`}
-                />
-              </button>
-              {showGasFreeInfo && (
-                <div className="text-secondary flex items-center gap-1 text-xs">
-                  <Fuel size={14} />
-                  Limited time free
-                </div>
-              )}
-            </div>
-          )}
+              </div>
+            )}
 
           {/* Action Button */}
           {bridgeStateType === "trustline_needed" ? (
