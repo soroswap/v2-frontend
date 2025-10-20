@@ -216,6 +216,7 @@ export const WithdrawBridge = ({
         address: evmAddress,
       });
       setWithdrawResult(result);
+      await refreshBalance();
     } catch (error) {
       console.error("Withdraw failed:", error);
     } finally {
