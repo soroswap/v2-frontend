@@ -32,4 +32,5 @@ export interface UseUSDCTrustlineReturn {
   refreshBalance: () => Promise<void>;
   createTrustline: () => Promise<void>;
   isCreating: boolean;
+  createTrustlineError?: string | null;
 }

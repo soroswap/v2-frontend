@@ -49,6 +49,9 @@ export function useUSDCTrustline(
   const [hasCheckedOnce, setHasCheckedOnce] = useState(false);
 
   const [isCreating, setIsCreating] = useState(false);
+  const [createTrustlineError, setCreateTrustlineError] = useState<
+    string | null
+  >(null);
 
   // Check both account status and USDC trustline in one request
   const checkAccountAndTrustline = useCallback(async () => {
@@ -133,6 +136,7 @@ export function useUSDCTrustline(
     }
 
     setIsCreating(true);
+    setCreateTrustlineError(null);
 
     try {
       const server = new Horizon.Server("https://horizon.stellar.org");
@@ -167,7 +171,6 @@ export function useUSDCTrustline(
 
       // Send transaction
       const result = await sendTransaction(signedXdr);
-      console.log("result = ", result);
 
       if (result.data?.status === "success" || result.data?.successful) {
         // Refresh account and trustline status after successful creation
@@ -175,8 +178,12 @@ export function useUSDCTrustline(
       } else {
         throw new Error("Transaction failed");
       }
-    } catch {
-      throw new Error("Failed to create trustline");
+    } catch (err) {
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Failed to create trustline";
+      setCreateTrustlineError(message);
     } finally {
       setIsCreating(false);
     }
@@ -202,5 +209,6 @@ export function useUSDCTrustline(
     refreshBalance,
     createTrustline,
     isCreating,
+    createTrustlineError,
   };
 }
