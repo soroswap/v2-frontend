@@ -3,9 +3,16 @@
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo } from "react";
 
 export const BridgeFooter = () => {
   const { theme } = useTheme();
+
+  const rozoLogo = useMemo(() => {
+    return theme === "dark"
+      ? "https://bridge.rozo.ai/rozo-white-transparent.png"
+      : "https://bridge.rozo.ai/rozo-transparent.png";
+  }, [theme]);
 
   return (
     <div className="container mx-auto mt-auto w-full">
@@ -156,11 +163,7 @@ export const BridgeFooter = () => {
               className="flex items-center"
             >
               <Image
-                src={
-                  theme === "dark"
-                    ? "https://bridge.rozo.ai/rozo-white-transparent.png"
-                    : "https://bridge.rozo.ai/rozo-transparent.png"
-                }
+                src={rozoLogo}
                 alt="Rozo"
                 width={20}
                 height={20}

@@ -1,14 +1,19 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { ArrowRight } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { RotateArrowButton } from "@/shared/components";
+import { cn } from "@/shared/lib/utils";
+import { useRozoConnectStellar } from "@rozoai/intent-pay";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
-import { BridgeChainsStacked } from "./BridgeChainsStacked";
-import { DepositBridge } from "./BridgeDeposit";
+import { BridgePanel } from "./BridgePanel";
+import { Base, Stellar } from "./icons/chains";
 
 export const BridgeLayout = () => {
-  const { address: userAddress } = useUserContext();
+  const { address: userAddress, selectedWallet } = useUserContext();
+  const { setConnector, disconnect } = useRozoConnectStellar();
+
+  const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
 
   const hasInitialized = useRef(false);
 
@@ -22,37 +27,43 @@ export const BridgeLayout = () => {
       hasInitialized.current = false;
     }
   }, [userAddress, trustlineData]);
+
+  useEffect(() => {
+    if (selectedWallet) {
+      setConnector(selectedWallet);
+    } else {
+      disconnect();
+    }
+  }, [selectedWallet, setConnector]);
+
+  const onSwitchTokens = useCallback(() => {
+    setIsTokenSwitched((prev: boolean) => !prev);
+  }, []);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="mb-4 flex items-center justify-between">
         <p className="text-primary text-xl sm:text-2xl">Bridge</p>
-        <div className="flex items-center gap-4">
-          <BridgeChainsStacked excludeChains={["stellar"]} />
+        <div className="relative flex items-center justify-between gap-4">
+          <Base width={40} height={40} />
 
-          <div className="m-auto flex items-center justify-center">
-            <ArrowRight size={20} />
-          </div>
+          <RotateArrowButton
+            onClick={onSwitchTokens}
+            className={cn(
+              "relative inset-0 translate-x-0 transition-transform duration-300",
+              isTokenSwitched ? "rotate-90" : "-rotate-90",
+            )}
+            disabled={!userAddress}
+          />
 
-          <BridgeChainsStacked excludeChains={["base", "polygon", "solana"]} />
+          <Stellar width={40} height={40} className="rounded-full" />
         </div>
       </div>
 
-      <DepositBridge trustlineData={trustlineData} />
-
-      {/* <BridgeToggle
-        bridgeMode={bridgeMode}
-        onModeChange={handleModeChange}
-        disabled={isWithdrawInProgress}
-      /> */}
-
-      {/* {bridgeMode === "deposit" ? (
-        <DepositBridge trustlineData={trustlineData} />
-      ) : (
-        <WithdrawBridge
-          trustlineData={trustlineData}
-          onWithdrawStateChange={handleWithdrawStateChange}
-        />
-      )} */}
+      <BridgePanel
+        trustlineData={trustlineData}
+        isTokenSwitched={isTokenSwitched}
+      />
     </div>
   );
 };

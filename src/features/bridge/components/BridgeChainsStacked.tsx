@@ -1,3 +1,4 @@
+import { cn } from "@/shared/lib/utils";
 import { Base, Polygon, Solana, Stellar } from "./icons/chains";
 
 interface ChainLogo {
@@ -9,8 +10,10 @@ type ChainType = "base" | "polygon" | "solana" | "stellar";
 
 export const BridgeChainsStacked = ({
   excludeChains,
+  className,
 }: {
   excludeChains?: ChainType[];
+  className?: string;
 }) => {
   // CSS classes for logo container
   const logoContainerClasses =
@@ -24,7 +27,12 @@ export const BridgeChainsStacked = ({
   ];
 
   return (
-    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2">
+    <div
+      className={cn(
+        "*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2",
+        className,
+      )}
+    >
       {chainLogos
         .filter((logo) => !excludeChains?.includes(logo.type as ChainType))
         .map((logo, index) => (
