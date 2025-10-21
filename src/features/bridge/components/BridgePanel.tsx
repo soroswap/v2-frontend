@@ -4,17 +4,17 @@ import { useUserContext } from "@/contexts";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
+import { ExternalPaymentOptions } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { Clipboard, WalletIcon } from "lucide-react";
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAddress, isAddress } from "viem";
 import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { useBridgeState } from "../hooks/useBridgeState";
 import { UseUSDCTrustlineReturn } from "../types";
 import { IntentPayConfig } from "../types/rozo";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
-import { BridgeChainsStacked } from "./BridgeChainsStacked";
 import { TrustlineSection } from "./BridgeTrustlineSection";
 
 interface BridgePanelProps {
@@ -32,6 +32,10 @@ export const BridgePanel = ({
   const [evmAddress, setEvmAddress] = useState<string>("");
   const [evmAddressError, setEvmAddressError] = useState<string>("");
   const [intentConfig, setIntentConfig] = useState<IntentPayConfig | null>(
+    null,
+  );
+  const [isConfigLoading, setIsConfigLoading] = useState<boolean>(false);
+  const [configTimeoutId, setConfigTimeoutId] = useState<NodeJS.Timeout | null>(
     null,
   );
 
@@ -116,7 +120,7 @@ export const BridgePanel = ({
     }
   };
 
-  const getActionButtonDisabled = () => {
+  const getActionButtonDisabled = useMemo(() => {
     if (!isConnected) return true;
     if (bridgeStateType !== "ready") return true;
     if (isTokenSwitched && (!evmAddress || !!evmAddressError)) return true;
@@ -124,55 +128,134 @@ export const BridgePanel = ({
       return !customAmount || parseFloat(customAmount) <= 0;
     }
     return !selectedAmount;
-  };
+  }, [
+    isConnected,
+    bridgeStateType,
+    isTokenSwitched,
+    evmAddress,
+    evmAddressError,
+    selectedAmount,
+    customAmount,
+  ]);
+
+  // Memoize the button content to prevent unnecessary re-renders
+  const buttonContent = useMemo(() => {
+    if (isConfigLoading) {
+      return (
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          Preparing bridge...
+        </div>
+      );
+    }
+    return `Bridge USDC to ${!isTokenSwitched ? "Stellar" : "Base"}`;
+  }, [isConfigLoading, isTokenSwitched]);
 
   // Handle amount selection with validation
   const handleAmountSelectWithValidation = (value: string) => {
     handleAmountSelect(value);
   };
 
-  // Create config function to avoid duplication
+  // Create config function with proper error handling
   const createPaymentConfig = useCallback(async () => {
-    if (!getActionButtonDisabled() && userAddress) {
-      const amount =
-        selectedAmount === "custom" ? customAmount : selectedAmount;
+    if (!userAddress) return;
+
+    const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
+
+    // Validate required fields
+    if (!amount || parseFloat(amount) <= 0) {
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    if (isTokenSwitched && (!evmAddress || evmAddressError)) {
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    setIsConfigLoading(true);
+
+    try {
       const toAddress = isTokenSwitched
         ? evmAddress
         : "0x0000000000000000000000000000000000000000";
 
       const config = {
-        appId: "rozoSoroswapDeposit",
+        appId: "rozoSoroswapApp",
         toChain: Number(BASE_CONFIG.chainId),
         toAddress: getAddress(toAddress),
         toToken: getAddress(BASE_CONFIG.tokenAddress),
         toStellarAddress: isTokenSwitched ? undefined : userAddress,
         toUnits: amount,
+        paymentOptions: isTokenSwitched
+          ? [ExternalPaymentOptions.Stellar]
+          : [ExternalPaymentOptions.Ethereum],
         metadata: {
           items: [
             {
-              name: "Soroswap Deposit",
-              description: `Deposit ${amount} USDC to Stellar`,
+              name: "Soroswap Bridge",
+              description: `Bridge ${amount} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
             },
           ],
           payer: {
-            paymentOptions: isTokenSwitched ? ["ethereum"] : ["stellar"],
+            paymentOptions: isTokenSwitched
+              ? [ExternalPaymentOptions.Stellar]
+              : [ExternalPaymentOptions.Ethereum],
           },
         },
       };
 
       await resetPayment(config as never);
       setIntentConfig(config);
+    } catch (error) {
+      console.error("Failed to create payment config:", error);
+      setIntentConfig(null);
+    } finally {
+      setTimeout(() => {
+        setIsConfigLoading(false);
+      }, 700);
     }
-  }, [selectedAmount, customAmount, userAddress, isTokenSwitched]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+    userAddress,
+    selectedAmount,
+    customAmount,
+    isTokenSwitched,
+    evmAddress,
+    evmAddressError,
+  ]);
 
-  // Debounced effect for amount changes
+  // Debounced effect for config creation
   useEffect(() => {
+    // Clear existing timeout
+    if (configTimeoutId) {
+      clearTimeout(configTimeoutId);
+    }
+
+    // Set new timeout
     const timeoutId = setTimeout(() => {
       createPaymentConfig();
-    }, 500); // 500ms debounce delay
+    }, 150); // 150ms debounce delay
 
-    return () => clearTimeout(timeoutId);
-  }, [selectedAmount, customAmount, isTokenSwitched]); // eslint-disable-line react-hooks/exhaustive-deps
+    setConfigTimeoutId(timeoutId);
+
+    // Cleanup function
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [selectedAmount, customAmount, evmAddress, isTokenSwitched]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (configTimeoutId) {
+        clearTimeout(configTimeoutId);
+      }
+    };
+  }, [configTimeoutId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -288,7 +371,7 @@ export const BridgePanel = ({
 
           {trustlineStatus.exists && !trustlineStatus.checking && (
             <>
-              {intentConfig && !getActionButtonDisabled() ? (
+              {intentConfig && !getActionButtonDisabled && !isConfigLoading ? (
                 <div className="space-y-3">
                   <RozoPayButton.Custom
                     appId={"rozoSoroswapDeposit"}
@@ -298,6 +381,8 @@ export const BridgePanel = ({
                     toStellarAddress={intentConfig.toStellarAddress}
                     toUnits={intentConfig.toUnits}
                     metadata={intentConfig.metadata as never}
+                    connectedWalletOnly={isTokenSwitched}
+                    paymentOptions={intentConfig.paymentOptions}
                     showProcessingPayout
                   >
                     {({ show }) => (
@@ -305,8 +390,7 @@ export const BridgePanel = ({
                         onClick={show}
                         className="w-full gap-2 py-6 text-base text-white"
                       >
-                        Pay with USDC{" "}
-                        <BridgeChainsStacked excludeChains={["stellar"]} />
+                        Bridge USDC to {!isTokenSwitched ? "Stellar" : "Base"}
                       </TheButton>
                     )}
                   </RozoPayButton.Custom>
@@ -316,8 +400,7 @@ export const BridgePanel = ({
                   className="flex w-full items-center justify-center gap-2 py-6 text-base text-white"
                   disabled={true}
                 >
-                  Pay with USDC{" "}
-                  <BridgeChainsStacked excludeChains={["stellar"]} />
+                  {buttonContent}
                 </TheButton>
               )}
             </>

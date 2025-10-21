@@ -1,20 +1,23 @@
-import { ArrowRight, Loader2 } from "lucide-react";
-import { BridgeChainsStacked } from "./BridgeChainsStacked";
-import { Stellar } from "./icons/chains";
+import { RotateArrowButton } from "@/shared/components/buttons";
+import { Loader2 } from "lucide-react";
+import { Base, Stellar } from "./icons/chains";
 
 export const BridgeLoader = () => {
   return (
     <div className="flex w-full flex-col gap-6">
       <div className="mb-4 flex items-center justify-between">
         <p className="text-primary text-xl sm:text-2xl">Bridge</p>
-        <div className="flex items-center gap-4">
-          <BridgeChainsStacked excludeChains={["stellar"]} />
+        <div className="relative flex items-center justify-between gap-4">
+          <Base width={40} height={40} />
 
-          <div className="m-auto flex items-center justify-center">
-            <ArrowRight size={20} />
-          </div>
+          <RotateArrowButton
+            className={
+              "relative inset-0 translate-x-0 -rotate-90 transition-transform duration-300"
+            }
+            disabled
+          />
 
-          <Stellar width={24} height={24} />
+          <Stellar width={40} height={40} className="rounded-full" />
         </div>
       </div>
 

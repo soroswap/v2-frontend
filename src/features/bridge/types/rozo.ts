@@ -1,3 +1,4 @@
+import { ExternalPaymentOptionsString } from "@rozoai/intent-common";
 import { Address } from "viem";
 
 // Unified Intent Pay configuration for all transfer types
@@ -16,4 +17,5 @@ export interface IntentPayConfig {
     value: string;
   }; // Optional memo for Stellar transfers
   metadata?: object;
+  paymentOptions?: ExternalPaymentOptionsString[];
 }

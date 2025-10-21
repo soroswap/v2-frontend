@@ -11,19 +11,20 @@ type ChainType = "base" | "polygon" | "solana" | "stellar";
 export const BridgeChainsStacked = ({
   excludeChains,
   className,
+  size = 24,
 }: {
   excludeChains?: ChainType[];
   className?: string;
+  size?: number;
 }) => {
   // CSS classes for logo container
-  const logoContainerClasses =
-    "border overflow-hidden rounded-full border-background";
+  const logoContainerClasses = "overflow-hidden rounded-full";
 
   const chainLogos: ChainLogo[] = [
-    { type: "base", component: <Base width={24} height={24} /> },
-    { type: "polygon", component: <Polygon width={24} height={24} /> },
-    { type: "solana", component: <Solana width={24} height={24} /> },
-    { type: "stellar", component: <Stellar width={24} height={24} /> },
+    { type: "base", component: <Base width={size} height={size} /> },
+    { type: "polygon", component: <Polygon width={size} height={size} /> },
+    { type: "solana", component: <Solana width={size} height={size} /> },
+    { type: "stellar", component: <Stellar width={size} height={size} /> },
   ];
 
   return (
