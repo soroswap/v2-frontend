@@ -7,7 +7,7 @@ import { cn } from "@/shared/lib/utils/cn";
 import { ExternalPaymentOptions } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
-import { Clipboard, WalletIcon } from "lucide-react";
+import { Clipboard, Loader2, WalletIcon } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAddress, isAddress } from "viem";
@@ -39,6 +39,10 @@ export const BridgePanel = ({
   isTokenSwitched,
 }: BridgePanelProps) => {
   const { address: userAddress } = useUserContext();
+  const { trustlineStatus, refreshBalance } = trustlineData;
+  const { bridgeStateType } = useBridgeState(trustlineData);
+  const { resetPayment } = useRozoPayUI();
+
   const [selectedAmount, setSelectedAmount] = useState<string>("");
   const [customAmount, setCustomAmount] = useState<string>("");
   const [evmAddress, setEvmAddress] = useState<string>("");
@@ -51,15 +55,8 @@ export const BridgePanel = ({
     null,
   );
 
-  const { trustlineStatus, refreshBalance } = trustlineData;
-
-  const { bridgeStateType } = useBridgeState(trustlineData);
-
-  const { resetPayment } = useRozoPayUI();
-
   const isConnected = !!userAddress;
   const availableBalance = parseFloat(trustlineStatus.balance) || 0;
-
   const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
   const handleAmountSelect = (value: string) => {
@@ -125,7 +122,11 @@ export const BridgePanel = ({
     if (bridgeStateType !== "ready") return true;
     if (isTokenSwitched && (!evmAddress || !!evmAddressError)) return true;
     if (selectedAmount === "custom") {
-      return !customAmount || parseFloat(customAmount) <= 0;
+      return (
+        !customAmount ||
+        parseFloat(customAmount) <= 0 ||
+        parseFloat(customAmount) > 500
+      );
     }
     return !selectedAmount;
   }, [
@@ -142,24 +143,20 @@ export const BridgePanel = ({
     if (isConfigLoading) {
       return (
         <div className="flex items-center gap-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          Preparing bridge...
+          <Loader2 className="text-secondary h-4 w-4 animate-spin" />
+          <span className="text-secondary">Preparing bridge...</span>
         </div>
       );
     }
     return `Bridge USDC to ${!isTokenSwitched ? "Stellar" : "Base"}`;
   }, [isConfigLoading, isTokenSwitched]);
 
-  const handleAmountSelectWithValidation = (value: string) => {
-    handleAmountSelect(value);
-  };
-
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) return;
 
     const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
-    if (!amount || parseFloat(amount) <= 0) {
+    if (!amount || parseFloat(amount) <= 0 || parseFloat(amount) > 500) {
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -214,7 +211,7 @@ export const BridgePanel = ({
     } finally {
       setTimeout(() => {
         setIsConfigLoading(false);
-      }, 700);
+      }, 500);
     }
   }, [
     userAddress,
@@ -242,13 +239,7 @@ export const BridgePanel = ({
         clearTimeout(timeoutId);
       }
     };
-  }, [
-    selectedAmount,
-    customAmount,
-    evmAddress,
-    configTimeoutId,
-    isTokenSwitched,
-  ]);
+  }, [selectedAmount, customAmount, evmAddress, isTokenSwitched]);
 
   useEffect(() => {
     return () => {
@@ -259,7 +250,7 @@ export const BridgePanel = ({
   }, [configTimeoutId]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 transition-all duration-300 ease-in-out">
       {isConnected ? (
         <>
           <TrustlineSection trustlineData={trustlineData} />
@@ -283,9 +274,7 @@ export const BridgePanel = ({
                   {PREDEFINED_AMOUNTS.map((amount) => (
                     <button
                       key={amount.value}
-                      onClick={() =>
-                        handleAmountSelectWithValidation(amount.value)
-                      }
+                      onClick={() => handleAmountSelect(amount.value)}
                       className={cn(
                         "bg-surface-subtle hover:bg-surface-hover text-primary flex h-12 items-center justify-center rounded-lg border border-transparent px-3 py-2 text-sm font-medium transition-colors",
                         selectedAmount === amount.value
@@ -300,7 +289,7 @@ export const BridgePanel = ({
 
                 {/* Custom Amount Input */}
                 {selectedAmount === "custom" && (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 transition-all duration-300 ease-in-out">
                     <TokenAmountInput
                       amount={customAmount}
                       setAmount={handleCustomAmountChange}
@@ -308,103 +297,123 @@ export const BridgePanel = ({
                       token={usdcToken}
                       className="bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand w-full rounded-lg border px-3 py-2 text-sm focus:outline-none"
                     />
+                    {customAmount && parseFloat(customAmount) > 500 && (
+                      <p className="text-xs text-red-500">
+                        Maximum amount is 500 USDC
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* EVM Address Input - Only show when token is switched */}
-              {isTokenSwitched && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-primary text-sm font-medium">
-                    EVM Address
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="0x..."
-                      value={evmAddress}
-                      onChange={(e) => handleEvmAddressChange(e.target.value)}
-                      className={cn(
-                        "w-full rounded-lg border px-3 py-2 pr-12 text-sm focus:outline-none",
-                        evmAddressError
-                          ? "border-red-500 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500"
-                          : "bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand",
-                      )}
-                    />
-                    <button
-                      type="button"
-                      onClick={handlePasteAddress}
-                      className="hover:bg-surface-hover absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 transition-colors"
-                    >
-                      <Clipboard className="text-secondary h-4 w-4" />
-                    </button>
-                  </div>
-                  {evmAddressError && (
-                    <p className="text-xs text-red-500">{evmAddressError}</p>
-                  )}
+              <div
+                className={cn(
+                  "flex flex-col gap-2 overflow-hidden transition-all duration-300 ease-in-out",
+                  isTokenSwitched
+                    ? "max-h-96 opacity-100"
+                    : "max-h-0 opacity-0",
+                )}
+              >
+                <label className="text-primary text-sm font-medium">
+                  EVM Address
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="0x..."
+                    value={evmAddress}
+                    onChange={(e) => handleEvmAddressChange(e.target.value)}
+                    className={cn(
+                      "w-full rounded-lg border px-3 py-2 pr-12 text-sm focus:outline-none",
+                      evmAddressError
+                        ? "border-red-500 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500"
+                        : "bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand",
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={handlePasteAddress}
+                    className="hover:bg-surface-hover absolute top-1/2 right-2 -translate-y-1/2 rounded p-1 transition-colors"
+                  >
+                    <Clipboard className="text-secondary h-4 w-4" />
+                  </button>
                 </div>
-              )}
+                {evmAddressError && (
+                  <p className="text-xs text-red-500">{evmAddressError}</p>
+                )}
+              </div>
             </>
           )}
 
           {/* Fee/Time Indicator - Only show when ready */}
-          {bridgeStateType === "ready" &&
-            !!amount &&
-            parseFloat(amount) > 0 && (
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Image
-                    src="https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy"
-                    alt="USDC"
-                    width={14}
-                    height={14}
-                  />
-                  <span>
-                    {new Intl.NumberFormat("en-US").format(parseFloat(amount))}{" "}
-                    USDC
-                  </span>
-                  <span className="text-secondary">in</span>
-                  <span>a minute</span>
-                </div>
-              </div>
+          <div
+            className={cn(
+              "flex flex-col items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out",
+              bridgeStateType === "ready" &&
+                !!amount &&
+                parseFloat(amount) > 0 &&
+                parseFloat(amount) <= 500
+                ? "max-h-20 opacity-100"
+                : "max-h-0 opacity-0",
             )}
+          >
+            <div className="flex items-center gap-1">
+              <Image
+                src="https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy"
+                alt="USDC"
+                width={14}
+                height={14}
+              />
+              <span>
+                {new Intl.NumberFormat("en-US").format(parseFloat(amount))} USDC
+              </span>
+              <span className="text-secondary">in</span>
+              <span>a minute</span>
+            </div>
+          </div>
 
-          {trustlineStatus.exists && !trustlineStatus.checking && (
-            <>
-              {intentConfig && !getActionButtonDisabled && !isConfigLoading ? (
-                <div className="space-y-3">
-                  <RozoPayButton.Custom
-                    appId={"rozoSoroswapDeposit"}
-                    toChain={intentConfig.toChain}
-                    toToken={intentConfig.toToken}
-                    toAddress={intentConfig.toAddress as `0x${string}`}
-                    toStellarAddress={intentConfig.toStellarAddress}
-                    toUnits={intentConfig.toUnits}
-                    metadata={intentConfig.metadata as never}
-                    connectedWalletOnly={isTokenSwitched}
-                    paymentOptions={intentConfig.paymentOptions}
-                    showProcessingPayout
-                  >
-                    {({ show }) => (
-                      <TheButton
-                        onClick={show}
-                        className="w-full gap-2 py-6 text-base text-white"
-                      >
-                        Bridge USDC to {!isTokenSwitched ? "Stellar" : "Base"}
-                      </TheButton>
-                    )}
-                  </RozoPayButton.Custom>
-                </div>
-              ) : (
-                <TheButton
-                  className="flex w-full items-center justify-center gap-2 py-6 text-base text-white"
-                  disabled={true}
+          <div
+            className={cn(
+              "overflow-hidden transition-all duration-300 ease-in-out",
+              trustlineStatus.exists && !trustlineStatus.checking
+                ? "max-h-96 opacity-100"
+                : "max-h-0 opacity-0",
+            )}
+          >
+            {intentConfig && !getActionButtonDisabled && !isConfigLoading ? (
+              <div className="space-y-3">
+                <RozoPayButton.Custom
+                  appId={intentConfig.appId}
+                  toChain={intentConfig.toChain}
+                  toToken={intentConfig.toToken}
+                  toAddress={intentConfig.toAddress as `0x${string}`}
+                  toStellarAddress={intentConfig.toStellarAddress}
+                  toUnits={intentConfig.toUnits}
+                  metadata={intentConfig.metadata as never}
+                  connectedWalletOnly={isTokenSwitched}
+                  paymentOptions={intentConfig.paymentOptions}
+                  showProcessingPayout
                 >
-                  {buttonContent}
-                </TheButton>
-              )}
-            </>
-          )}
+                  {({ show }) => (
+                    <TheButton
+                      onClick={show}
+                      className="w-full gap-2 py-6 text-base text-white"
+                    >
+                      Bridge USDC to {!isTokenSwitched ? "Stellar" : "Base"}
+                    </TheButton>
+                  )}
+                </RozoPayButton.Custom>
+              </div>
+            ) : (
+              <TheButton
+                className="flex w-full items-center justify-center gap-2 py-6 text-base text-white"
+                disabled={true}
+              >
+                {buttonContent}
+              </TheButton>
+            )}
+          </div>
         </>
       ) : (
         <div className="flex flex-col items-center gap-4 py-8">
@@ -414,7 +423,9 @@ export const BridgePanel = ({
               Connect your wallet to start bridging
             </p>
             <p className="text-secondary text-sm">
-              Deposit USDC from any supported chain to Stellar
+              {isTokenSwitched
+                ? "Bridge USDC from Stellar to Base"
+                : "Bridge USDC from any supported chain to Stellar"}
             </p>
           </div>
           <ConnectWallet className="flex w-full max-w-xs justify-center" />

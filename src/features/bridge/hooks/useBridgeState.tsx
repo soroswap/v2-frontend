@@ -1,12 +1,8 @@
-import { UseUSDCTrustlineReturn } from "../types";
 import { useMemo } from "react";
+import { UseUSDCTrustlineReturn } from "../types";
 
 export const useBridgeState = (trustlineData: UseUSDCTrustlineReturn) => {
   const { trustlineStatus, accountStatus, hasCheckedOnce } = trustlineData;
-
-  /**
-   * Logic based on getBridgeState from DepositBridge.
-   */
 
   const bridgeState = useMemo(() => {
     if (accountStatus.checking || trustlineStatus.checking) {

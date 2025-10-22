@@ -3,8 +3,8 @@
 import { TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import { AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
-import { UseUSDCTrustlineReturn } from "../types";
 import { useBridgeState } from "../hooks/useBridgeState";
+import { UseUSDCTrustlineReturn } from "../types";
 
 interface TrustlineSectionProps {
   trustlineData: UseUSDCTrustlineReturn;
@@ -19,7 +19,6 @@ export const TrustlineSection = ({ trustlineData }: TrustlineSectionProps) => {
     isCreating,
     createTrustlineError,
   } = trustlineData;
-
   const { bridgeStateType, bridgeStateMessage } = useBridgeState(trustlineData);
 
   return (

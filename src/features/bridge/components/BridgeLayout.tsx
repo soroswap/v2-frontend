@@ -12,9 +12,10 @@ import { Stellar } from "./icons/chains";
 
 export const BridgeLayout = () => {
   const { address: userAddress, selectedWallet } = useUserContext();
-  const { setConnector, disconnect } = useRozoConnectStellar();
+  const { setConnector, disconnect, connector } = useRozoConnectStellar();
 
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
+  const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
 
   const hasInitialized = useRef(false);
 
@@ -30,7 +31,7 @@ export const BridgeLayout = () => {
   }, [userAddress, trustlineData]);
 
   useEffect(() => {
-    if (selectedWallet) {
+    if (selectedWallet && !connector) {
       setConnector(selectedWallet);
     } else {
       disconnect();
@@ -38,7 +39,13 @@ export const BridgeLayout = () => {
   }, [selectedWallet]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onSwitchTokens = useCallback(() => {
-    setIsTokenSwitched((prev: boolean) => !prev);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      setIsTokenSwitched((prev: boolean) => !prev);
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 150); // Half of the transition duration
+    }, 150); // Half of the transition duration
   }, []);
 
   const excludeChains: ChainType[] = isTokenSwitched
@@ -50,7 +57,11 @@ export const BridgeLayout = () => {
       <div className="mb-4 flex items-center justify-between">
         <p className="text-primary text-xl sm:text-2xl">Bridge</p>
         <div className="relative flex items-center justify-between gap-4">
-          <BridgeChainsStacked excludeChains={excludeChains} size={40} />
+          <BridgeChainsStacked
+            excludeChains={excludeChains}
+            size={40}
+            isTransitioning={isTransitioning}
+          />
 
           <RotateArrowButton
             onClick={onSwitchTokens}
@@ -58,7 +69,6 @@ export const BridgeLayout = () => {
               "relative inset-0 translate-x-0 transition-transform duration-300",
               isTokenSwitched ? "rotate-90" : "-rotate-90",
             )}
-            disabled={!userAddress}
           />
 
           <Stellar width={40} height={40} className="rounded-full" />

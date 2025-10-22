@@ -6,13 +6,13 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 export const BridgeFooter = () => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   const rozoLogo = useMemo(() => {
-    return theme === "dark"
+    return resolvedTheme === "dark"
       ? "https://bridge.rozo.ai/rozo-white-transparent.png"
       : "https://bridge.rozo.ai/rozo-transparent.png";
-  }, [theme]);
+  }, [resolvedTheme]);
 
   return (
     <div className="container mx-auto mt-auto w-full">
@@ -99,13 +99,11 @@ export const BridgeFooter = () => {
             </a>
           </div>
 
-          <span className="text-muted-foreground mx-2 select-none">·</span>
-
           <Link
             href="https://bridge.rozo.ai/faq"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary/80 transition-colors"
+            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
           >
             FAQs
           </Link>
@@ -146,7 +144,7 @@ export const BridgeFooter = () => {
             href="https://bridge.rozo.ai/terms"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-primary/80 transition-colors"
+            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
           >
             Terms of Service
           </Link>
