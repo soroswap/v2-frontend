@@ -1,3 +1,4 @@
+import { envVars } from "@/shared/lib/environmentVars";
 import { cn } from "@/shared/lib/utils";
 import { Base, Polygon, Solana, Stellar } from "./icons/chains";
 
@@ -6,7 +7,7 @@ interface ChainLogo {
   component: React.ReactNode;
 }
 
-type ChainType = "base" | "polygon" | "solana" | "stellar";
+export type ChainType = "base" | "polygon" | "solana" | "stellar";
 
 export const BridgeChainsStacked = ({
   excludeChains,
@@ -17,14 +18,26 @@ export const BridgeChainsStacked = ({
   className?: string;
   size?: number;
 }) => {
-  // CSS classes for logo container
   const logoContainerClasses = "overflow-hidden rounded-full";
+  const isTestnet = envVars.isTestnet;
 
   const chainLogos: ChainLogo[] = [
-    { type: "base", component: <Base width={size} height={size} /> },
-    { type: "polygon", component: <Polygon width={size} height={size} /> },
-    { type: "solana", component: <Solana width={size} height={size} /> },
-    { type: "stellar", component: <Stellar width={size} height={size} /> },
+    {
+      type: "base",
+      component: <Base width={size} height={size} testnet={isTestnet} />,
+    },
+    {
+      type: "polygon",
+      component: <Polygon width={size} height={size} testnet={isTestnet} />,
+    },
+    {
+      type: "solana",
+      component: <Solana width={size} height={size} testnet={isTestnet} />,
+    },
+    {
+      type: "stellar",
+      component: <Stellar width={size} height={size} testnet={isTestnet} />,
+    },
   ];
 
   return (

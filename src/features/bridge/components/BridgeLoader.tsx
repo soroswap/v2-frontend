@@ -1,6 +1,7 @@
 import { RotateArrowButton } from "@/shared/components/buttons";
 import { Loader2 } from "lucide-react";
-import { Base, Stellar } from "./icons/chains";
+import { BridgeChainsStacked } from "./BridgeChainsStacked";
+import { Stellar } from "./icons/chains";
 
 export const BridgeLoader = () => {
   return (
@@ -8,7 +9,7 @@ export const BridgeLoader = () => {
       <div className="mb-4 flex items-center justify-between">
         <p className="text-primary text-xl sm:text-2xl">Bridge</p>
         <div className="relative flex items-center justify-between gap-4">
-          <Base width={40} height={40} />
+          <BridgeChainsStacked excludeChains={["stellar"]} size={40} />
 
           <RotateArrowButton
             className={

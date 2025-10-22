@@ -6,6 +6,7 @@ import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
 import { ExternalPaymentOptions } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
+import { AssetInfo } from "@soroswap/sdk";
 import { Clipboard, WalletIcon } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -21,6 +22,17 @@ interface BridgePanelProps {
   trustlineData: UseUSDCTrustlineReturn;
   isTokenSwitched: boolean;
 }
+
+const usdcToken: AssetInfo = {
+  code: "USDC",
+  issuer: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
+  contract: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
+  name: "USD Coin",
+  org: "Centre Consortium LLC",
+  domain: "centre.io",
+  icon: "https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy",
+  decimals: 7,
+};
 
 export const BridgePanel = ({
   trustlineData,
@@ -50,14 +62,6 @@ export const BridgePanel = ({
 
   const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
-  // Mock USDC token for TokenAmountInput
-  const usdcToken = {
-    address: "USDC",
-    symbol: "USDC",
-    decimals: 6,
-    name: "USD Coin",
-  };
-
   const handleAmountSelect = (value: string) => {
     if (value === "custom") {
       setSelectedAmount("custom");
@@ -73,24 +77,20 @@ export const BridgePanel = ({
     setCustomAmount(stringValue);
   };
 
-  // Validate EVM address (Base network)
   const validateEvmAddress = (address: string) => {
     if (!address) {
       setEvmAddressError("");
-      return false; // Address is required
+      return false;
     }
 
     try {
-      // Use viem's isAddress for robust validation
       if (!isAddress(address)) {
         setEvmAddressError("Invalid EVM address format");
         return false;
       }
 
-      // Normalize the address using viem's getAddress (checksum format)
       const normalizedAddress = getAddress(address);
 
-      // Update the input with the normalized address if it's different
       if (normalizedAddress !== address) {
         setEvmAddress(normalizedAddress);
       }
@@ -138,7 +138,6 @@ export const BridgePanel = ({
     customAmount,
   ]);
 
-  // Memoize the button content to prevent unnecessary re-renders
   const buttonContent = useMemo(() => {
     if (isConfigLoading) {
       return (
@@ -151,18 +150,15 @@ export const BridgePanel = ({
     return `Bridge USDC to ${!isTokenSwitched ? "Stellar" : "Base"}`;
   }, [isConfigLoading, isTokenSwitched]);
 
-  // Handle amount selection with validation
   const handleAmountSelectWithValidation = (value: string) => {
     handleAmountSelect(value);
   };
 
-  // Create config function with proper error handling
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) return;
 
     const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
-    // Validate required fields
     if (!amount || parseFloat(amount) <= 0) {
       setIntentConfig(null);
       setIsConfigLoading(false);
@@ -180,15 +176,18 @@ export const BridgePanel = ({
     try {
       const toAddress = isTokenSwitched
         ? evmAddress
-        : "0x0000000000000000000000000000000000000000";
+        : // Bridge to Stellar address is not needed. use toStellarAddress instead.
+          "0x0000000000000000000000000000000000000000";
+      const amountFormatted = Number(amount).toFixed(2);
 
-      const config = {
+      const config: IntentPayConfig = {
         appId: "rozoSoroswapApp",
         toChain: Number(BASE_CONFIG.chainId),
         toAddress: getAddress(toAddress),
         toToken: getAddress(BASE_CONFIG.tokenAddress),
         toStellarAddress: isTokenSwitched ? undefined : userAddress,
         toUnits: amount,
+        intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
         paymentOptions: isTokenSwitched
           ? [ExternalPaymentOptions.Stellar]
           : [ExternalPaymentOptions.Ethereum],
@@ -196,7 +195,7 @@ export const BridgePanel = ({
           items: [
             {
               name: "Soroswap Bridge",
-              description: `Bridge ${amount} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+              description: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
             },
           ],
           payer: {
@@ -228,27 +227,29 @@ export const BridgePanel = ({
 
   // Debounced effect for config creation
   useEffect(() => {
-    // Clear existing timeout
     if (configTimeoutId) {
       clearTimeout(configTimeoutId);
     }
 
-    // Set new timeout
     const timeoutId = setTimeout(() => {
       createPaymentConfig();
-    }, 150); // 150ms debounce delay
+    }, 150);
 
     setConfigTimeoutId(timeoutId);
 
-    // Cleanup function
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
     };
-  }, [selectedAmount, customAmount, evmAddress, isTokenSwitched]);
+  }, [
+    selectedAmount,
+    customAmount,
+    evmAddress,
+    configTimeoutId,
+    isTokenSwitched,
+  ]);
 
-  // Cleanup timeout on unmount
   useEffect(() => {
     return () => {
       if (configTimeoutId) {
@@ -261,7 +262,6 @@ export const BridgePanel = ({
     <div className="flex flex-col gap-4">
       {isConnected ? (
         <>
-          {/* Status Messages */}
           <TrustlineSection trustlineData={trustlineData} />
 
           {/* Amount Selection - Only show when ready */}

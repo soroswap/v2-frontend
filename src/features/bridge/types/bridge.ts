@@ -1,5 +1,3 @@
-export type BridgeMode = "deposit" | "withdraw";
-
 export interface BridgeAmount {
   label: string;
   value: string;
