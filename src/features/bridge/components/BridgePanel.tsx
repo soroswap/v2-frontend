@@ -4,7 +4,10 @@ import { useUserContext } from "@/contexts";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { ConnectWallet, TheButton } from "@/shared/components/buttons";
 import { cn } from "@/shared/lib/utils/cn";
-import { ExternalPaymentOptions } from "@rozoai/intent-common";
+import {
+  ExternalPaymentOptions,
+  PaymentCompletedEvent,
+} from "@rozoai/intent-common";
 import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
 import { Clipboard, Loader2, WalletIcon } from "lucide-react";
@@ -15,6 +18,7 @@ import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { useBridgeState } from "../hooks/useBridgeState";
 import { UseUSDCTrustlineReturn } from "../types";
 import { IntentPayConfig } from "../types/rozo";
+import { saveBridgeHistory } from "../utils/history";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { TrustlineSection } from "./BridgeTrustlineSection";
 
@@ -113,7 +117,30 @@ export const BridgePanel = ({
         validateEvmAddress(text);
       }
     } catch (error) {
-      console.error("Failed to read clipboard:", error);
+      throw error;
+    }
+  };
+
+  const onPaymentCompleted = (e: PaymentCompletedEvent) => {
+    if (userAddress && e.rozoPaymentId) {
+      // Determine destination address and chains
+      const destinationAddress = isTokenSwitched ? evmAddress : userAddress;
+      const fromChain = isTokenSwitched ? "Stellar" : "Base";
+      const toChain = isTokenSwitched ? "Base" : "Stellar";
+
+      saveBridgeHistory(
+        userAddress,
+        e.rozoPaymentId,
+        amount,
+        destinationAddress,
+        fromChain,
+        toChain,
+      );
+
+      // Dispatch custom event to notify BridgeHistory component to refetch
+      window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
+    } else {
+      throw new Error("Cannot save payment to history");
     }
   };
 
@@ -206,7 +233,7 @@ export const BridgePanel = ({
       await resetPayment(config as never);
       setIntentConfig(config);
     } catch (error) {
-      console.error("Failed to create payment config:", error);
+      throw error;
       setIntentConfig(null);
     } finally {
       setTimeout(() => {
@@ -248,6 +275,18 @@ export const BridgePanel = ({
       }
     };
   }, [configTimeoutId]);
+
+  // Reset all input states when user disconnects
+  useEffect(() => {
+    if (!userAddress) {
+      setSelectedAmount("");
+      setCustomAmount("");
+      setEvmAddress("");
+      setEvmAddressError("");
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+    }
+  }, [userAddress]);
 
   return (
     <div className="flex flex-col gap-4 transition-all duration-300 ease-in-out">
@@ -393,6 +432,8 @@ export const BridgePanel = ({
                   metadata={intentConfig.metadata as never}
                   connectedWalletOnly={isTokenSwitched}
                   paymentOptions={intentConfig.paymentOptions}
+                  onPaymentCompleted={onPaymentCompleted}
+                  resetOnSuccess
                   showProcessingPayout
                 >
                   {({ show }) => (

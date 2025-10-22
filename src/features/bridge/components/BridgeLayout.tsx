@@ -7,6 +7,7 @@ import { useRozoConnectStellar } from "@rozoai/intent-pay";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUSDCTrustline } from "../hooks/useUSDCTrustline";
 import { BridgeChainsStacked, ChainType } from "./BridgeChainsStacked";
+import { BridgeHistory } from "./BridgeHistory";
 import { BridgePanel } from "./BridgePanel";
 import { Stellar } from "./icons/chains";
 
@@ -79,6 +80,12 @@ export const BridgeLayout = () => {
         trustlineData={trustlineData}
         isTokenSwitched={isTokenSwitched}
       />
+
+      {userAddress && trustlineData.trustlineStatus.exists && (
+        <div className="mt-8">
+          <BridgeHistory walletAddress={userAddress} />
+        </div>
+      )}
     </div>
   );
 };
