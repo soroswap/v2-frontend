@@ -42,8 +42,8 @@ export const BridgeLayout = () => {
   }, []);
 
   const excludeChains: ChainType[] = isTokenSwitched
-    ? ["stellar"]
-    : ["base", "polygon", "solana"];
+    ? ["polygon", "solana", "stellar"]
+    : ["stellar"];
 
   return (
     <div className="flex flex-col gap-6">
