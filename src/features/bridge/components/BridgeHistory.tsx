@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { BridgeHistoryItem } from "../types/history";
 import {
+  clearPaymentHistoryForWallet,
   getBridgeHistoryForWallet,
   removeDuplicatePayments,
   SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY,
@@ -55,7 +56,6 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
     loadHistory();
   }, [walletAddress, loadHistory, currentWalletAddress]);
 
-  // Listen for storage changes to refetch when payment is completed
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY) {
@@ -67,10 +67,7 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
       loadHistory();
     };
 
-    // Listen for storage changes (works across tabs)
     window.addEventListener("storage", handleStorageChange);
-
-    // Listen for custom payment completed events (works within same tab)
     window.addEventListener("bridge-payment-completed", handleCustomEvent);
 
     return () => {
@@ -92,7 +89,7 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
 
   const clearHistory = () => {
     try {
-      localStorage.removeItem(SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY);
+      clearPaymentHistoryForWallet(walletAddress);
       setHistory([]);
     } catch (error) {
       throw error;
