@@ -8,7 +8,7 @@ import { BridgeHistoryItem } from "../types/history";
 import {
   getBridgeHistoryForWallet,
   removeDuplicatePayments,
-  ROZO_BRIDGE_HISTORY_STORAGE_KEY,
+  SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY,
 } from "../utils/history";
 
 interface BridgeHistoryProps {
@@ -58,7 +58,7 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
   // Listen for storage changes to refetch when payment is completed
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === ROZO_BRIDGE_HISTORY_STORAGE_KEY) {
+      if (e.key === SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY) {
         loadHistory();
       }
     };
@@ -92,7 +92,7 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
 
   const clearHistory = () => {
     try {
-      localStorage.removeItem(ROZO_BRIDGE_HISTORY_STORAGE_KEY);
+      localStorage.removeItem(SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY);
       setHistory([]);
     } catch (error) {
       throw error;

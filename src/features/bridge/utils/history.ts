@@ -1,6 +1,6 @@
 import { BridgeHistoryItem, BridgeHistoryStorage } from "../types/history";
 
-export const ROZO_BRIDGE_HISTORY_STORAGE_KEY = "rozo_bridge_history";
+export const SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY = "soroswap_bridge_history";
 
 export const saveBridgeHistory = (
   walletAddress: string,
@@ -40,7 +40,7 @@ export const saveBridgeHistory = (
     };
 
     localStorage.setItem(
-      ROZO_BRIDGE_HISTORY_STORAGE_KEY,
+      SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY,
       JSON.stringify(updatedData),
     );
   } catch (error) {
@@ -50,7 +50,7 @@ export const saveBridgeHistory = (
 
 export const getBridgeHistory = (): BridgeHistoryStorage => {
   try {
-    const data = localStorage.getItem(ROZO_BRIDGE_HISTORY_STORAGE_KEY);
+    const data = localStorage.getItem(SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY);
     const parsedData = data ? JSON.parse(data) : {};
     return parsedData;
   } catch {
@@ -72,7 +72,7 @@ export const clearPaymentHistoryForWallet = (walletAddress: string): void => {
     const updatedData = { ...existingData };
     delete updatedData[walletAddress];
     localStorage.setItem(
-      ROZO_BRIDGE_HISTORY_STORAGE_KEY,
+      SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY,
       JSON.stringify(updatedData),
     );
   } catch (error) {
@@ -108,7 +108,7 @@ export const removeDuplicatePayments = (walletAddress: string): void => {
         [walletAddress]: uniquePayments,
       };
       localStorage.setItem(
-        ROZO_BRIDGE_HISTORY_STORAGE_KEY,
+        SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY,
         JSON.stringify(updatedData),
       );
     }
