@@ -3,6 +3,7 @@ import { AssetInfo } from "@soroswap/sdk";
 import { TOKEN_LIST_URL, xlmTokenList } from "@/shared/lib/constants/tokenList";
 import { network } from "@/shared/lib/environmentVars";
 import { useMemo } from "react";
+import { soroswapTokenList } from "./hardcodedTokenList";
 
 interface NetworkData {
   network: string;
@@ -12,7 +13,15 @@ interface NetworkData {
 const fetchTokenList = async () => {
   const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
   try {
-    const response = await fetch(TOKEN_LIST_URL);
+    let response
+    if(network === "mainnet") {
+      response = {
+        ok: true,
+        json: async () => soroswapTokenList
+      }
+    } else {
+      response = await fetch(TOKEN_LIST_URL);
+    }
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
