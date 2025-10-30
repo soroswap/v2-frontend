@@ -11,6 +11,8 @@ import { BridgeLoader } from "../components/BridgeLoader";
 export const wagmiConfig = createConfig(
   getDefaultConfig({
     appName: "Soroswap",
+    appIcon: "https://app.soroswap.finance/SoroswapPurpleBlack.svg",
+    appUrl: "https://app.soroswap.finance/",
   }),
 );
 
@@ -18,7 +20,7 @@ const queryClient = new QueryClient();
 
 export function RozoProvider({ children }: { children: ReactNode }) {
   const { kit } = useUserContext();
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
 
   if (!kit) return <BridgeLoader />;
 
@@ -27,7 +29,8 @@ export function RozoProvider({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <RozoPayProvider
           stellarKit={kit}
-          mode={theme === "dark" ? "dark" : "light"}
+          stellarWalletPersistence={false}
+          mode={resolvedTheme === "dark" ? "dark" : "light"}
         >
           {children}
         </RozoPayProvider>

@@ -8,12 +8,16 @@ import {
   ExternalPaymentOptions,
   PaymentCompletedEvent,
 } from "@rozoai/intent-common";
-import { RozoPayButton, useRozoPayUI } from "@rozoai/intent-pay";
+import {
+  getEVMAddress,
+  isEVMAddress,
+  RozoPayButton,
+  useRozoPayUI,
+} from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
 import { Clipboard, Loader2, WalletIcon } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getAddress, isAddress } from "viem";
 import { BASE_CONFIG, PREDEFINED_AMOUNTS } from "../constants/bridge";
 import { useBridgeState } from "../hooks/useBridgeState";
 import { UseUSDCTrustlineReturn } from "../types";
@@ -85,12 +89,12 @@ export const BridgePanel = ({
     }
 
     try {
-      if (!isAddress(address)) {
+      if (!isEVMAddress(address)) {
         setEvmAddressError("Invalid EVM address format");
         return false;
       }
 
-      const normalizedAddress = getAddress(address);
+      const normalizedAddress = getEVMAddress(address);
 
       if (normalizedAddress !== address) {
         setEvmAddress(normalizedAddress);
@@ -207,8 +211,8 @@ export const BridgePanel = ({
       const config: IntentPayConfig = {
         appId: "rozoSoroswapApp",
         toChain: Number(BASE_CONFIG.chainId),
-        toAddress: getAddress(toAddress),
-        toToken: getAddress(BASE_CONFIG.tokenAddress),
+        toAddress: toAddress as `0x${string}`,
+        toToken: BASE_CONFIG.tokenAddress as `0x${string}`,
         toStellarAddress: isTokenSwitched ? undefined : userAddress,
         toUnits: amount,
         intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,

@@ -1,12 +1,11 @@
 import { ExternalPaymentOptionsString } from "@rozoai/intent-common";
-import { Address } from "viem";
 
 // Unified Intent Pay configuration for all transfer types
 export interface IntentPayConfig {
   appId: string;
   toChain: number;
-  toToken: Address; // USDC token address on destination chain
-  toAddress?: Address; // Destination EVM address
+  toToken: `0x${string}`; // USDC token address on destination chain
+  toAddress?: `0x${string}`; // Destination EVM address
   toStellarAddress?: string; // Destination Stellar address
   toUnits: string; // Amount in USDC units
   intent?: string; // e.g., "Transfer USDC"

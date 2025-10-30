@@ -3,16 +3,26 @@
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const BridgeFooter = () => {
   const { resolvedTheme } = useTheme();
 
+  // Prevent hydration mismatch by only rendering theme-dependent image after mount
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const rozoLogo = useMemo(() => {
+    if (!mounted) {
+      // Always show light logo on SSR/first client render
+      return "https://bridge.rozo.ai/rozo-transparent.png";
+    }
     return resolvedTheme === "dark"
       ? "https://bridge.rozo.ai/rozo-white-transparent.png"
       : "https://bridge.rozo.ai/rozo-transparent.png";
-  }, [resolvedTheme]);
+  }, [resolvedTheme, mounted]);
 
   return (
     <div className="container mx-auto mt-auto w-full">

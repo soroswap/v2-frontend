@@ -18,8 +18,8 @@ importers:
         specifier: 0.0.25-beta.1
         version: 0.0.25-beta.1(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.32-beta.4
-        version: 0.0.32-beta.4(8cecdeaba14630242a2752d5e59fd1fc)
+        specifier: 0.0.32-beta.14
+        version: 0.0.32-beta.14(0ee2daf4df6d4f81e72dbff6e7ec8f7c)
       '@soroswap/sdk':
         specifier: 0.3.7
         version: 0.3.7
@@ -1141,8 +1141,8 @@ packages:
   '@rozoai/intent-common@0.0.25-beta.1':
     resolution: {integrity: sha512-3yu7ThZe8gP+SbnPqAyfNtQk44CQGoPsEQT2CumU0cRZcYcB324dpRr1672FRa7h2WquXdk4LMQqQA4svGrd8A==}
 
-  '@rozoai/intent-pay@0.0.32-beta.4':
-    resolution: {integrity: sha512-4nsBtewkkmR2d7FAFw/Zo8YTzhH2l7/0mJhjBoEWv7Eo28lkrYYr+YGYtl7XBCBiRrl5v2a09SjD/CpByvszqQ==}
+  '@rozoai/intent-pay@0.0.32-beta.14':
+    resolution: {integrity: sha512-il+69VKNU9SWCXaJXR34tYKcQWZAToPDvoO02wBZ34kSt12Xx5LQAqK2M3BW32ghnK7OtqsCLoVbJXl1GfTGWA==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@creit.tech/stellar-wallets-kit': ^1.9.5
@@ -7734,7 +7734,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.32-beta.4(8cecdeaba14630242a2752d5e59fd1fc)':
+  '@rozoai/intent-pay@0.0.32-beta.14(0ee2daf4df6d4f81e72dbff6e7ec8f7c)':
     dependencies:
       '@albedo-link/intent': 0.13.0
       '@reown/appkit': 1.8.11(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.1(@babel/core@7.28.4)(@types/react@19.2.2)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10)))(@types/react@19.2.2)(bufferutil@4.0.9)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
@@ -7759,7 +7759,7 @@ snapshots:
       react-transition-state: 1.1.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       react-use-measure: 2.1.7(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       resize-observer-polyfill: 1.5.1
-      styled-components: 5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@16.13.1)(react@19.2.0)
+      styled-components: 5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@18.3.1)(react@19.2.0)
       viem: 2.38.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76)
       wagmi: 2.18.1(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.1(@babel/core@7.28.4)(@types/react@19.2.2)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10)))(@tanstack/query-core@5.90.5)(@tanstack/react-query@5.90.5(react@19.2.0))(@types/react@19.2.2)(bufferutil@4.0.9)(react@19.2.0)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.38.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.25.76))(zod@3.25.76)
     optionalDependencies:
@@ -10574,14 +10574,14 @@ snapshots:
       '@types/babel__core': 7.20.5
       '@types/babel__traverse': 7.28.0
 
-  babel-plugin-styled-components@2.1.4(@babel/core@7.28.4)(styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@16.13.1)(react@19.2.0))(supports-color@5.5.0):
+  babel-plugin-styled-components@2.1.4(@babel/core@7.28.4)(styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@18.3.1)(react@19.2.0))(supports-color@5.5.0):
     dependencies:
       '@babel/helper-annotate-as-pure': 7.27.3
       '@babel/helper-module-imports': 7.27.1(supports-color@5.5.0)
       '@babel/plugin-syntax-jsx': 7.27.1(@babel/core@7.28.4)
       lodash: 4.17.21
       picomatch: 2.3.1
-      styled-components: 5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@16.13.1)(react@19.2.0)
+      styled-components: 5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@18.3.1)(react@19.2.0)
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
@@ -13740,19 +13740,19 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
-  styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@16.13.1)(react@19.2.0):
+  styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@18.3.1)(react@19.2.0):
     dependencies:
       '@babel/helper-module-imports': 7.27.1(supports-color@5.5.0)
       '@babel/traverse': 7.28.4(supports-color@5.5.0)
       '@emotion/is-prop-valid': 1.4.0
       '@emotion/stylis': 0.8.5
       '@emotion/unitless': 0.7.5
-      babel-plugin-styled-components: 2.1.4(@babel/core@7.28.4)(styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@16.13.1)(react@19.2.0))(supports-color@5.5.0)
+      babel-plugin-styled-components: 2.1.4(@babel/core@7.28.4)(styled-components@5.3.11(@babel/core@7.28.4)(react-dom@19.2.0(react@19.2.0))(react-is@18.3.1)(react@19.2.0))(supports-color@5.5.0)
       css-to-react-native: 3.2.0
       hoist-non-react-statics: 3.3.2
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
-      react-is: 16.13.1
+      react-is: 18.3.1
       shallowequal: 1.1.0
       supports-color: 5.5.0
     transitivePeerDependencies:

@@ -13,7 +13,7 @@ import { Stellar } from "./icons/chains";
 
 export const BridgeLayout = () => {
   const { address: userAddress, selectedWallet } = useUserContext();
-  const { setConnector, disconnect, connector } = useRozoConnectStellar();
+  const { setConnector, disconnect, setPublicKey } = useRozoConnectStellar();
 
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
@@ -32,21 +32,20 @@ export const BridgeLayout = () => {
   }, [userAddress, trustlineData]);
 
   useEffect(() => {
-    if (selectedWallet && !connector) {
+    if (userAddress && selectedWallet) {
+      setPublicKey(userAddress);
       setConnector(selectedWallet);
     } else {
       disconnect();
     }
-  }, [selectedWallet]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [userAddress, selectedWallet]);
 
   const onSwitchTokens = useCallback(() => {
     setIsTransitioning(true);
+    setIsTokenSwitched((prev: boolean) => !prev);
     setTimeout(() => {
-      setIsTokenSwitched((prev: boolean) => !prev);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 150); // Half of the transition duration
-    }, 150); // Half of the transition duration
+      setIsTransitioning(false);
+    }, 150);
   }, []);
 
   const excludeChains: ChainType[] = isTokenSwitched
