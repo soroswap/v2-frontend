@@ -18,6 +18,7 @@ export const TheButton = ({
         "bg-brand hover:bg-brand/80 text-primary disabled:bg-surface-alt relative flex h-14 w-full cursor-pointer items-center justify-center rounded-2xl p-4 text-[20px] font-bold disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]",
         className,
       )}
+      disabled={props.disabled}
       {...props}
     >
       {children}
