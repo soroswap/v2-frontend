@@ -37,6 +37,9 @@
     --color-accent-warning: #ea4335; */
 
   --color-accent-warning: #ea4335;
+  --color-info-bg: #dbeafe;
+  --color-info-border: #3b82f6;
+  --color-info-text: #1e40af;
 
   --color-icon-muted: #9aa0a6;
 
@@ -77,6 +80,9 @@
   /* --color-inverse: #171717; */
   /* --color-accent-success: #CFFFD9; */
   --color-accent-warning: #f88f6d;
+  --color-info-bg: #1e3a8a;
+  --color-info-border: #3b82f6;
+  --color-info-text: #93c5fd;
 
   --color-icon-muted: #a0a3c4;
 

@@ -5,4 +5,5 @@ export const ALLOWED_ORIGINS = [
   "paltalabs.vercel.app",
   "v2.soroswap.finance",
   "app.soroswap.finance",
+  "soroswap-v2-frontend.vercel.app",
 ];
