@@ -1,7 +1,7 @@
 "use client";
 
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
-import { BridgePricePanel } from "./BridgePricePanel";
+import { PricePanel } from "@/features/swap/PricePanel";
 import { BridgeChainDisplay } from "./BridgeChainDisplay";
 import { AssetInfo } from "@soroswap/sdk";
 import { cn } from "@/shared/lib/utils/cn";
@@ -55,9 +55,10 @@ export const BridgePanel = ({
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
-        <BridgePricePanel amount={amount} />
+        <PricePanel isLoading={isLoading} token={token} amount={amount} />
       </div>
     </div>
   );
 };
+
 

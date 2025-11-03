@@ -33,7 +33,7 @@ export const BridgeBalanceDisplay = ({
     <div
       className={`bg-surface-subtle border-surface-alt flex items-center justify-between rounded-lg border p-3 ${className}`}
     >
-      <span className="text-secondary text-sm">Your Balance</span>
+      <span className="text-secondary text-sm">Your Stellar Balance</span>
       <div className="flex items-center gap-2">
         <span className="text-primary text-sm font-medium">
           {balance.toFixed(2)} {currency}
