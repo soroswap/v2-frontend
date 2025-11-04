@@ -23,7 +23,13 @@ const BORDER_RADIUS = "50%";
 /**
  * Solana blockchain logo
  */
-export const Solana = ({ width = 44, height = 44, ...props }: LogoProps) => (
+export const Solana = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  testnet,
+  width = 44,
+  height = 44,
+  ...props
+}: LogoProps) => (
   <svg
     {...props}
     aria-hidden="true"
@@ -73,7 +79,13 @@ export const Solana = ({ width = 44, height = 44, ...props }: LogoProps) => (
 /**
  * USDC token logo
  */
-export const USDC = ({ width = 44, height = 44, ...props }: LogoProps) => (
+export const USDC = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  testnet,
+  width = 44,
+  height = 44,
+  ...props
+}: LogoProps) => (
   <svg
     {...props}
     aria-hidden="true"
@@ -316,7 +328,13 @@ export const Base = ({
 /**
  * Stellar blockchain logo
  */
-export const Stellar = ({ width = 44, height = 44, ...props }: LogoProps) => (
+export const Stellar = ({
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  testnet,
+  width = 44,
+  height = 44,
+  ...props
+}: LogoProps) => (
   <svg
     {...props}
     xmlns="http://www.w3.org/2000/svg"
