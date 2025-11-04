@@ -64,7 +64,9 @@ export const BridgePanel = ({
   );
 
   const isConnected = !!userAddress;
-  const availableBalance = parseFloat(trustlineStatus.balance) || 0;
+  const availableBalance = (
+    Math.floor(parseFloat(trustlineStatus.balance || "0") * 100) / 100
+  ).toFixed(2);
   const amount = selectedAmount === "custom" ? customAmount : selectedAmount;
 
   const handleAmountSelect = (value: string) => {

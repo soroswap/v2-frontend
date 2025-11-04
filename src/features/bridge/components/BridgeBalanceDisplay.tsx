@@ -4,7 +4,7 @@ import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 
 interface BalanceDisplayProps {
-  balance: number;
+  balance: string;
   currency?: string;
   onRefresh?: () => void;
   className?: string;
@@ -36,7 +36,7 @@ export const BridgeBalanceDisplay = ({
       <span className="text-secondary text-sm">Your Balance</span>
       <div className="flex items-center gap-2">
         <span className="text-primary text-sm font-medium">
-          {balance.toFixed(2)} {currency}
+          {balance} {currency}
         </span>
         {onRefresh && (
           <button
