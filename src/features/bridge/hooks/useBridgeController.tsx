@@ -6,12 +6,7 @@ import { useUserContext } from "@/contexts";
 import { useUSDCTrustline } from "./useUSDCTrustline";
 import { useBridgeState } from "./useBridgeState";
 import { ExternalPaymentOptions } from "@rozoai/intent-common";
-import {
-  PaymentCompletedEvent,
-  getEVMAddress,
-  isEVMAddress,
-  useRozoPayUI,
-} from "@rozoai/intent-pay";
+import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { BASE_CONFIG } from "../constants/bridge";
 import { saveBridgeHistory } from "../utils/history";
 
@@ -28,6 +23,10 @@ interface BridgeState {
   evmAddress: string;
   evmAddressError: string;
 }
+
+type PaymentCompletedEvent = {
+  rozoPaymentId?: string;
+};
 
 const initialBridgeState: BridgeState = {
   typedValue: "",
@@ -128,6 +127,10 @@ export function useBridgeController({
   const [intentConfig, setIntentConfig] = useState<any | null>(null);
   const [isConfigLoading, setIsConfigLoading] = useState<boolean>(false);
   const configTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const resetPaymentRef = useRef(resetPayment);
+  useEffect(() => {
+    resetPaymentRef.current = resetPayment;
+  }, [resetPayment]);
 
   // ---------------------------------------------------------------------------
   // Derived values
@@ -214,20 +217,51 @@ export function useBridgeController({
   // ---------------------------------------------------------------------------
   // Payment config creation
   // ---------------------------------------------------------------------------
+  const lastConfigSignatureRef = useRef<string | null>(null);
+  const desiredConfigSignature = useMemo(() => {
+    return JSON.stringify({
+      userAddress,
+      bridgeStateType,
+      typedValue,
+      isTokenSwitched,
+      evmAddress,
+      evmAddressError,
+    });
+  }, [userAddress, bridgeStateType, typedValue, isTokenSwitched, evmAddress, evmAddressError]);
+
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) {
+      console.debug("[Bridge] createPaymentConfig: no userAddress");
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    // Only prepare payment config when bridge is ready (account + trustline checks passed)
+    if (bridgeStateType !== "ready") {
+      console.debug("[Bridge] createPaymentConfig: bridgeStateType not ready", {
+        bridgeStateType,
+      });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
     }
 
     if (!typedValue || parseFloat(typedValue) <= 0 || parseFloat(typedValue) > 500) {
+      console.debug("[Bridge] createPaymentConfig: invalid typedValue", {
+        typedValue,
+      });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
     }
 
     if (isTokenSwitched && (!evmAddress || evmAddressError)) {
+      console.debug("[Bridge] createPaymentConfig: EVM address invalid/missing", {
+        isTokenSwitched,
+        evmAddress,
+        evmAddressError,
+      });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -267,20 +301,49 @@ export function useBridgeController({
         },
       };
 
-      await resetPayment(config as never);
+      const currentSignature = JSON.stringify({
+        userAddress,
+        typedValue,
+        isTokenSwitched,
+        evmAddress,
+        evmAddressError,
+        bridgeStateType,
+      });
+
+      // Skip rebuilding if nothing relevant changed and we already have config
+      if (lastConfigSignatureRef.current === currentSignature && intentConfig) {
+        setIsConfigLoading(false);
+        console.debug("[Bridge] createPaymentConfig: unchanged config, skipping");
+        return;
+      }
+
+      await resetPaymentRef.current(config as never);
       setIntentConfig(config);
       setIsConfigLoading(false);
+      console.debug("[Bridge] createPaymentConfig: config set", { config });
+      lastConfigSignatureRef.current = currentSignature;
     } catch (error) {
       console.error("Failed to create payment config:", error);
       setIntentConfig(null);
       setIsConfigLoading(false);
     }
-  }, [userAddress, typedValue, isTokenSwitched, evmAddress, evmAddressError, resetPayment]);
+  }, [userAddress, bridgeStateType, typedValue, isTokenSwitched, evmAddress, evmAddressError, intentConfig]);
 
   // Debounced effect for config creation
   useEffect(() => {
     // Only create config if user is connected
     if (!isConnected) {
+      console.debug("[Bridge] debounce: not connected");
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    // Only create config when bridge is ready (no trustline/account blockers)
+    if (bridgeStateType !== "ready") {
+      console.debug("[Bridge] debounce: bridgeStateType not ready", {
+        bridgeStateType,
+      });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -288,6 +351,7 @@ export function useBridgeController({
 
     // Only create config if we have valid input
     if (!typedValue || parseFloat(typedValue) <= 0 || parseFloat(typedValue) > 500) {
+      console.debug("[Bridge] debounce: invalid typedValue", { typedValue });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -295,6 +359,11 @@ export function useBridgeController({
 
     // If bridging to Base, we need EVM address
     if (isTokenSwitched && (!evmAddress || evmAddressError)) {
+      console.debug("[Bridge] debounce: EVM address invalid/missing", {
+        isTokenSwitched,
+        evmAddress,
+        evmAddressError,
+      });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -305,6 +374,12 @@ export function useBridgeController({
     }
 
     const timeoutId = setTimeout(() => {
+      console.debug("[Bridge] debounce: creating payment config", {
+        typedValue,
+        isTokenSwitched,
+        evmAddress,
+        evmAddressError,
+      });
       createPaymentConfig();
     }, 150);
 
@@ -315,7 +390,11 @@ export function useBridgeController({
         clearTimeout(timeoutId);
       }
     };
-  }, [typedValue, evmAddress, isTokenSwitched, evmAddressError, isConnected, createPaymentConfig]);
+    // We intentionally exclude createPaymentConfig to avoid effect retriggering due to function identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [typedValue, evmAddress, isTokenSwitched, evmAddressError, isConnected, bridgeStateType, desiredConfigSignature]);
+
+  
 
   // Reset all input states when user disconnects
   useEffect(() => {
@@ -368,6 +447,44 @@ export function useBridgeController({
     evmAddress,
     evmAddressError,
     typedValue,
+  ]);
+
+  // Centralized debug logger for button state and related variables
+  useEffect(() => {
+    const disabledBecause = {
+      notConnected: !isConnected,
+      notReady: bridgeStateType !== "ready",
+      evmInvalid: isTokenSwitched && (!evmAddress || !!evmAddressError),
+      invalidAmount:
+        !typedValue || parseFloat(typedValue) <= 0 || parseFloat(typedValue) > 500,
+      loadingConfig: isConfigLoading,
+      noIntentConfig: !intentConfig,
+    };
+
+    console.groupCollapsed("[Bridge] Debug State");
+    console.debug({
+      isConnected,
+      bridgeStateType,
+      isTokenSwitched,
+      evmAddress,
+      evmAddressError,
+      typedValue,
+      isConfigLoading,
+      hasIntentConfig: !!intentConfig,
+      getActionButtonDisabled,
+      disabledBecause,
+    });
+    console.groupEnd();
+  }, [
+    isConnected,
+    bridgeStateType,
+    isTokenSwitched,
+    evmAddress,
+    evmAddressError,
+    typedValue,
+    isConfigLoading,
+    intentConfig,
+    getActionButtonDisabled,
   ]);
 
   // ---------------------------------------------------------------------------

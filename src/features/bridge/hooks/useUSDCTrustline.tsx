@@ -61,6 +61,11 @@ export function useUSDCTrustline(
       return;
     }
 
+    // Avoid concurrent checks that could cause UI flicker
+    if (trustlineStatus.checking || accountStatus.checking) {
+      return;
+    }
+
     setTrustlineStatus((prev) => ({ ...prev, checking: true }));
     setAccountStatus((prev) => ({ ...prev, checking: true }));
 
