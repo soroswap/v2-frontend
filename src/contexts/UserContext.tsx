@@ -28,6 +28,7 @@ interface UserContextProps {
   connectWallet: () => Promise<void>;
   disconnect: () => void;
   signTransaction: (xdr: string, userAddress: string) => Promise<string>;
+  selectedWallet: ISupportedWallet | null;
 }
 
 interface UserProviderProps {
@@ -37,6 +38,9 @@ interface UserProviderProps {
 export const UserProvider = ({ children }: UserProviderProps) => {
   const [address, setAddress] = useState<string | null>(null);
   const [kit, setKit] = useState<StellarWalletsKit | null>(null);
+  const [selectedWallet, setSelectedWallet] = useState<ISupportedWallet | null>(
+    null,
+  );
   const kitRef = useRef<StellarWalletsKit | null>(null);
 
   useEffect(() => {
@@ -75,6 +79,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
+        setSelectedWallet(option);
         const { address } = await kit.getAddress();
         setAddress(address);
       },
@@ -85,6 +90,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
     if (kit) {
       kit.disconnect();
       setAddress(null);
+      setSelectedWallet(null);
     }
   };
 
@@ -112,6 +118,7 @@ export const UserProvider = ({ children }: UserProviderProps) => {
         connectWallet,
         disconnect,
         signTransaction,
+        selectedWallet,
       }}
     >
       {children}
@@ -126,6 +133,7 @@ export const UserContext = createContext<UserContextProps>({
   connectWallet: async () => {},
   disconnect: () => {},
   signTransaction: async () => "",
+  selectedWallet: null,
 });
 
 export const useUserContext = () => useContext(UserContext);

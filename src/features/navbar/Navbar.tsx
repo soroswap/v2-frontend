@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { name: "Swap", href: "/" },
   { name: "Pools", href: "/pools" },
   { name: "Earn", href: "/earn" },
+  { name: "Bridge", href: "/bridge" },
   { name: "Info", href: "https://dune.com/paltalabs/soroswap", external: true },
 ];
 
