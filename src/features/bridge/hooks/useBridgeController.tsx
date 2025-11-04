@@ -9,6 +9,7 @@ import { ExternalPaymentOptions } from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { BASE_CONFIG } from "../constants/bridge";
 import { saveBridgeHistory } from "../utils/history";
+import { IntentPayConfig } from "../types/rozo";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
@@ -124,7 +125,7 @@ export function useBridgeController({
   const { bridgeStateType } = useBridgeState(trustlineData);
 
   // Payment config state
-  const [intentConfig, setIntentConfig] = useState<any | null>(null);
+  const [intentConfig, setIntentConfig] = useState<IntentPayConfig | null>(null);
   const [isConfigLoading, setIsConfigLoading] = useState<boolean>(false);
   const configTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resetPaymentRef = useRef(resetPayment);
@@ -153,7 +154,8 @@ export function useBridgeController({
    * For USDC bridge, amounts are always equal (1:1), so we always set the same value.
    */
   const handleAmountChange = useCallback(
-    (field: IndependentField) => (amount: string | undefined) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    (_field: IndependentField) => (amount: string | undefined) => {
       // Always set the same value regardless of which field is being typed
       dispatchBridge({
         type: "TYPE_INPUT",

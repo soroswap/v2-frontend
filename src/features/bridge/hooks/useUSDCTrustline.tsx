@@ -99,6 +99,7 @@ export function useUSDCTrustline(
       });
       setHasCheckedOnce(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stellarAddress]);
 
   // Refresh only the USDC balance without checking account status

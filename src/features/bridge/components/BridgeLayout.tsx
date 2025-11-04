@@ -24,11 +24,8 @@ export const BridgeLayout = () => {
 
   const {
     typedValue,
-    independentField,
     fromChain,
     toChain,
-    fromAmount,
-    toAmount,
     evmAddress,
     evmAddressError,
     isConnected,
@@ -97,7 +94,7 @@ export const BridgeLayout = () => {
 
         {isConnected && bridgeStateType === "ready" && (
           <BridgeBalanceDisplay
-            balance={availableBalance}
+            balance={availableBalance.toFixed(2)}
             currency="USDC"
             onRefresh={trustlineData.refreshBalance}
           />
@@ -178,7 +175,7 @@ export const BridgeLayout = () => {
             <ConnectWallet className="flex w-full justify-center" />
           ) : (
             <>
-              {intentConfig && !getActionButtonDisabled && !isConfigLoading ? (
+              {intentConfig && !getActionButtonDisabled && !isConfigLoading && intentConfig.toAddress ? (
                 <RozoPayButton.Custom
                   appId={intentConfig.appId}
                   toChain={intentConfig.toChain}
@@ -186,7 +183,7 @@ export const BridgeLayout = () => {
                   toAddress={intentConfig.toAddress}
                   toStellarAddress={intentConfig.toStellarAddress}
                   toUnits={intentConfig.toUnits}
-                  metadata={intentConfig.metadata}
+                  metadata={intentConfig.metadata as Record<string, string>}
                   connectedWalletOnly={controllerIsTokenSwitched}
                   paymentOptions={intentConfig.paymentOptions}
                   onPaymentCompleted={handlePaymentCompleted}
