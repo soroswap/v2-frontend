@@ -92,11 +92,7 @@ export function usePools() {
     return Array.from(set);
   }, [remotePools]);
 
-  const {
-    priceMap,
-    isLoading: pricesLoading,
-    isError: pricesError,
-  } = useBatchTokenPrices(tokenAddresses);
+  const { priceMap, isError: pricesError } = useBatchTokenPrices(tokenAddresses);
 
   // Compute pools enriched with tvl once we have price information.
   const enrichedPools: Pool[] = useMemo(() => {

@@ -1,66 +1,52 @@
 import useSWR from "swr";
 import { AssetInfo } from "@soroswap/sdk";
-import { TOKEN_LIST_URL, xlmTokenList } from "@/shared/lib/constants/tokenList";
+import { xlmTokenList } from "@/shared/lib/constants/tokenList";
 import { network } from "@/shared/lib/environmentVars";
 import { useMemo } from "react";
-import { soroswapTokenList } from "./hardcodedTokenList";
 
-interface NetworkData {
-  network: string;
-  assets: AssetInfo[];
+interface TokensApiResponse {
+  code: string;
+  data: AssetInfo[];
+  metadata?: {
+    name: string;
+    provider?: string;
+    version?: string;
+    network?: string;
+  };
 }
 
-const fetchTokenList = async () => {
-  const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
+const fetchTokenList = async (): Promise<AssetInfo[]> => {
   try {
-    let response
-    if(network === "mainnet") {
-      response = {
-        ok: true,
-        json: async () => soroswapTokenList
-      }
-    } else {
-      response = await fetch(TOKEN_LIST_URL);
-    }
+    // Fetch token list from our API route which uses the SDK server-side
+    const response = await fetch("/api/tokens");
+
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    const data = await response.json();
-    if (network === "mainnet") {
-      // Create a copy to avoid mutating the original hardcoded list
-      const assets: AssetInfo[] = [...data.assets];
 
-      if (xlmToken) {
-        assets.unshift(xlmToken[0]);
-      }
+    const result: TokensApiResponse = await response.json();
 
-      return assets;
-    } else if (network === "testnet") {
-      // Find the testnet network object and extract its assets
-      const testnetData = data.find(
-        (item: NetworkData) => item.network === "testnet",
-      );
-      const assets: AssetInfo[] = testnetData?.assets || [];
-
-      return assets;
+    if (result.code !== "TOKENS_SUCCESS") {
+      throw new Error("Failed to fetch tokens from API");
     }
+
+    return result.data;
   } catch (error) {
-    console.error("Error fetching token list:", error);
+    console.error("Error fetching token list from API:", error);
     throw error;
   }
 };
 
 // Prepare fallback data outside the hook to avoid recalculating on every render
-const prepareFallbackData = () => {
-  if (network === "mainnet") {
-    const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
-    const assets: AssetInfo[] = [...soroswapTokenList.assets];
-    if (xlmToken && xlmToken[0]) {
-      assets.unshift(xlmToken[0] as AssetInfo);
-    }
-    return assets;
+const prepareFallbackData = (): AssetInfo[] => {
+  const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
+  const assets: AssetInfo[] = [];
+
+  if (xlmToken && xlmToken[0]) {
+    assets.unshift(xlmToken[0] as AssetInfo);
   }
-  return [];
+
+  return assets;
 };
 
 const fallbackData = prepareFallbackData();
