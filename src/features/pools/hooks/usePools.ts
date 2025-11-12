@@ -135,9 +135,9 @@ export function usePools() {
   };
 
   return {
-    pools: enrichedPools,
+    pools: priceMap && Object.keys(priceMap).length > 0 ? enrichedPools : pools,
     rawPools: remotePools ?? [],
-    isLoading: remotePoolsLoading || tokenListLoading || pricesLoading || false,
+    isLoading: remotePoolsLoading || tokenListLoading || false,
     isError: error || pricesError,
     revalidate,
   } as const;
