@@ -90,7 +90,7 @@ export interface Invocation {
   args: xdr.ScVal[];
 }
 
-const StellarRouterContractAddress = STELLAR.ROUTER_ADDRESS;
+const StellarRouterContractAddress = STELLAR.STELLAR_ROUTER_ADDRESS;
 
 async function simulateMultipleInvocations(invocations: Invocation[]) {
   const stellarRouterContract = new Contract(StellarRouterContractAddress);

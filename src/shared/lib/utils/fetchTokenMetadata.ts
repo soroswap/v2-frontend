@@ -20,7 +20,7 @@ interface Invocation {
 }
 
 // Stellar Router contract for batch invocations (network-specific)
-const StellarRouterContractAddress = STELLAR.ROUTER_ADDRESS;
+const StellarRouterContractAddress = STELLAR.STELLAR_ROUTER_ADDRESS;
 
 // Helper account for building transactions (doesn't need to exist or have funds)
 const HELPER_ACCOUNT_ADDRESS =

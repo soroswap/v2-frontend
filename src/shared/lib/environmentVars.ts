@@ -60,7 +60,7 @@ export const envVars = {
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? "Test SDF Network ; September 2015"
         : "Public Global Stellar Network ; September 2015",
-    ROUTER_ADDRESS:
+    STELLAR_ROUTER_ADDRESS:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? "CA4YSDKNIGIV77W6XDUUWFDTPCVUJ5IPZQJDQCPD65DBVG3R3XTOCFZA"
         : "CBZV3HBP672BV7FF3ZILVT4CNPW3N5V2WTJ2LAGOAYW5R7L2D5SLUDFZ",
