@@ -27,7 +27,8 @@ const fetchTokenList = async () => {
     }
     const data = await response.json();
     if (network === "mainnet") {
-      const assets: AssetInfo[] = data.assets;
+      // Create a copy to avoid mutating the original hardcoded list
+      const assets: AssetInfo[] = [...data.assets];
 
       if (xlmToken) {
         assets.unshift(xlmToken[0]);
@@ -49,17 +50,37 @@ const fetchTokenList = async () => {
   }
 };
 
+// Prepare fallback data outside the hook to avoid recalculating on every render
+const prepareFallbackData = () => {
+  if (network === "mainnet") {
+    const xlmToken = xlmTokenList.find((set) => set.network === network)?.assets;
+    const assets: AssetInfo[] = [...soroswapTokenList.assets];
+    if (xlmToken && xlmToken[0]) {
+      assets.unshift(xlmToken[0] as AssetInfo);
+    }
+    return assets;
+  }
+  return [];
+};
+
+const fallbackData = prepareFallbackData();
+
 export const useTokensList = () => {
-  const { data, error, isLoading } = useSWR("token-list", fetchTokenList, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 43200000, // 12 hours
-    refreshInterval: 86400000, // 24 hours
-    errorRetryCount: 3,
-    shouldRetryOnError: true,
-    suspense: false,
-    fallbackData: [],
-  });
+  const { data, error, isLoading } = useSWR(
+    `token-list-${network}`, // Include network in key to avoid cache conflicts
+    fetchTokenList,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 43200000, // 12 hours
+      refreshInterval: 86400000, // 24 hours
+      errorRetryCount: 3,
+      shouldRetryOnError: true,
+      suspense: false,
+      fallbackData,
+      keepPreviousData: false, // Don't keep old data when switching networks
+    },
+  );
 
   // Dictionary for 0(1) lookups by contract
   const tokenMap = useMemo(() => {
