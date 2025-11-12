@@ -5,15 +5,15 @@ import {
   Address,
   Contract,
   BASE_FEE,
-  Networks,
   xdr,
   TransactionBuilder,
   scValToNative,
 } from "@stellar/stellar-sdk";
 import { AssetInfo } from "@soroswap/sdk";
+import { STELLAR } from "@/shared/lib/environmentVars";
 
-const horizonServer = new Horizon.Server("https://horizon.stellar.org");
-const sorobanServer = new rpc.Server("https://mainnet.sorobanrpc.com");
+const horizonServer = new Horizon.Server(STELLAR.HORIZON_URL);
+const sorobanServer = new rpc.Server(STELLAR.RPC_URL);
 
 /* This function is used to find an asset on the Stellar network */
 export async function findAsset(assetString: string): Promise<AssetInfo> {
@@ -32,7 +32,7 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
     return {
       code: assetInfo.records[0].asset_code,
       issuer: assetInfo.records[0].asset_issuer,
-      contract: new Asset(code, issuer).contractId(Networks.PUBLIC),
+      contract: new Asset(code, issuer).contractId(STELLAR.NETWORK),
       name: `${code}:${issuer}`,
       org: undefined,
       domain: undefined,
@@ -74,7 +74,7 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
     return {
       code: symbol,
       issuer: issuer,
-      contract: new Asset(code, issuer).contractId(Networks.PUBLIC),
+      contract: new Asset(code, issuer).contractId(STELLAR.NETWORK),
       name: name,
       org: undefined,
       domain: undefined,
@@ -90,8 +90,7 @@ export interface Invocation {
   args: xdr.ScVal[];
 }
 
-const StellarRouterContractAddress =
-  "CBZV3HBP672BV7FF3ZILVT4CNPW3N5V2WTJ2LAGOAYW5R7L2D5SLUDFZ";
+const StellarRouterContractAddress = STELLAR.ROUTER_ADDRESS;
 
 async function simulateMultipleInvocations(invocations: Invocation[]) {
   const stellarRouterContract = new Contract(StellarRouterContractAddress);
@@ -116,7 +115,7 @@ async function simulateMultipleInvocations(invocations: Invocation[]) {
 
   const tx = new TransactionBuilder(helperAccount, {
     fee: BASE_FEE,
-    networkPassphrase: Networks.PUBLIC,
+    networkPassphrase: STELLAR.NETWORK_PASSPHRASE,
   })
     .addOperation(stellarRouterContract.call("exec", ...params))
     .setTimeout(500)
