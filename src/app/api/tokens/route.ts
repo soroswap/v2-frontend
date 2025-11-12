@@ -1,13 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { network } from "@/shared/lib/environmentVars";
-import { ALLOWED_ORIGINS } from "@/shared/lib/server";
+import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { AssetInfo, AssetList, SupportedAssetLists } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { xlmTokenList } from "@/shared/lib/constants/tokenList";
+import { soroswapTokenList } from "@/shared/hooks/hardcodedTokenList";
 
 /**
  * GET /api/tokens - Get the token list from Soroswap SDK
  * Returns the curated list of tokens for the current network
+ * Prioritizes SDK, falls back to hardcoded list if SDK fails
  */
 export async function GET(request: NextRequest) {
   const origin =
@@ -34,16 +36,30 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Fetch token list directly from GitHub to ensure we get the latest version
-    // The SDK's getAssetList() may return cached or different data
-    const tokenListUrl = SupportedAssetLists.SOROSWAP;
-    const response = await fetch(tokenListUrl);
+    let assetList: AssetList;
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch token list: ${response.statusText}`);
+    // Try to get token list from SDK first (priority)
+    try {
+      const assetListData = await soroswapClient.getAssetList(
+        SupportedAssetLists.SOROSWAP,
+      );
+
+      // Handle the response which can be AssetList or AssetListInfo[]
+      if (Array.isArray(assetListData)) {
+        throw new Error("SDK returned AssetListInfo[] instead of AssetList");
+      }
+
+      assetList = assetListData;
+      console.log("[API INFO] Using token list from SDK");
+    } catch (sdkError: any) {
+      // Fallback to hardcoded list if SDK fails
+      console.warn(
+        "[API WARN] SDK getAssetList failed, using hardcoded fallback:",
+        sdkError.message,
+      );
+
+      assetList = soroswapTokenList as AssetList;
     }
-
-    const assetList: AssetList = await response.json();
 
     // Extract assets from the asset list
     const assets: AssetInfo[] = [...assetList.assets];
