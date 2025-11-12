@@ -185,11 +185,42 @@ export function TheTable<T extends RowData>(props: TheTableProps<T>) {
         </thead>
         <tbody>
           {isLoading &&
-            Array.from({ length: skeletonRows }).map((_, i) => (
-              <tr key={`skeleton-${i}`} className={rowVariants({ variant })}>
-                <td colSpan={columns.length} className="p-4">
-                  <span className="skeleton h-4 w-full" />
-                </td>
+            Array.from({ length: skeletonRows }).map((_, rowIndex) => (
+              <tr key={`skeleton-${rowIndex}`} className={rowVariants({ variant })}>
+                {table.getHeaderGroups()[0].headers.map((header, colIndex) => {
+                  // First column typically has icons + text (like token pair)
+                  const isFirstColumn = colIndex === 0;
+                  // Determine alignment from column meta or header
+                  const cell = header.column.columnDef.cell;
+                  const isRightAligned =
+                    typeof cell === "function" &&
+                    cell.toString().includes("justify-end");
+
+                  return (
+                    <td key={header.id} className="px-4 py-3">
+                      {isFirstColumn ? (
+                        // Token pair skeleton: icons + text
+                        <div className="flex items-center gap-4">
+                          <div className="relative">
+                            <div className="skeleton size-8 !rounded-full" />
+                            <div className="skeleton absolute left-3 top-0 size-8 !rounded-full" />
+                          </div>
+                          <div className="skeleton h-4 w-24" />
+                        </div>
+                      ) : (
+                        // Regular column skeleton
+                        <div
+                          className={cn(
+                            "flex",
+                            isRightAligned && "justify-end",
+                          )}
+                        >
+                          <span className="skeleton h-4 w-16" />
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
 

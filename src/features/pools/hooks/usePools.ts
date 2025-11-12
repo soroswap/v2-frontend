@@ -9,9 +9,10 @@ import { calculateTvl } from "@/shared/lib/utils";
 const FALLBACK_POOLS: Pool[] = [
   {
     protocol: SupportedProtocols.SOROSWAP,
-    address: "xlm-usdc",
-    tokenA: "xlm",
-    tokenB: "usdc",
+    address: "CAM7DY53G63XA4AJRS24Z6VFYAFSSF76C3RZ45BE5YU3FQS5255OOABP",
+    // Use valid XLM and USDC contract addresses from mainnet token list
+    tokenA: "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA", // XLM
+    tokenB: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75", // USDC
     reserveA: BigInt(1000000000000000000),
     reserveB: BigInt(1000000000000000000),
     ledger: Number(1000000000000000000),
@@ -20,9 +21,11 @@ const FALLBACK_POOLS: Pool[] = [
     poolType: "pool",
     fee: BigInt(1000000000000000000),
     totalFeeBps: 10000,
-    tokenC: "usdt",
     involvesAsset: (asset: string) => {
-      return asset === "xlm" || asset === "usdc" || asset === "usdt";
+      return (
+        asset === "CAS3J7GYLGXMF6TDJBBYYSE3HQ6BBSMLNUQ34T6TZMYMW2EVH34XOWMA" ||
+        asset === "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75"
+      );
     },
   },
 ];
@@ -92,11 +95,7 @@ export function usePools() {
     return Array.from(set);
   }, [remotePools]);
 
-  const {
-    priceMap,
-    isLoading: pricesLoading,
-    isError: pricesError,
-  } = useBatchTokenPrices(tokenAddresses);
+  const { priceMap, isError: pricesError } = useBatchTokenPrices(tokenAddresses);
 
   // Compute pools enriched with tvl once we have price information.
   const enrichedPools: Pool[] = useMemo(() => {
@@ -135,9 +134,9 @@ export function usePools() {
   };
 
   return {
-    pools: enrichedPools,
+    pools: priceMap && Object.keys(priceMap).length > 0 ? enrichedPools : pools,
     rawPools: remotePools ?? [],
-    isLoading: remotePoolsLoading || tokenListLoading || pricesLoading || false,
+    isLoading: remotePoolsLoading || tokenListLoading || false,
     isError: error || pricesError,
     revalidate,
   } as const;

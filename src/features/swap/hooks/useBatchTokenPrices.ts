@@ -53,7 +53,8 @@ export function useBatchTokenPrices(addresses: string[]) {
   } = useSWR(key, fetchBatchPrices, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 300000, // 5 minutes
+    dedupingInterval: 600000, // 10 minutes (increased from 5)
+    refreshInterval: 300000, // Auto-refresh every 5 minutes in background
     errorRetryCount: 3,
     errorRetryInterval: 1000,
   });

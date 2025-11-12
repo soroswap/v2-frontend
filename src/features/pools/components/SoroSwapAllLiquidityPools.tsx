@@ -2,14 +2,71 @@ import { ColumnDef } from "@tanstack/react-table";
 import { usePools } from "@/features/pools/hooks/usePools";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { TheTable } from "@/shared/components";
-import { Pool } from "@soroswap/sdk";
+import { Pool, AssetInfo } from "@soroswap/sdk";
 import { ArrowUp } from "lucide-react";
 import { cn, formatCurrency } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
 import { useRouter } from "next/navigation";
+import { useTokenMetadata } from "@/shared/hooks/useTokenMetadata";
+
+/**
+ * Component that renders a pool's token pair with automatic fallback to on-demand metadata fetching
+ */
+function PoolTokenPair({
+  tokenA,
+  tokenB,
+  tokenMap,
+}: {
+  tokenA: string;
+  tokenB: string;
+  tokenMap: Record<string, AssetInfo>;
+}) {
+  const tokenAData = tokenMap[tokenA];
+  const tokenBData = tokenMap[tokenB];
+
+  // Only fetch metadata if token is not in the token map
+  const { metadata: tokenAMetadata } = useTokenMetadata(
+    !tokenAData ? tokenA : null,
+  );
+  const { metadata: tokenBMetadata } = useTokenMetadata(
+    !tokenBData ? tokenB : null,
+  );
+
+  // Use token map data as primary source, fallback to on-demand metadata
+  const finalTokenA = tokenAData || tokenAMetadata;
+  const finalTokenB = tokenBData || tokenBMetadata;
+
+  // If still loading or missing data, show skeleton or truncated contract
+  const tokenACode =
+    finalTokenA?.code || (tokenA ? tokenA.slice(0, 6) + "..." : "???");
+  const tokenBCode =
+    finalTokenB?.code || (tokenB ? tokenB.slice(0, 6) + "..." : "???");
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative">
+        <TokenIcon
+          src={finalTokenA?.icon}
+          alt={tokenA}
+          code={finalTokenA?.code}
+          className="rounded-full border border-white bg-white"
+        />
+        <TokenIcon
+          src={finalTokenB?.icon}
+          alt={tokenB}
+          code={finalTokenB?.code}
+          className="absolute top-0 left-3 rounded-full border border-white bg-white"
+        />
+      </div>
+      <p className="text-primary font-semibold">
+        {tokenACode}/{tokenBCode}
+      </p>
+    </div>
+  );
+}
 
 export const SoroSwapAllLiquidityPools = () => {
-  const { pools, isLoading } = usePools();
+  const { pools, isLoading: isLoadingPools } = usePools();
   const { tokenMap } = useTokensList();
   const router = useRouter();
 
@@ -21,9 +78,6 @@ export const SoroSwapAllLiquidityPools = () => {
       accessorFn: (row) => `${row.tokenA}/${row.tokenB}`,
       cell: ({ row }) => {
         const pool = row.original;
-
-        const tokenAData = tokenMap[pool.tokenA];
-        const tokenBData = tokenMap[pool.tokenB];
 
         if (!pool.tokenA || !pool.tokenB) {
           return (
@@ -38,23 +92,11 @@ export const SoroSwapAllLiquidityPools = () => {
         }
 
         return (
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <TokenIcon
-                src={tokenAData?.icon}
-                alt={pool.tokenA}
-                className="rounded-full border border-white bg-white"
-              />
-              <TokenIcon
-                src={tokenBData?.icon}
-                alt={pool.tokenB}
-                className="absolute top-0 left-3 rounded-full border border-white bg-white"
-              />
-            </div>
-            <p className="text-primary font-semibold">
-              {tokenAData?.code}/{tokenBData?.code}
-            </p>
-          </div>
+          <PoolTokenPair
+            tokenA={pool.tokenA}
+            tokenB={pool.tokenB}
+            tokenMap={tokenMap}
+          />
         );
       },
     },
@@ -105,7 +147,7 @@ export const SoroSwapAllLiquidityPools = () => {
       <TheTable
         data={pools}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoadingPools}
         variant="default"
         onRowClick={(row) => {
           router.push(`/pools/add-liquidity/${row.tokenA}/${row.tokenB}`);
