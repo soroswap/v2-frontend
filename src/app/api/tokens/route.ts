@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { network } from "@/shared/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import { ALLOWED_ORIGINS } from "@/shared/lib/server";
 import { AssetInfo, AssetList, SupportedAssetLists } from "@soroswap/sdk";
 import { NextRequest, NextResponse } from "next/server";
 import { xlmTokenList } from "@/shared/lib/constants/tokenList";
@@ -34,23 +34,16 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Get asset list directly from SDK
-    const assetListData = await soroswapClient.getAssetList(
-      SupportedAssetLists.SOROSWAP,
-    );
+    // Fetch token list directly from GitHub to ensure we get the latest version
+    // The SDK's getAssetList() may return cached or different data
+    const tokenListUrl = SupportedAssetLists.SOROSWAP;
+    const response = await fetch(tokenListUrl);
 
-    // Handle the response which can be AssetList or AssetListInfo[]
-    if (Array.isArray(assetListData)) {
-      return NextResponse.json(
-        {
-          code: "TOKENS_ERROR",
-          message: "Unexpected AssetListInfo[] response from SDK",
-        },
-        { status: 500 },
-      );
+    if (!response.ok) {
+      throw new Error(`Failed to fetch token list: ${response.statusText}`);
     }
 
-    const assetList: AssetList = assetListData;
+    const assetList: AssetList = await response.json();
 
     // Extract assets from the asset list
     const assets: AssetInfo[] = [...assetList.assets];
