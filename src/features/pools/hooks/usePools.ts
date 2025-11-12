@@ -4,14 +4,15 @@ import { useTokensList } from "@/shared/hooks/useTokensList";
 import { Pool, SupportedProtocols } from "@soroswap/sdk";
 import { useBatchTokenPrices } from "@/features/swap/hooks/useBatchTokenPrices";
 import { calculateTvl } from "@/shared/lib/utils";
+import { soroswapTokenList } from "@/shared/hooks/hardcodedTokenList";
 
 //TODO: Adjust to use the getPoolByTokens hook or create it to use it in the add liquidity page
 const FALLBACK_POOLS: Pool[] = [
   {
     protocol: SupportedProtocols.SOROSWAP,
-    address: "xlm-usdc",
-    tokenA: "xlm",
-    tokenB: "usdc",
+    address: "CAM7DY53G63XA4AJRS24Z6VFYAFSSF76C3RZ45BE5YU3FQS5255OOABP",
+    tokenA: "XLM",
+    tokenB: "USDC",
     reserveA: BigInt(1000000000000000000),
     reserveB: BigInt(1000000000000000000),
     ledger: Number(1000000000000000000),
@@ -20,9 +21,9 @@ const FALLBACK_POOLS: Pool[] = [
     poolType: "pool",
     fee: BigInt(1000000000000000000),
     totalFeeBps: 10000,
-    tokenC: "usdt",
+    tokenC: "USDT",
     involvesAsset: (asset: string) => {
-      return asset === "xlm" || asset === "usdc" || asset === "usdt";
+      return asset === "XLM" || asset === "USDC" || asset === "USDT";
     },
   },
 ];
