@@ -278,7 +278,7 @@ export function useBridgeController({
       const amountFormatted = Number(typedValue).toFixed(2);
 
       const config = {
-        appId: "rozoSoroswapApp",
+        appId: "rozoSoroswapAppStellar",
         toChain: Number(BASE_CONFIG.chainId),
         toAddress: toAddress as `0x${string}`,
         toToken: BASE_CONFIG.tokenAddress as `0x${string}`,
