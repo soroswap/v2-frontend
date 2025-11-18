@@ -1,10 +1,11 @@
 "use client";
 
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
-import { BridgePricePanel } from "./BridgePricePanel";
-import { BridgeChainDisplay } from "./BridgeChainDisplay";
-import { AssetInfo } from "@soroswap/sdk";
 import { cn } from "@/shared/lib/utils/cn";
+import { AssetInfo } from "@soroswap/sdk";
+import { Loader2 } from "lucide-react";
+import { BridgeChainDisplay } from "./BridgeChainDisplay";
+import { BridgePricePanel } from "./BridgePricePanel";
 
 /* -------------------------------------------------------------------------- */
 /*                                Components                                  */
@@ -18,6 +19,7 @@ export const BridgePanel = ({
   chain,
   isLoading,
   token,
+  readonly = false,
 }: {
   label: string;
   amount: string | undefined;
@@ -26,6 +28,7 @@ export const BridgePanel = ({
   chain: "stellar" | "base";
   isLoading: boolean;
   token: AssetInfo | null;
+  readonly?: boolean;
 }) => {
   return (
     <div
@@ -39,6 +42,12 @@ export const BridgePanel = ({
       {/* Panel header */}
       <div className="mb-2 flex items-center justify-between">
         <p className="text-base font-medium text-[#A0A3C4]">{label}</p>
+        {isLoading && readonly && (
+          <div className="flex items-center gap-1.5 text-xs text-[#A0A3C4]">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>Calculating...</span>
+          </div>
+        )}
       </div>
 
       {/* Amount + chain */}
@@ -48,6 +57,7 @@ export const BridgePanel = ({
           setAmount={setAmount}
           isLoading={isLoading}
           token={token}
+          readonly={readonly}
         />
 
         <BridgeChainDisplay chain={chain} />
@@ -60,4 +70,3 @@ export const BridgePanel = ({
     </div>
   );
 };
-
