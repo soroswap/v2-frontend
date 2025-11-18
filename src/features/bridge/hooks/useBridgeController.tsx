@@ -12,7 +12,11 @@ import {
   useRef,
   useState,
 } from "react";
-import { BASE_CONFIG, BRIDGE_APP_ID } from "../constants/bridge";
+import {
+  BASE_CONFIG,
+  BRIDGE_APP_ID,
+  BRIDGE_MAX_AMOUNT,
+} from "../constants/bridge";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
@@ -162,7 +166,7 @@ export function useBridgeController({
       appId: BRIDGE_APP_ID,
     },
     {
-      enabled: debouncedAmount > 0 && debouncedAmount <= 500,
+      enabled: debouncedAmount > 0 && debouncedAmount <= BRIDGE_MAX_AMOUNT,
     },
   );
 
@@ -177,7 +181,7 @@ export function useBridgeController({
     // Mark that the amount is changing (user is typing)
     setIsAmountChanging(true);
 
-    if (amount > 0 && amount <= 500) {
+    if (amount > 0 && amount <= BRIDGE_MAX_AMOUNT) {
       feeTimeoutRef.current = setTimeout(() => {
         setDebouncedAmount(amount);
         setIsAmountChanging(false);
@@ -219,7 +223,7 @@ export function useBridgeController({
     typedValue &&
     !isNaN(currentAmount) &&
     currentAmount > 0 &&
-    currentAmount <= 500 &&
+    currentAmount <= BRIDGE_MAX_AMOUNT &&
     !isAmountChanging &&
     !isFeeLoading &&
     isFeeValid;
@@ -299,9 +303,13 @@ export function useBridgeController({
 
   const handleEvmAddressChange = useCallback(
     (value: string) => {
-      validateEvmAddress(value);
+      dispatchBridge({ type: "SET_EVM_ADDRESS", address: value });
+      // Clear error when user starts typing
+      if (evmAddressError) {
+        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+      }
     },
-    [validateEvmAddress],
+    [evmAddressError],
   );
 
   // ---------------------------------------------------------------------------
@@ -347,7 +355,7 @@ export function useBridgeController({
     if (
       !typedValue ||
       parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > 500
+      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
     ) {
       console.debug("[Bridge] createPaymentConfig: invalid typedValue", {
         typedValue,
@@ -467,7 +475,7 @@ export function useBridgeController({
     if (
       !typedValue ||
       parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > 500
+      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
     ) {
       console.debug("[Bridge] debounce: invalid typedValue", { typedValue });
       setIntentConfig(null);
@@ -564,7 +572,7 @@ export function useBridgeController({
     if (
       !typedValue ||
       parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > 500
+      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
     )
       return true;
     // Disable button while fee is being fetched or if there's a fee error
@@ -591,7 +599,7 @@ export function useBridgeController({
       invalidAmount:
         !typedValue ||
         parseFloat(typedValue) <= 0 ||
-        parseFloat(typedValue) > 500,
+        parseFloat(typedValue) > BRIDGE_MAX_AMOUNT,
       loadingConfig: isConfigLoading,
       noIntentConfig: !intentConfig,
       feeLoading: isFeeLoading,

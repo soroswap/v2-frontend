@@ -10,6 +10,7 @@ import { cn } from "@/shared/lib/utils";
 import { RozoPayButton, useRozoConnectStellar } from "@rozoai/intent-pay";
 import { Clipboard } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { BRIDGE_MAX_AMOUNT } from "../constants";
 import { useBridgeController } from "../hooks/useBridgeController";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { BridgeHistory } from "./BridgeHistory";
@@ -46,6 +47,7 @@ export const BridgeLayout = () => {
     handleAmountChange,
     handleSwitchChains,
     handleEvmAddressChange,
+    validateEvmAddress,
     handlePaymentCompleted,
     usdcToken,
   } = useBridgeController();
@@ -137,7 +139,7 @@ export const BridgeLayout = () => {
             (isAmountChanging || isFeeLoading) &&
             typedValue !== "" &&
             parseFloat(typedValue || "0") > 0 &&
-            parseFloat(typedValue || "0") <= 500
+            parseFloat(typedValue || "0") <= BRIDGE_MAX_AMOUNT
           }
           token={usdcToken}
           variant="outline"
@@ -156,6 +158,7 @@ export const BridgeLayout = () => {
                 placeholder="0x..."
                 value={evmAddress}
                 onChange={(e) => handleEvmAddressChange(e.target.value)}
+                onBlur={(e) => validateEvmAddress(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 pr-12 text-sm focus:outline-none",
                   evmAddressError
@@ -183,6 +186,31 @@ export const BridgeLayout = () => {
           toChain={toChain}
           fee={fee}
         />
+
+        {/* Warning alert for exceeding max amount */}
+        {typedValue &&
+          parseFloat(typedValue) > BRIDGE_MAX_AMOUNT &&
+          !isNaN(parseFloat(typedValue)) && (
+            <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
+              <svg
+                className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-sm text-[var(--color-warning-text)]">
+                Maximum bridge amount is {BRIDGE_MAX_AMOUNT} USDC. Please enter
+                a lower amount.
+              </p>
+            </div>
+          )}
 
         <div className="flex flex-col gap-2">
           {!isConnected ? (

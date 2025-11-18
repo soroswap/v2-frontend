@@ -11,7 +11,7 @@ export default function BridgePage() {
         <div className="text-center text-sm sm:text-base">
           <p
             className="text-sm leading-relaxed"
-            style={{ color: "var(--color-warning-text)" }}
+            style={{ color: "var(--color-info-text)" }}
           >
             This bridge is currently in <b>Alpha Phase</b> and may contain
             unexpected behavior. Start with a small amount first to verify
