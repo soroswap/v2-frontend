@@ -42,7 +42,7 @@ export const BridgePanel = ({
       {/* Panel header */}
       <div className="mb-2 flex items-center justify-between">
         <p className="text-base font-medium text-[#A0A3C4]">{label}</p>
-        {isLoading && readonly && (
+        {isLoading && (
           <div className="flex items-center gap-1.5 text-xs text-[#A0A3C4]">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>Calculating...</span>

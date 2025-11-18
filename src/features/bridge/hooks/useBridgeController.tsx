@@ -73,7 +73,7 @@ function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
         ...state,
         fromChain: state.toChain,
         toChain: state.fromChain,
-        independentField: state.independentField === "from" ? "to" : "from",
+        // Keep independent field the same - the calculation will adjust automatically
         evmAddress: "", // Clear EVM address when switching
         evmAddressError: "",
       };
@@ -155,10 +155,10 @@ export function useBridgeController({
   const [isAmountChanging, setIsAmountChanging] = useState<boolean>(false);
   const feeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Fetch fee using debounced amount
+  // First fee fetch - this might be for "from" amount or an estimate for "to" amount
   const {
-    data: feeData,
-    isLoading: isFeeLoading,
+    data: initialFeeData,
+    isLoading: isInitialFeeLoading,
     error: feeError,
   } = useGetFee(
     {
@@ -169,6 +169,37 @@ export function useBridgeController({
       enabled: debouncedAmount > 0 && debouncedAmount <= BRIDGE_MAX_AMOUNT,
     },
   );
+
+  // When in "to" mode, calculate the actual "from" amount and fetch the correct fee
+  const calculatedFromAmount =
+    independentField === "to" && initialFeeData
+      ? parseFloat(typedValue || "0") + initialFeeData.fee
+      : 0;
+
+  // Second fee fetch - for the actual "from" amount when in "to" mode
+  const { data: refinedFeeData, isLoading: isRefinedFeeLoading } = useGetFee(
+    {
+      amount: calculatedFromAmount,
+      appId: BRIDGE_APP_ID,
+    },
+    {
+      enabled:
+        independentField === "to" &&
+        calculatedFromAmount > 0 &&
+        calculatedFromAmount <= BRIDGE_MAX_AMOUNT &&
+        !!initialFeeData,
+    },
+  );
+
+  // Use the appropriate fee data based on independent field
+  const feeData =
+    independentField === "to" && refinedFeeData
+      ? refinedFeeData
+      : initialFeeData;
+  const isFeeLoading =
+    independentField === "to"
+      ? isInitialFeeLoading || isRefinedFeeLoading
+      : isInitialFeeLoading;
 
   // Debounce effect for fee fetching
   useEffect(() => {
@@ -201,24 +232,27 @@ export function useBridgeController({
   // ---------------------------------------------------------------------------
   // Derived values
   // ---------------------------------------------------------------------------
-  const fromAmount = typedValue;
 
   // Only use fee data if it matches the current debounced amount
   // This prevents showing old fee values when amount changes
   const currentAmount = parseFloat(typedValue || "0");
+
+  // When in "to" mode, we need to check if the refined fee is valid
+  // When in "from" mode, check if the initial fee matches the typed amount
   const isFeeValid =
-    feeData &&
-    feeData.amount === debouncedAmount &&
-    debouncedAmount === currentAmount;
+    independentField === "from"
+      ? feeData &&
+        feeData.amount === debouncedAmount &&
+        debouncedAmount === currentAmount
+      : independentField === "to" && feeData && refinedFeeData
+        ? debouncedAmount === currentAmount && !isRefinedFeeLoading
+        : false;
 
-  const fee = isFeeValid ? feeData.fee : 0;
+  const fee = isFeeValid && feeData ? feeData.fee : 0;
 
-  // Calculate the output amount after fee
-  // Only show calculated amount when:
-  // 1. We have a valid typed value
-  // 2. Amount is not changing (debounce completed)
-  // 3. Fee has been successfully fetched for current amount
-  // 4. Not currently loading a new fee
+  // Calculate the dependent amount based on independent field
+  // If user is typing in "from" field -> calculate "to" amount (subtract fee)
+  // If user is typing in "to" field -> calculate "from" amount (add fee)
   const shouldShowCalculatedAmount =
     typedValue &&
     !isNaN(currentAmount) &&
@@ -228,9 +262,19 @@ export function useBridgeController({
     !isFeeLoading &&
     isFeeValid;
 
-  const toAmount = shouldShowCalculatedAmount
-    ? Math.max(0, currentAmount - fee).toFixed(2)
-    : "";
+  const toAmount =
+    independentField === "from"
+      ? shouldShowCalculatedAmount
+        ? Math.max(0, currentAmount - fee).toFixed(2)
+        : ""
+      : typedValue;
+
+  const fromAmount =
+    independentField === "to"
+      ? shouldShowCalculatedAmount
+        ? (currentAmount + fee).toFixed(2)
+        : ""
+      : typedValue;
 
   const isConnected = !!userAddress;
   const isTokenSwitched = fromChain === "stellar"; // Stellar -> Base
@@ -243,15 +287,13 @@ export function useBridgeController({
 
   /**
    * Update amount the user typed in either the "from" or "to" input.
-   * For USDC bridge, amounts are always equal (1:1), so we always set the same value.
+   * The field parameter determines which field is being edited (independent field).
    */
   const handleAmountChange = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (_field: IndependentField) => (amount: string | undefined) => {
-      // Always set the same value regardless of which field is being typed
+    (field: IndependentField) => (amount: string | undefined) => {
       dispatchBridge({
         type: "TYPE_INPUT",
-        field: "from", // Always use "from" as the field, but the value applies to both
+        field: field,
         typedValue: amount ?? "",
       });
     },
@@ -321,17 +363,21 @@ export function useBridgeController({
       userAddress,
       bridgeStateType,
       typedValue,
+      independentField,
       isTokenSwitched,
       evmAddress,
       evmAddressError,
+      fee,
     });
   }, [
     userAddress,
     bridgeStateType,
     typedValue,
+    independentField,
     isTokenSwitched,
     evmAddress,
     evmAddressError,
+    fee,
   ]);
 
   const createPaymentConfig = useCallback(async () => {
@@ -385,7 +431,15 @@ export function useBridgeController({
       const toAddress = isTokenSwitched
         ? evmAddress
         : "0x0000000000000000000000000000000000000000";
-      const amountFormatted = Number(typedValue).toFixed(2);
+
+      // Use the "from" amount for payment (the amount user will send)
+      // If user typed in "to" field, we need to calculate the "from" amount including fee
+      const paymentAmount =
+        independentField === "from"
+          ? typedValue
+          : (parseFloat(typedValue) + fee).toFixed(2);
+
+      const amountFormatted = Number(paymentAmount).toFixed(2);
 
       const config = {
         appId: BRIDGE_APP_ID,
@@ -393,7 +447,7 @@ export function useBridgeController({
         toAddress: toAddress as `0x${string}`,
         toToken: BASE_CONFIG.tokenAddress as `0x${string}`,
         toStellarAddress: isTokenSwitched ? undefined : userAddress,
-        toUnits: typedValue,
+        toUnits: paymentAmount,
         intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
         paymentOptions: isTokenSwitched
           ? [ExternalPaymentOptions.Stellar]
@@ -416,10 +470,12 @@ export function useBridgeController({
       const currentSignature = JSON.stringify({
         userAddress,
         typedValue,
+        independentField,
         isTokenSwitched,
         evmAddress,
         evmAddressError,
         bridgeStateType,
+        fee,
       });
 
       // Skip rebuilding if nothing relevant changed and we already have config
@@ -445,10 +501,12 @@ export function useBridgeController({
     userAddress,
     bridgeStateType,
     typedValue,
+    independentField,
     isTokenSwitched,
     evmAddress,
     evmAddressError,
     intentConfig,
+    fee,
   ]);
 
   // Debounced effect for config creation
@@ -547,10 +605,16 @@ export function useBridgeController({
         const fromChainName = isTokenSwitched ? "Stellar" : "Base";
         const toChainName = isTokenSwitched ? "Base" : "Stellar";
 
+        // Save the "from" amount (the amount user actually sent)
+        const sentAmount =
+          independentField === "from"
+            ? typedValue
+            : (parseFloat(typedValue) + fee).toFixed(2);
+
         saveBridgeHistory(
           userAddress,
           e.rozoPaymentId,
-          typedValue,
+          sentAmount,
           destinationAddress,
           fromChainName,
           toChainName,
@@ -561,7 +625,15 @@ export function useBridgeController({
 
       onPaymentCompleted?.(e);
     },
-    [userAddress, isTokenSwitched, evmAddress, typedValue, onPaymentCompleted],
+    [
+      userAddress,
+      isTokenSwitched,
+      evmAddress,
+      typedValue,
+      independentField,
+      fee,
+      onPaymentCompleted,
+    ],
   );
 
   // Button disabled state
@@ -614,6 +686,7 @@ export function useBridgeController({
       evmAddress,
       evmAddressError,
       typedValue,
+      independentField,
       isConfigLoading,
       hasIntentConfig: !!intentConfig,
       fee,
@@ -630,6 +703,7 @@ export function useBridgeController({
     evmAddress,
     evmAddressError,
     typedValue,
+    independentField,
     isConfigLoading,
     intentConfig,
     fee,

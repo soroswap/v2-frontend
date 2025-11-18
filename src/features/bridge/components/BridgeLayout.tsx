@@ -28,8 +28,10 @@ export const BridgeLayout = () => {
 
   const {
     typedValue,
+    independentField,
     fromChain,
     toChain,
+    fromAmount,
     toAmount,
     evmAddress,
     evmAddressError,
@@ -112,10 +114,16 @@ export const BridgeLayout = () => {
         <div className="relative z-10">
           <BridgePanel
             label="From"
-            amount={typedValue}
+            amount={fromAmount}
             setAmount={handleAmountChange("from")}
             chain={fromChain}
-            isLoading={false}
+            isLoading={
+              independentField === "to" &&
+              (isAmountChanging || isFeeLoading) &&
+              typedValue !== "" &&
+              parseFloat(typedValue || "0") > 0 &&
+              parseFloat(typedValue || "0") <= BRIDGE_MAX_AMOUNT
+            }
             token={usdcToken}
           />
 
@@ -133,9 +141,10 @@ export const BridgeLayout = () => {
         <BridgePanel
           label="To"
           amount={toAmount}
-          setAmount={() => {}}
+          setAmount={handleAmountChange("to")}
           chain={toChain}
           isLoading={
+            independentField === "from" &&
             (isAmountChanging || isFeeLoading) &&
             typedValue !== "" &&
             parseFloat(typedValue || "0") > 0 &&
@@ -143,7 +152,6 @@ export const BridgeLayout = () => {
           }
           token={usdcToken}
           variant="outline"
-          readonly
         />
 
         {/* EVM Address Input - Only show when bridging from Stellar to Base */}
@@ -181,7 +189,7 @@ export const BridgeLayout = () => {
         )}
 
         <BridgeQuoteDetails
-          amount={typedValue}
+          amount={fromAmount}
           fromChain={fromChain}
           toChain={toChain}
           fee={fee}
