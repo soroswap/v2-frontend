@@ -19,7 +19,6 @@ export const BridgePanel = ({
   chain,
   isLoading,
   token,
-  readonly = false,
 }: {
   label: string;
   amount: string | undefined;
@@ -28,7 +27,6 @@ export const BridgePanel = ({
   chain: "stellar" | "base";
   isLoading: boolean;
   token: AssetInfo | null;
-  readonly?: boolean;
 }) => {
   return (
     <div
@@ -57,7 +55,6 @@ export const BridgePanel = ({
           setAmount={setAmount}
           isLoading={isLoading}
           token={token}
-          readonly={readonly}
         />
 
         <BridgeChainDisplay chain={chain} />
