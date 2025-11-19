@@ -10,7 +10,6 @@ import { cn } from "@/shared/lib/utils";
 import { RozoPayButton, useRozoConnectStellar } from "@rozoai/intent-pay";
 import { Clipboard } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BRIDGE_MAX_AMOUNT } from "../constants";
 import { useBridgeController } from "../hooks/useBridgeController";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
 import { BridgeHistory } from "./BridgeHistory";
@@ -45,6 +44,7 @@ export const BridgeLayout = () => {
     getActionButtonDisabled,
     fee,
     isFeeLoading,
+    feeError,
     isAmountChanging,
     handleAmountChange,
     handleSwitchChains,
@@ -121,8 +121,7 @@ export const BridgeLayout = () => {
               independentField === "to" &&
               (isAmountChanging || isFeeLoading) &&
               typedValue !== "" &&
-              parseFloat(typedValue || "0") > 0 &&
-              parseFloat(typedValue || "0") <= BRIDGE_MAX_AMOUNT
+              parseFloat(typedValue || "0") > 0
             }
             token={usdcToken}
           />
@@ -147,8 +146,7 @@ export const BridgeLayout = () => {
             independentField === "from" &&
             (isAmountChanging || isFeeLoading) &&
             typedValue !== "" &&
-            parseFloat(typedValue || "0") > 0 &&
-            parseFloat(typedValue || "0") <= BRIDGE_MAX_AMOUNT
+            parseFloat(typedValue || "0") > 0
           }
           token={usdcToken}
           variant="outline"
@@ -195,10 +193,11 @@ export const BridgeLayout = () => {
           fee={fee}
         />
 
-        {/* Warning alert for exceeding max amount */}
-        {typedValue &&
-          parseFloat(typedValue) > BRIDGE_MAX_AMOUNT &&
-          !isNaN(parseFloat(typedValue)) && (
+        {/* Error alert for API validation (e.g., amount too high) */}
+        {feeError &&
+          typeof feeError === "object" &&
+          "error" in feeError &&
+          feeError.error === "Amount too high" && (
             <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
               <svg
                 className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
@@ -214,8 +213,7 @@ export const BridgeLayout = () => {
                 />
               </svg>
               <p className="text-sm text-[var(--color-warning-text)]">
-                Maximum bridge amount is {BRIDGE_MAX_AMOUNT} USDC. Please enter
-                a lower amount.
+                {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
               </p>
             </div>
           )}

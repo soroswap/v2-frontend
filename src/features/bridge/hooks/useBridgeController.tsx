@@ -12,15 +12,11 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  BASE_CONFIG,
-  BRIDGE_APP_ID,
-  BRIDGE_MAX_AMOUNT,
-} from "../constants/bridge";
+import { BASE_CONFIG, BRIDGE_APP_ID } from "../constants/bridge";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
-import { useGetFee } from "./useGetFee";
+import { GetFeeError, useGetFee } from "./useGetFee";
 import { useUSDCTrustline } from "./useUSDCTrustline";
 
 // -----------------------------------------------------------------------------
@@ -166,7 +162,7 @@ export function useBridgeController({
       appId: BRIDGE_APP_ID,
     },
     {
-      enabled: debouncedAmount > 0 && debouncedAmount <= BRIDGE_MAX_AMOUNT,
+      enabled: debouncedAmount > 0,
     },
   );
 
@@ -177,7 +173,11 @@ export function useBridgeController({
       : 0;
 
   // Second fee fetch - for the actual "from" amount when in "to" mode
-  const { data: refinedFeeData, isLoading: isRefinedFeeLoading } = useGetFee(
+  const {
+    data: refinedFeeData,
+    isLoading: isRefinedFeeLoading,
+    error: refinedFeeError,
+  } = useGetFee(
     {
       amount: calculatedFromAmount,
       appId: BRIDGE_APP_ID,
@@ -186,7 +186,6 @@ export function useBridgeController({
       enabled:
         independentField === "to" &&
         calculatedFromAmount > 0 &&
-        calculatedFromAmount <= BRIDGE_MAX_AMOUNT &&
         !!initialFeeData,
     },
   );
@@ -201,6 +200,11 @@ export function useBridgeController({
       ? isInitialFeeLoading || isRefinedFeeLoading
       : isInitialFeeLoading;
 
+  // Use the refined error when in "to" mode (since that's the actual amount being sent),
+  // otherwise use the initial error
+  const effectiveFeeError =
+    independentField === "to" && refinedFeeError ? refinedFeeError : feeError;
+
   // Debounce effect for fee fetching
   useEffect(() => {
     if (feeTimeoutRef.current) {
@@ -212,7 +216,7 @@ export function useBridgeController({
     // Mark that the amount is changing (user is typing)
     setIsAmountChanging(true);
 
-    if (amount > 0 && amount <= BRIDGE_MAX_AMOUNT) {
+    if (amount > 0) {
       feeTimeoutRef.current = setTimeout(() => {
         setDebouncedAmount(amount);
         setIsAmountChanging(false);
@@ -240,13 +244,14 @@ export function useBridgeController({
   // When in "to" mode, we need to check if the refined fee is valid
   // When in "from" mode, check if the initial fee matches the typed amount
   const isFeeValid =
-    independentField === "from"
+    !effectiveFeeError &&
+    (independentField === "from"
       ? feeData &&
         feeData.amount === debouncedAmount &&
         debouncedAmount === currentAmount
       : independentField === "to" && feeData && refinedFeeData
         ? debouncedAmount === currentAmount && !isRefinedFeeLoading
-        : false;
+        : false);
 
   const fee = isFeeValid && feeData ? feeData.fee : 0;
 
@@ -257,7 +262,6 @@ export function useBridgeController({
     typedValue &&
     !isNaN(currentAmount) &&
     currentAmount > 0 &&
-    currentAmount <= BRIDGE_MAX_AMOUNT &&
     !isAmountChanging &&
     !isFeeLoading &&
     isFeeValid;
@@ -398,13 +402,19 @@ export function useBridgeController({
       return;
     }
 
-    if (
-      !typedValue ||
-      parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
-    ) {
+    if (!typedValue || parseFloat(typedValue) <= 0) {
       console.debug("[Bridge] createPaymentConfig: invalid typedValue", {
         typedValue,
+      });
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    // Check if there's a fee error (e.g., amount too high)
+    if (effectiveFeeError) {
+      console.debug("[Bridge] createPaymentConfig: fee error", {
+        effectiveFeeError,
       });
       setIntentConfig(null);
       setIsConfigLoading(false);
@@ -530,12 +540,16 @@ export function useBridgeController({
     }
 
     // Only create config if we have valid input
-    if (
-      !typedValue ||
-      parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
-    ) {
+    if (!typedValue || parseFloat(typedValue) <= 0) {
       console.debug("[Bridge] debounce: invalid typedValue", { typedValue });
+      setIntentConfig(null);
+      setIsConfigLoading(false);
+      return;
+    }
+
+    // Check if there's a fee error (e.g., amount too high)
+    if (effectiveFeeError) {
+      console.debug("[Bridge] debounce: fee error", { effectiveFeeError });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
@@ -641,15 +655,10 @@ export function useBridgeController({
     if (!isConnected) return true;
     if (bridgeStateType !== "ready") return true;
     if (isTokenSwitched && (!evmAddress || !!evmAddressError)) return true;
-    if (
-      !typedValue ||
-      parseFloat(typedValue) <= 0 ||
-      parseFloat(typedValue) > BRIDGE_MAX_AMOUNT
-    )
-      return true;
+    if (!typedValue || parseFloat(typedValue) <= 0) return true;
     // Disable button while fee is being fetched or if there's a fee error
     if (isFeeLoading) return true;
-    if (feeError) return true;
+    if (effectiveFeeError) return true;
     return false;
   }, [
     isConnected,
@@ -659,7 +668,7 @@ export function useBridgeController({
     evmAddressError,
     typedValue,
     isFeeLoading,
-    feeError,
+    effectiveFeeError,
   ]);
 
   // Centralized debug logger for button state and related variables
@@ -668,14 +677,11 @@ export function useBridgeController({
       notConnected: !isConnected,
       notReady: bridgeStateType !== "ready",
       evmInvalid: isTokenSwitched && (!evmAddress || !!evmAddressError),
-      invalidAmount:
-        !typedValue ||
-        parseFloat(typedValue) <= 0 ||
-        parseFloat(typedValue) > BRIDGE_MAX_AMOUNT,
+      invalidAmount: !typedValue || parseFloat(typedValue) <= 0,
       loadingConfig: isConfigLoading,
       noIntentConfig: !intentConfig,
       feeLoading: isFeeLoading,
-      feeError: !!feeError,
+      feeError: !!effectiveFeeError,
     };
 
     console.groupCollapsed("[Bridge] Debug State");
@@ -691,7 +697,7 @@ export function useBridgeController({
       hasIntentConfig: !!intentConfig,
       fee,
       isFeeLoading,
-      feeError,
+      feeError: effectiveFeeError,
       getActionButtonDisabled,
       disabledBecause,
     });
@@ -708,7 +714,7 @@ export function useBridgeController({
     intentConfig,
     fee,
     isFeeLoading,
-    feeError,
+    effectiveFeeError,
     getActionButtonDisabled,
   ]);
 
@@ -741,7 +747,7 @@ export function useBridgeController({
     // fee data
     fee,
     isFeeLoading,
-    feeError,
+    feeError: effectiveFeeError as GetFeeError | null,
     isAmountChanging,
 
     // handlers
