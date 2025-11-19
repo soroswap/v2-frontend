@@ -194,29 +194,26 @@ export const BridgeLayout = () => {
         />
 
         {/* Error alert for API validation (e.g., amount too high) */}
-        {feeError &&
-          typeof feeError === "object" &&
-          "error" in feeError &&
-          feeError.error === "Amount too high" && (
-            <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
-              <svg
-                className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                />
-              </svg>
-              <p className="text-sm text-[var(--color-warning-text)]">
-                {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
-              </p>
-            </div>
-          )}
+        {feeError && typeof feeError === "object" && "error" in feeError && (
+          <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
+            <svg
+              className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <p className="text-sm text-[var(--color-warning-text)]">
+              {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           {!isConnected ? (

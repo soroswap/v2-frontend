@@ -150,6 +150,8 @@ export function useBridgeController({
   const [debouncedAmount, setDebouncedAmount] = useState<number>(0);
   const [isAmountChanging, setIsAmountChanging] = useState<boolean>(false);
   const feeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isFeeLoadingStable, setIsFeeLoadingStable] = useState<boolean>(false);
+  const feeLoadingStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // First fee fetch - this might be for "from" amount or an estimate for "to" amount
   const {
@@ -195,7 +197,10 @@ export function useBridgeController({
     independentField === "to" && refinedFeeData
       ? refinedFeeData
       : initialFeeData;
-  const isFeeLoading =
+
+  // When in "to" mode, consider both loading states to prevent flickering
+  // The loading should be true if either query is still loading
+  const rawIsFeeLoading =
     independentField === "to"
       ? isInitialFeeLoading || isRefinedFeeLoading
       : isInitialFeeLoading;
@@ -204,6 +209,34 @@ export function useBridgeController({
   // otherwise use the initial error
   const effectiveFeeError =
     independentField === "to" && refinedFeeError ? refinedFeeError : feeError;
+
+  // Stabilize loading state to prevent flickering on errors
+  // Keep loading state true for a brief moment after error to smooth transition
+  useEffect(() => {
+    if (feeLoadingStableTimeoutRef.current) {
+      clearTimeout(feeLoadingStableTimeoutRef.current);
+    }
+
+    if (rawIsFeeLoading) {
+      setIsFeeLoadingStable(true);
+    } else if (effectiveFeeError) {
+      // If there's an error but we were loading, keep loading state for a brief moment
+      // to prevent flickering
+      feeLoadingStableTimeoutRef.current = setTimeout(() => {
+        setIsFeeLoadingStable(false);
+      }, 150); // Small delay to prevent flickering
+    } else {
+      setIsFeeLoadingStable(false);
+    }
+
+    return () => {
+      if (feeLoadingStableTimeoutRef.current) {
+        clearTimeout(feeLoadingStableTimeoutRef.current);
+      }
+    };
+  }, [rawIsFeeLoading, effectiveFeeError]);
+
+  const isFeeLoading = rawIsFeeLoading || isFeeLoadingStable;
 
   // Debounce effect for fee fetching
   useEffect(() => {
@@ -215,6 +248,11 @@ export function useBridgeController({
 
     // Mark that the amount is changing (user is typing)
     setIsAmountChanging(true);
+    // Reset stable loading state when amount changes
+    setIsFeeLoadingStable(false);
+    if (feeLoadingStableTimeoutRef.current) {
+      clearTimeout(feeLoadingStableTimeoutRef.current);
+    }
 
     if (amount > 0) {
       feeTimeoutRef.current = setTimeout(() => {
