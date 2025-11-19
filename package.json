@@ -15,7 +15,7 @@
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@defindex/sdk": "0.1.1",
     "@rozoai/intent-common": "0.0.30",
-    "@rozoai/intent-pay": "0.0.39",
+    "@rozoai/intent-pay": "0.0.40",
     "@soroswap/sdk": "0.3.7",
     "@stellar/stellar-sdk": "14.1.1",
     "@tanstack/react-query": "^5.90.5",

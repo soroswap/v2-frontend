@@ -18,8 +18,8 @@ importers:
         specifier: 0.0.30
         version: 0.0.30(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@rozoai/intent-pay':
-        specifier: 0.0.39
-        version: 0.0.39(164b2b22c2a22ac27fb9bb1dc3ef2978)
+        specifier: 0.0.40
+        version: 0.0.40(164b2b22c2a22ac27fb9bb1dc3ef2978)
       '@soroswap/sdk':
         specifier: 0.3.7
         version: 0.3.7
@@ -1149,8 +1149,8 @@ packages:
   '@rozoai/intent-common@0.0.30':
     resolution: {integrity: sha512-o+OaAa/BbTiEhCtgbUnWC8RkwcgMiCuD3uKnrBcGRMgovdeDIQ0cit528X6HJl2xr4d5FRzmGgCsSXUUPfpjow==}
 
-  '@rozoai/intent-pay@0.0.39':
-    resolution: {integrity: sha512-Z9Xkug6vBo96uXKBrKAIXZFi+F+/fX8hWO/CFxq3Ie9CQmQMsnH937IEpuQFQZ6f6MVJR8UqP8AB97iIvLvAEg==}
+  '@rozoai/intent-pay@0.0.40':
+    resolution: {integrity: sha512-ZLUg/8SucHfJzSxv87buqnYFOsSl8VQko8f2Ie6o96n98fMUXZD/6FCmApVTA8YFZHbT4K9cWHKHFwqHVmF9Ag==}
     engines: {node: '>=12.4'}
     peerDependencies:
       '@creit.tech/stellar-wallets-kit': ^1.9.5
@@ -8079,7 +8079,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@rozoai/intent-pay@0.0.39(164b2b22c2a22ac27fb9bb1dc3ef2978)':
+  '@rozoai/intent-pay@0.0.40(164b2b22c2a22ac27fb9bb1dc3ef2978)':
     dependencies:
       '@albedo-link/intent': 0.13.0
       '@reown/appkit': 1.8.14(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.2.6)(bufferutil@4.0.9)(react@19.2.0)(utf-8-validate@5.0.10)))(@types/react@19.2.6)(bufferutil@4.0.9)(fastestsmallesttextencoderdecoder@1.0.22)(react@19.2.0)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@19.2.0))(utf-8-validate@5.0.10)(ws@8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.76)
@@ -10485,7 +10485,7 @@ snapshots:
 
   '@walletconnect/relay-api@1.0.11':
     dependencies:
-      '@walletconnect/jsonrpc-types': 1.0.3
+      '@walletconnect/jsonrpc-types': 1.0.4
 
   '@walletconnect/relay-auth@1.1.0':
     dependencies:
