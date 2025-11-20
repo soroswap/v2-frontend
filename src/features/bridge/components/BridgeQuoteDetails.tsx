@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import { cn } from "@/shared/lib/utils/cn";
 import { ChevronDownIcon } from "lucide-react";
+import { useState } from "react";
 
 interface BridgeQuoteDetailsProps {
   amount: string | undefined;
   fromChain: "stellar" | "base";
   toChain: "stellar" | "base";
+  fee: number;
   className?: string;
 }
 
@@ -15,6 +16,7 @@ export const BridgeQuoteDetails = ({
   amount,
   fromChain,
   toChain,
+  fee,
   className,
 }: BridgeQuoteDetailsProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -70,6 +72,18 @@ export const BridgeQuoteDetails = ({
             </p>
           </div>
 
+          {/* Fee */}
+          <div className="flex items-center justify-between">
+            <p className="text-secondary text-sm">Fee</p>
+            <p className="text-primary text-sm">
+              {new Intl.NumberFormat("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 6,
+              }).format(fee)}{" "}
+              USDC
+            </p>
+          </div>
+
           {/* Expected Output */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">Expected output</p>
@@ -77,7 +91,7 @@ export const BridgeQuoteDetails = ({
               {new Intl.NumberFormat("en-US", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 6,
-              }).format(parseFloat(amount))}{" "}
+              }).format(parseFloat(amount) - fee)}{" "}
               USDC
             </p>
           </div>
@@ -104,5 +118,3 @@ export const BridgeQuoteDetails = ({
     </div>
   );
 };
-
-

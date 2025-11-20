@@ -1,5 +1,7 @@
 import { BridgeAmount } from "../types/bridge";
 
+export const BRIDGE_APP_ID = "rozoSoroswapAppStellar";
+
 // USDC Asset configuration
 export const USDC_ASSET_MAINNET = {
   code: "USDC",
