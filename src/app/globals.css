@@ -37,6 +37,11 @@
     --color-accent-warning: #ea4335; */
 
   --color-accent-warning: #ea4335;
+  --color-warning: #f59e0b;
+  --color-warning-bg: oklch(from var(--color-warning) l c h / 0.1);
+  --color-warning-border: oklch(from var(--color-warning) l c h / 0.3);
+  --color-warning-text: var(--color-warning);
+
   --color-info-bg: #dbeafe;
   --color-info-border: #3b82f6;
   --color-info-text: #1e40af;
@@ -80,6 +85,11 @@
   /* --color-inverse: #171717; */
   /* --color-accent-success: #CFFFD9; */
   --color-accent-warning: #f88f6d;
+  --color-warning: #f6b512;
+  --color-warning-bg: oklch(from var(--color-warning) l c h / 0.1);
+  --color-warning-border: oklch(from var(--color-warning) l c h / 0.3);
+  --color-warning-text: var(--color-warning);
+
   --color-info-bg: #1e3a8a;
   --color-info-border: #3b82f6;
   --color-info-text: #93c5fd;

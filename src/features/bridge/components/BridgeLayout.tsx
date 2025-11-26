@@ -1,18 +1,21 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { RotateArrowButton, TheButton, ConnectWallet } from "@/shared/components";
+import {
+  ConnectWallet,
+  RotateArrowButton,
+  TheButton,
+} from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
-import { useRozoConnectStellar } from "@rozoai/intent-pay";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { RozoPayButton } from "@rozoai/intent-pay";
+import { RozoPayButton, useRozoConnectStellar } from "@rozoai/intent-pay";
 import { Clipboard } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useBridgeController } from "../hooks/useBridgeController";
+import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
+import { BridgeHistory } from "./BridgeHistory";
 import { BridgePanel } from "./BridgePanel";
 import { BridgeQuoteDetails } from "./BridgeQuoteDetails";
-import { BridgeHistory } from "./BridgeHistory";
 import { TrustlineSection } from "./BridgeTrustlineSection";
-import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
-import { useBridgeController } from "../hooks/useBridgeController";
 
 export const BridgeLayout = () => {
   const { address: userAddress, selectedWallet } = useUserContext();
@@ -24,8 +27,11 @@ export const BridgeLayout = () => {
 
   const {
     typedValue,
+    independentField,
     fromChain,
     toChain,
+    fromAmount,
+    toAmount,
     evmAddress,
     evmAddressError,
     isConnected,
@@ -36,9 +42,14 @@ export const BridgeLayout = () => {
     intentConfig,
     isConfigLoading,
     getActionButtonDisabled,
+    fee,
+    isFeeLoading,
+    feeError,
+    isAmountChanging,
     handleAmountChange,
     handleSwitchChains,
     handleEvmAddressChange,
+    validateEvmAddress,
     handlePaymentCompleted,
     usdcToken,
   } = useBridgeController();
@@ -79,7 +90,9 @@ export const BridgeLayout = () => {
 
   const buttonContent = isConfigLoading
     ? "Preparing bridge..."
-    : `Bridge USDC to ${!controllerIsTokenSwitched ? "Stellar" : "Base"}`;
+    : isAmountChanging || isFeeLoading
+      ? "Calculating fee..."
+      : `Bridge USDC to ${!controllerIsTokenSwitched ? "Stellar" : "Base"}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -88,9 +101,7 @@ export const BridgeLayout = () => {
       </div>
 
       <div className="flex flex-col gap-2">
-        {isConnected && (
-          <TrustlineSection trustlineData={trustlineData} />
-        )}
+        {isConnected && <TrustlineSection trustlineData={trustlineData} />}
 
         {isConnected && bridgeStateType === "ready" && (
           <BridgeBalanceDisplay
@@ -103,10 +114,15 @@ export const BridgeLayout = () => {
         <div className="relative z-10">
           <BridgePanel
             label="From"
-            amount={typedValue}
+            amount={fromAmount}
             setAmount={handleAmountChange("from")}
             chain={fromChain}
-            isLoading={false}
+            isLoading={
+              independentField === "to" &&
+              (isAmountChanging || isFeeLoading) &&
+              typedValue !== "" &&
+              parseFloat(typedValue || "0") > 0
+            }
             token={usdcToken}
           />
 
@@ -123,10 +139,15 @@ export const BridgeLayout = () => {
 
         <BridgePanel
           label="To"
-          amount={typedValue}
+          amount={toAmount}
           setAmount={handleAmountChange("to")}
           chain={toChain}
-          isLoading={false}
+          isLoading={
+            independentField === "from" &&
+            (isAmountChanging || isFeeLoading) &&
+            typedValue !== "" &&
+            parseFloat(typedValue || "0") > 0
+          }
           token={usdcToken}
           variant="outline"
         />
@@ -143,6 +164,7 @@ export const BridgeLayout = () => {
                 placeholder="0x..."
                 value={evmAddress}
                 onChange={(e) => handleEvmAddressChange(e.target.value)}
+                onBlur={(e) => validateEvmAddress(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 pr-12 text-sm focus:outline-none",
                   evmAddressError
@@ -165,17 +187,43 @@ export const BridgeLayout = () => {
         )}
 
         <BridgeQuoteDetails
-          amount={typedValue}
+          amount={fromAmount}
           fromChain={fromChain}
           toChain={toChain}
+          fee={fee}
         />
+
+        {/* Error alert for API validation (e.g., amount too high) */}
+        {feeError && typeof feeError === "object" && "error" in feeError && (
+          <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
+            <svg
+              className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+              />
+            </svg>
+            <p className="text-sm text-[var(--color-warning-text)]">
+              {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-2">
           {!isConnected ? (
             <ConnectWallet className="flex w-full justify-center" />
           ) : (
             <>
-              {intentConfig && !getActionButtonDisabled && !isConfigLoading && intentConfig.toAddress ? (
+              {intentConfig &&
+              !getActionButtonDisabled &&
+              !isConfigLoading &&
+              intentConfig.toAddress ? (
                 <RozoPayButton.Custom
                   appId={intentConfig.appId}
                   toChain={intentConfig.toChain}
@@ -195,7 +243,8 @@ export const BridgeLayout = () => {
                       onClick={show}
                       className="w-full gap-2 py-6 text-base text-white"
                     >
-                      Bridge USDC to {!controllerIsTokenSwitched ? "Stellar" : "Base"}
+                      Bridge USDC to{" "}
+                      {!controllerIsTokenSwitched ? "Stellar" : "Base"}
                     </TheButton>
                   )}
                 </RozoPayButton.Custom>
