@@ -10,27 +10,6 @@ interface TokenIconProps {
   className?: string;
 }
 
-/**
- * Generate a consistent random color based on a seed string
- * Uses a simple hash function to generate HSL colors with good contrast
- */
-const getColorFromSeed = (seed?: string): string => {
-  if (!seed) return "#8866DD"; // Default fallback
-
-  // Simple hash function
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-
-  // Generate HSL color with good saturation and lightness
-  const hue = Math.abs(hash % 360);
-  const saturation = 60 + (Math.abs(hash) % 20); // 60-80%
-  const lightness = 45 + (Math.abs(hash >> 8) % 15); // 45-60%
-
-  return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-};
 
 export const TokenIcon = ({
   src,
@@ -60,7 +39,7 @@ export const TokenIcon = ({
   };
 
   // Generate consistent color from alt (contract address) or code
-  const backgroundColor = getColorFromSeed(alt || code || name);
+  const backgroundColor = "#8866DD";
 
   if (hasValidImage) {
     return (

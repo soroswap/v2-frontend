@@ -7,10 +7,17 @@ import { ArrowUp } from "lucide-react";
 import { cn, formatCurrency } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
 import { useRouter } from "next/navigation";
-import { useTokenMetadata } from "@/shared/hooks/useTokenMetadata";
 
 /**
- * Component that renders a pool's token pair with automatic fallback to on-demand metadata fetching
+ * Helper to truncate a contract address for display
+ */
+function truncateAddress(address: string): string {
+  if (!address) return "???";
+  return `${address.slice(0, 4)}`;
+}
+
+/**
+ * Component that renders a pool's token pair using token list data with truncated address fallback
  */
 function PoolTokenPair({
   tokenA,
@@ -24,37 +31,23 @@ function PoolTokenPair({
   const tokenAData = tokenMap[tokenA];
   const tokenBData = tokenMap[tokenB];
 
-  // Only fetch metadata if token is not in the token map
-  const { metadata: tokenAMetadata } = useTokenMetadata(
-    !tokenAData ? tokenA : null,
-  );
-  const { metadata: tokenBMetadata } = useTokenMetadata(
-    !tokenBData ? tokenB : null,
-  );
-
-  // Use token map data as primary source, fallback to on-demand metadata
-  const finalTokenA = tokenAData || tokenAMetadata;
-  const finalTokenB = tokenBData || tokenBMetadata;
-
-  // If still loading or missing data, show skeleton or truncated contract
-  const tokenACode =
-    finalTokenA?.code || (tokenA ? tokenA.slice(0, 6) + "..." : "???");
-  const tokenBCode =
-    finalTokenB?.code || (tokenB ? tokenB.slice(0, 6) + "..." : "???");
+  // Use token map data, fallback to truncated contract address
+  const tokenACode = tokenAData?.code || truncateAddress(tokenA);
+  const tokenBCode = tokenBData?.code || truncateAddress(tokenB);
 
   return (
     <div className="flex items-center gap-4">
       <div className="relative">
         <TokenIcon
-          src={finalTokenA?.icon}
+          src={tokenAData?.icon}
           alt={tokenA}
-          code={finalTokenA?.code}
+          code={tokenAData?.code || tokenACode}
           className="rounded-full border border-white bg-white"
         />
         <TokenIcon
-          src={finalTokenB?.icon}
+          src={tokenBData?.icon}
           alt={tokenB}
-          code={finalTokenB?.code}
+          code={tokenBData?.code || tokenBCode}
           className="absolute top-0 left-3 rounded-full border border-white bg-white"
         />
       </div>
