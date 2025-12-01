@@ -1,6 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import {
+  ALLOWED_ORIGINS,
+  getErrorMessage,
+  getErrorStatusCode,
+  soroswapClient,
+} from "@/shared/lib/server";
 import {
   AssetInfo,
   AssetList,
@@ -54,7 +58,7 @@ async function fetchTestnetAssetList(): Promise<AssetInfo[]> {
  * Fetch mainnet asset list from SDK with retry logic for rate limiting
  */
 async function fetchMainnetAssetListWithRetry(): Promise<AssetList> {
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
@@ -68,12 +72,14 @@ async function fetchMainnetAssetListWithRetry(): Promise<AssetList> {
 
       console.log("[API INFO] Using mainnet token list from SDK");
       return assetListData;
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error;
+      const errorMessage = getErrorMessage(error);
+      const statusCode = getErrorStatusCode(error);
       const isRateLimit =
-        error.message?.includes("Rate limit") ||
-        error.message?.includes("429") ||
-        error.status === 429;
+        errorMessage.includes("Rate limit") ||
+        errorMessage.includes("429") ||
+        statusCode === 429;
 
       if (isRateLimit && attempt < MAX_RETRIES) {
         console.warn(
@@ -159,14 +165,14 @@ export async function GET(request: NextRequest) {
       data: assets,
       metadata,
     });
-  } catch (error: any) {
-    console.error("[API ERROR] Failed to fetch token list:", error);
+  } catch (error: unknown) {
+    console.error("[API ERROR] Failed to fetch token list:", getErrorMessage(error));
     return NextResponse.json(
       {
         code: "TOKENS_ERROR",
-        message: error.message || "Failed to fetch token list",
+        message: getErrorMessage(error),
       },
-      { status: error.status || 500 },
+      { status: getErrorStatusCode(error) || 500 },
     );
   }
 }

@@ -1,7 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
-import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
+import {
+  ALLOWED_ORIGINS,
+  getErrorMessage,
+  getErrorStatusCode,
+  soroswapClient,
+} from "@/shared/lib/server";
 import { NextRequest, NextResponse } from "next/server";
+import { SupportedNetworks } from "@soroswap/sdk";
 
 // Configurable delay between retries (in ms)
 const RETRY_DELAY_MS = 2000;
@@ -9,6 +14,13 @@ const MAX_RETRIES = 3;
 const REQUEST_TIMEOUT_MS = 15000; // 15 seconds timeout per request
 const BATCH_SIZE = 2; // Reduced to avoid rate limits
 const BATCH_DELAY_MS = 1500; // 1.5s delay between batches
+
+/** Result of a price fetch operation */
+interface PriceResult {
+  asset: string;
+  data: { price: number } | null;
+  error?: boolean;
+}
 
 /**
  * Helper to delay execution
@@ -43,27 +55,30 @@ async function fetchWithTimeout<T>(
 
 /**
  * Fetch price with retry logic for rate limiting
+ * Returns the raw price response from the SDK
  */
 async function fetchPriceWithRetry(
   assetAddress: string,
-  network: any,
-): Promise<any> {
-  let lastError: any;
+  networkParam: SupportedNetworks,
+): Promise<{ price: number }[]> {
+  let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       const result = await fetchWithTimeout(
-        () => soroswapClient.getPrice(assetAddress, network),
+        () => soroswapClient.getPrice(assetAddress, networkParam),
         REQUEST_TIMEOUT_MS,
       );
-      return result;
-    } catch (error: any) {
+      return result as { price: number }[];
+    } catch (error: unknown) {
       lastError = error;
+      const errorMessage = getErrorMessage(error);
+      const statusCode = getErrorStatusCode(error);
       const isRateLimit =
-        error.message?.includes("Rate limit") ||
-        error.message?.includes("429") ||
-        error.statusCode === 429;
-      const isTimeout = error.message === "Request timeout";
+        errorMessage.includes("Rate limit") ||
+        errorMessage.includes("429") ||
+        statusCode === 429;
+      const isTimeout = errorMessage === "Request timeout";
 
       if ((isRateLimit || isTimeout) && attempt < MAX_RETRIES) {
         const waitTime = RETRY_DELAY_MS * attempt; // Linear backoff: 2s, 4s, 6s
@@ -149,11 +164,11 @@ export async function GET(request: NextRequest) {
     }
 
     // Process assets in batches to balance speed and rate limiting
-    const priceResults: { asset: string; data: any; error?: boolean }[] = [];
+    const priceResults: PriceResult[] = [];
     for (let i = 0; i < assetList.length; i += BATCH_SIZE) {
       const batch = assetList.slice(i, i + BATCH_SIZE);
       const batchResults = await Promise.all(
-        batch.map(async (assetAddress) => {
+        batch.map(async (assetAddress): Promise<PriceResult> => {
           try {
             const priceResponse = await fetchPriceWithRetry(
               assetAddress,
@@ -167,10 +182,10 @@ export async function GET(request: NextRequest) {
               return { asset: assetAddress, data: priceResponse[0] };
             }
             return { asset: assetAddress, data: null, error: true };
-          } catch (error) {
+          } catch (error: unknown) {
             console.error(
               `[API ERROR] Failed to fetch price for ${assetAddress}:`,
-              error,
+              getErrorMessage(error),
             );
             return { asset: assetAddress, data: null, error: true };
           }
@@ -191,16 +206,19 @@ export async function GET(request: NextRequest) {
         }
         return acc;
       },
-      {} as Record<string, any>,
+      {} as Record<string, { price: number }>,
     );
 
     return NextResponse.json({
       code: "PRICE_SUCCESS",
       data: priceMap,
     });
-  } catch (error: any) {
-    console.error("[API ERROR]", error);
+  } catch (error: unknown) {
+    console.error("[API ERROR]", getErrorMessage(error));
 
-    return NextResponse.json(error, { status: error.statusCode || 500 });
+    return NextResponse.json(
+      { code: "PRICE_ERROR", message: getErrorMessage(error) },
+      { status: getErrorStatusCode(error) || 500 },
+    );
   }
 }

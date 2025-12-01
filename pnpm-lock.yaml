@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@soroswap/sdk': link:../../../Library/pnpm/global/5/node_modules/@soroswap/sdk
-
 importers:
 
   .:
@@ -24,8 +21,8 @@ importers:
         specifier: 0.0.35
         version: 0.0.35(a79d5db4c324ecade46043c0f601df1e)
       '@soroswap/sdk':
-        specifier: link:../../../Library/pnpm/global/5/node_modules/@soroswap/sdk
-        version: link:../../../Library/pnpm/global/5/node_modules/@soroswap/sdk
+        specifier: 0.3.8
+        version: 0.3.8
       '@stellar/stellar-sdk':
         specifier: 14.1.1
         version: 14.1.1
@@ -1853,6 +1850,10 @@ packages:
 
   '@solana/web3.js@1.98.4':
     resolution: {integrity: sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw==}
+
+  '@soroswap/sdk@0.3.8':
+    resolution: {integrity: sha512-tkb4PouwxvenZItqosyU+cYLPGc5UQW31u1+X0j07BKjLxVMga6ONExX3VT6gvsvlqUnSEUgsX2VL2QSosIJNQ==}
+    engines: {node: '>=22.0.0'}
 
   '@stablelib/aead@1.0.1':
     resolution: {integrity: sha512-q39ik6sxGHewqtO0nP4BuSe3db5G1fEJE8ukvngS2gLkBXyy6E7pLubhbYgnkDFv6V8cWaxcE4Xn0t6LWcJkyg==}
@@ -9267,6 +9268,12 @@ snapshots:
       - encoding
       - typescript
       - utf-8-validate
+
+  '@soroswap/sdk@0.3.8':
+    dependencies:
+      axios: 1.13.1
+    transitivePeerDependencies:
+      - debug
 
   '@stablelib/aead@1.0.1': {}
 
