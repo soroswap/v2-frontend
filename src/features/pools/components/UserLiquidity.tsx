@@ -62,25 +62,35 @@ export const UserLiquidity = () => {
           );
         }
 
+        // Get token info from tokenMap
+        const tokenAInfo = tokenMap[pool.poolInformation.tokenA.address];
+        const tokenBInfo = tokenMap[pool.poolInformation.tokenB.address];
+
         // Convert contract addresses to human-readable token codes when possible
         const displayTokenA =
-          tokenMap[pool.poolInformation.tokenA.address]?.code ??
-          pool.poolInformation.tokenA.address.slice(0, 4);
+          tokenAInfo?.code ??
+          pool.poolInformation.tokenA.symbol ??
+          "???";
         const displayTokenB =
-          tokenMap[pool.poolInformation.tokenB.address]?.code ??
-          pool.poolInformation.tokenB.address.slice(0, 4);
+          tokenBInfo?.code ??
+          pool.poolInformation.tokenB.symbol ??
+          "???";
 
         return (
           <div className="flex w-full flex-col items-start gap-4 sm:flex-row sm:items-center">
             <div className="relative">
               <TokenIcon
-                src={tokenMap[pool.poolInformation.tokenA.address]?.icon}
-                alt={displayTokenA}
+                src={tokenAInfo?.icon}
+                alt={`${displayTokenA} logo`}
+                code={tokenAInfo?.code ?? pool.poolInformation.tokenA.symbol}
+                name={tokenAInfo?.name ?? pool.poolInformation.tokenA.name}
                 className="rounded-full border border-white bg-white"
               />
               <TokenIcon
-                src={tokenMap[pool.poolInformation.tokenB.address]?.icon}
-                alt={displayTokenB}
+                src={tokenBInfo?.icon}
+                alt={`${displayTokenB} logo`}
+                code={tokenBInfo?.code ?? pool.poolInformation.tokenB.symbol}
+                name={tokenBInfo?.name ?? pool.poolInformation.tokenB.name}
                 className="absolute top-0 left-3 rounded-full border border-white bg-white"
               />
             </div>
