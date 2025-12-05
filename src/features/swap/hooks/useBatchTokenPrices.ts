@@ -53,7 +53,12 @@ export function useBatchTokenPrices(addresses: string[]) {
   } = useSWR(key, fetchBatchPrices, {
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 300000, // 5 minutes
+    // Caching strategy:
+    // - dedupingInterval: Prevents redundant requests within 10 min window
+    // - refreshInterval: Keeps prices reasonably fresh with background updates
+    // - Server-side: /api/price has its own retry logic for rate limiting
+    dedupingInterval: 600000, // 10 min - prevents redundant requests
+    refreshInterval: 300000, // 5 min - keeps prices reasonably fresh
     errorRetryCount: 3,
     errorRetryInterval: 1000,
   });

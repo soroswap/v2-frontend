@@ -1,4 +1,5 @@
 import { WalletNetwork } from "@creit.tech/stellar-wallets-kit/types";
+import { Networks } from "@stellar/stellar-sdk";
 import { SupportedNetworks } from "@soroswap/sdk";
 import { z } from "zod";
 
@@ -47,6 +48,28 @@ export const envVars = {
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? WalletNetwork.TESTNET
         : WalletNetwork.PUBLIC,
+    RPC_URL:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? "https://soroban-testnet.stellar.org"
+        : "https://soroban.stellar.org",
+    HORIZON_URL:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? "https://horizon-testnet.stellar.org"
+        : "https://horizon.stellar.org",
+    NETWORK_PASSPHRASE:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? "Test SDF Network ; September 2015"
+        : "Public Global Stellar Network ; September 2015",
+    // Soroswap Router contract - handles swap routing for the DEX
+    // These are the official deployed router addresses per network
+    STELLAR_ROUTER_ADDRESS:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? "CA4YSDKNIGIV77W6XDUUWFDTPCVUJ5IPZQJDQCPD65DBVG3R3XTOCFZA" // Testnet router
+        : "CBZV3HBP672BV7FF3ZILVT4CNPW3N5V2WTJ2LAGOAYW5R7L2D5SLUDFZ", // Mainnet router
+    NETWORK:
+      validatedEnv.NEXT_PUBLIC_ENV === "testnet"
+        ? Networks.TESTNET
+        : Networks.PUBLIC,
   },
 
   SOROSWAP: {

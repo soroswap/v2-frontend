@@ -16,7 +16,7 @@
     "@defindex/sdk": "0.1.1",
     "@rozoai/intent-common": "0.0.30",
     "@rozoai/intent-pay": "0.0.41",
-    "@soroswap/sdk": "0.3.7",
+    "@soroswap/sdk": "0.3.8",
     "@stellar/stellar-sdk": "14.1.1",
     "@tanstack/react-query": "^5.90.5",
     "@tanstack/react-table": "^8.21.3",

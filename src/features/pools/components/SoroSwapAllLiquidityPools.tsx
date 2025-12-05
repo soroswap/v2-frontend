@@ -2,14 +2,64 @@ import { ColumnDef } from "@tanstack/react-table";
 import { usePools } from "@/features/pools/hooks/usePools";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { TheTable } from "@/shared/components";
-import { Pool } from "@soroswap/sdk";
+import { Pool, AssetInfo } from "@soroswap/sdk";
 import { ArrowUp } from "lucide-react";
 import { cn, formatCurrency } from "@/shared/lib/utils";
 import { TokenIcon } from "@/shared/components";
 import { useRouter } from "next/navigation";
 
+/**
+ * Helper to truncate a contract address for display
+ */
+function truncateAddress(address: string): string {
+  if (!address) return "???";
+  return `${address.slice(0, 4)}`;
+}
+
+/**
+ * Component that renders a pool's token pair using token list data with truncated address fallback
+ */
+function PoolTokenPair({
+  tokenA,
+  tokenB,
+  tokenMap,
+}: {
+  tokenA: string;
+  tokenB: string;
+  tokenMap: Record<string, AssetInfo>;
+}) {
+  const tokenAData = tokenMap[tokenA];
+  const tokenBData = tokenMap[tokenB];
+
+  // Use token map data, fallback to truncated contract address
+  const tokenACode = tokenAData?.code || truncateAddress(tokenA);
+  const tokenBCode = tokenBData?.code || truncateAddress(tokenB);
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative">
+        <TokenIcon
+          src={tokenAData?.icon}
+          alt={tokenA}
+          code={tokenAData?.code || tokenACode}
+          className="rounded-full border border-white bg-white"
+        />
+        <TokenIcon
+          src={tokenBData?.icon}
+          alt={tokenB}
+          code={tokenBData?.code || tokenBCode}
+          className="absolute top-0 left-3 rounded-full border border-white bg-white"
+        />
+      </div>
+      <p className="text-primary font-semibold">
+        {tokenACode}/{tokenBCode}
+      </p>
+    </div>
+  );
+}
+
 export const SoroSwapAllLiquidityPools = () => {
-  const { pools, isLoading } = usePools();
+  const { pools, isLoading: isLoadingPools } = usePools();
   const { tokenMap } = useTokensList();
   const router = useRouter();
 
@@ -21,9 +71,6 @@ export const SoroSwapAllLiquidityPools = () => {
       accessorFn: (row) => `${row.tokenA}/${row.tokenB}`,
       cell: ({ row }) => {
         const pool = row.original;
-
-        const tokenAData = tokenMap[pool.tokenA];
-        const tokenBData = tokenMap[pool.tokenB];
 
         if (!pool.tokenA || !pool.tokenB) {
           return (
@@ -38,23 +85,11 @@ export const SoroSwapAllLiquidityPools = () => {
         }
 
         return (
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <TokenIcon
-                src={tokenAData?.icon}
-                alt={pool.tokenA}
-                className="rounded-full border border-white bg-white"
-              />
-              <TokenIcon
-                src={tokenBData?.icon}
-                alt={pool.tokenB}
-                className="absolute top-0 left-3 rounded-full border border-white bg-white"
-              />
-            </div>
-            <p className="text-primary font-semibold">
-              {tokenAData?.code}/{tokenBData?.code}
-            </p>
-          </div>
+          <PoolTokenPair
+            tokenA={pool.tokenA}
+            tokenB={pool.tokenB}
+            tokenMap={tokenMap}
+          />
         );
       },
     },
@@ -105,7 +140,7 @@ export const SoroSwapAllLiquidityPools = () => {
       <TheTable
         data={pools}
         columns={columns}
-        isLoading={isLoading}
+        isLoading={isLoadingPools}
         variant="default"
         onRowClick={(row) => {
           router.push(`/pools/add-liquidity/${row.tokenA}/${row.tokenB}`);

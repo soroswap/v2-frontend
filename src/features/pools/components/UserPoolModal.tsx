@@ -17,14 +17,23 @@ export const UserPoolModal = ({
   rowData: UserPositionResponse;
 }) => {
   const { tokenMap } = useTokensList();
-  const displayTokenA = tokenMap[rowData.poolInformation.tokenA.address]?.icon;
-  const displayTokenB = tokenMap[rowData.poolInformation.tokenB.address]?.icon;
+
+  // Get token info from tokenMap
+  const tokenAInfo = tokenMap[rowData.poolInformation.tokenA.address];
+  const tokenBInfo = tokenMap[rowData.poolInformation.tokenB.address];
+
+  // Display data
+  const displayTokenA = tokenAInfo?.icon;
+  const displayTokenB = tokenBInfo?.icon;
+
   const displayTokenAName =
-    tokenMap[rowData.poolInformation.tokenA.address]?.code ??
-    rowData.poolInformation.tokenA.address.slice(0, 4);
+    tokenAInfo?.code ??
+    rowData.poolInformation.tokenA.symbol ??
+    "???";
   const displayTokenBName =
-    tokenMap[rowData.poolInformation.tokenB.address]?.code ??
-    rowData.poolInformation.tokenB.address.slice(0, 4);
+    tokenBInfo?.code ??
+    rowData.poolInformation.tokenB.symbol ??
+    "???";
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -34,12 +43,16 @@ export const UserPoolModal = ({
           <div className="relative">
             <TokenIcon
               src={displayTokenA}
-              alt={displayTokenAName}
+              alt={`${displayTokenAName} logo`}
+              code={tokenAInfo?.code ?? rowData.poolInformation.tokenA.symbol}
+              name={tokenAInfo?.name ?? rowData.poolInformation.tokenA.name}
               className="rounded-full border border-white bg-white"
             />
             <TokenIcon
               src={displayTokenB}
-              alt={displayTokenBName}
+              alt={`${displayTokenBName} logo`}
+              code={tokenBInfo?.code ?? rowData.poolInformation.tokenB.symbol}
+              name={tokenBInfo?.name ?? rowData.poolInformation.tokenB.name}
               className="absolute top-0 left-3 rounded-full border border-white bg-white"
             />
           </div>
@@ -65,7 +78,9 @@ export const UserPoolModal = ({
             <div className="flex items-center gap-2">
               <TokenIcon
                 src={displayTokenA}
-                alt={displayTokenAName}
+                alt={`${displayTokenAName} logo`}
+                code={tokenAInfo?.code ?? rowData.poolInformation.tokenA.symbol}
+                name={tokenAInfo?.name ?? rowData.poolInformation.tokenA.name}
                 className="rounded-full border border-white bg-white"
               />
               {displayTokenAName}
@@ -83,7 +98,9 @@ export const UserPoolModal = ({
             <div className="flex items-center gap-2">
               <TokenIcon
                 src={displayTokenB}
-                alt={displayTokenBName}
+                alt={`${displayTokenBName} logo`}
+                code={tokenBInfo?.code ?? rowData.poolInformation.tokenB.symbol}
+                name={tokenBInfo?.name ?? rowData.poolInformation.tokenB.name}
                 className="rounded-full border border-white bg-white"
               />
               {displayTokenBName}
@@ -120,7 +137,9 @@ export const UserPoolModal = ({
             <div className="flex items-center gap-2">
               <TokenIcon
                 src={displayTokenA}
-                alt={displayTokenAName}
+                alt={`${displayTokenAName} logo`}
+                code={tokenAInfo?.code ?? rowData.poolInformation.tokenA.symbol}
+                name={tokenAInfo?.name ?? rowData.poolInformation.tokenA.name}
                 className="rounded-full border border-white bg-white"
               />
               {displayTokenAName}
@@ -138,7 +157,9 @@ export const UserPoolModal = ({
             <div className="flex items-center gap-2">
               <TokenIcon
                 src={displayTokenB}
-                alt={displayTokenBName}
+                alt={`${displayTokenBName} logo`}
+                code={tokenBInfo?.code ?? rowData.poolInformation.tokenB.symbol}
+                name={tokenBInfo?.name ?? rowData.poolInformation.tokenB.name}
                 className="rounded-full border border-white bg-white"
               />
               {displayTokenBName}
