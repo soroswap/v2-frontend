@@ -1,9 +1,8 @@
 "use client";
 
-import { cn } from "@/shared/lib/utils/cn";
 import { TokenIcon } from "@/shared/components";
+import { cn } from "@/shared/lib/utils/cn";
 import { Base, Stellar } from "./icons/chains";
-import { envVars } from "@/shared/lib/environmentVars";
 
 interface BridgeChainDisplayProps {
   chain: "stellar" | "base";
@@ -25,8 +24,6 @@ export const BridgeChainDisplay = ({
   chain,
   className,
 }: BridgeChainDisplayProps) => {
-  const isTestnet = envVars.isTestnet.toString() === "true";
-
   return (
     <div
       className={cn(
@@ -47,11 +44,10 @@ export const BridgeChainDisplay = ({
         {chain === "stellar" ? (
           <Stellar width={20} height={20} className="rounded-full" />
         ) : (
-          <Base width={20} height={20} testnet={isTestnet} className="rounded-full" />
+          <Base width={20} height={20} className="rounded-full" />
         )}
         <p className="text-primary text-sm font-bold capitalize">{chain}</p>
       </div>
     </div>
   );
 };
-

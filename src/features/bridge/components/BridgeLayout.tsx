@@ -229,7 +229,6 @@ export const BridgeLayout = () => {
                   toChain={intentConfig.toChain}
                   toToken={intentConfig.toToken}
                   toAddress={intentConfig.toAddress}
-                  toStellarAddress={intentConfig.toStellarAddress}
                   toUnits={intentConfig.toUnits}
                   metadata={intentConfig.metadata as Record<string, string>}
                   connectedWalletOnly={controllerIsTokenSwitched}

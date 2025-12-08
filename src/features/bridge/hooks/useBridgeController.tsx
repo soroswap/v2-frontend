@@ -1,7 +1,12 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { ExternalPaymentOptions } from "@rozoai/intent-common";
+import {
+  baseUSDC,
+  ExternalPaymentOptions,
+  FeeType,
+  rozoStellarUSDC,
+} from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
 import {
@@ -12,7 +17,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { BASE_CONFIG, BRIDGE_APP_ID } from "../constants/bridge";
+import { BRIDGE_APP_ID } from "../constants/bridge";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
@@ -109,9 +114,7 @@ const usdcToken: AssetInfo = {
   decimals: 7,
 };
 
-export function useBridgeController({
-  onPaymentCompleted,
-}: UseBridgeControllerProps = {}) {
+export function useBridgeController() {
   const { address: userAddress } = useUserContext();
   const { resetPayment } = useRozoPayUI();
 
@@ -161,6 +164,7 @@ export function useBridgeController({
   } = useGetFee(
     {
       amount: debouncedAmount,
+      type: independentField === "from" ? FeeType.ExactIn : FeeType.ExactOut,
       appId: BRIDGE_APP_ID,
     },
     {
@@ -182,6 +186,7 @@ export function useBridgeController({
   } = useGetFee(
     {
       amount: calculatedFromAmount,
+      type: FeeType.ExactIn, // When calculating "from" amount, we use ExactIn
       appId: BRIDGE_APP_ID,
     },
     {
@@ -400,27 +405,6 @@ export function useBridgeController({
   // Payment config creation
   // ---------------------------------------------------------------------------
   const lastConfigSignatureRef = useRef<string | null>(null);
-  const desiredConfigSignature = useMemo(() => {
-    return JSON.stringify({
-      userAddress,
-      bridgeStateType,
-      typedValue,
-      independentField,
-      isTokenSwitched,
-      evmAddress,
-      evmAddressError,
-      fee,
-    });
-  }, [
-    userAddress,
-    bridgeStateType,
-    typedValue,
-    independentField,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    fee,
-  ]);
 
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) {
@@ -489,14 +473,15 @@ export function useBridgeController({
 
       const amountFormatted = Number(paymentAmount).toFixed(2);
 
-      const config = {
+      const config: IntentPayConfig = {
         appId: BRIDGE_APP_ID,
-        toChain: Number(BASE_CONFIG.chainId),
-        toAddress: toAddress as `0x${string}`,
-        toToken: BASE_CONFIG.tokenAddress as `0x${string}`,
-        toStellarAddress: isTokenSwitched ? undefined : userAddress,
+        toChain: isTokenSwitched ? rozoStellarUSDC.chainId : baseUSDC.chainId,
+        toAddress: isTokenSwitched ? userAddress : toAddress,
+        toToken: isTokenSwitched ? rozoStellarUSDC.token : baseUSDC.token,
         toUnits: paymentAmount,
         intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+        feeType:
+          independentField === "from" ? FeeType.ExactIn : FeeType.ExactOut,
         paymentOptions: isTokenSwitched
           ? [ExternalPaymentOptions.Stellar]
           : [ExternalPaymentOptions.Ethereum],
@@ -507,12 +492,7 @@ export function useBridgeController({
               description: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
             },
           ],
-          payer: {
-            paymentOptions: isTokenSwitched
-              ? [ExternalPaymentOptions.Stellar]
-              : [ExternalPaymentOptions.Ethereum],
-          },
-        },
+        } as any,
       };
 
       const currentSignature = JSON.stringify({
@@ -635,7 +615,6 @@ export function useBridgeController({
     evmAddressError,
     isConnected,
     bridgeStateType,
-    desiredConfigSignature,
   ]);
 
   // Reset all input states when user disconnects
@@ -674,8 +653,6 @@ export function useBridgeController({
 
         window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
       }
-
-      onPaymentCompleted?.(e);
     },
     [
       userAddress,
@@ -684,7 +661,6 @@ export function useBridgeController({
       typedValue,
       independentField,
       fee,
-      onPaymentCompleted,
     ],
   );
 
