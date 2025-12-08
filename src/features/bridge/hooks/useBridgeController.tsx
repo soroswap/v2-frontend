@@ -22,7 +22,7 @@ import { useUSDCTrustline } from "./useUSDCTrustline";
 // -----------------------------------------------------------------------------
 // Types & helper utilities
 // -----------------------------------------------------------------------------
-type IndependentField = "from" | "to";
+export type IndependentField = "from" | "to";
 
 interface BridgeState {
   typedValue: string;

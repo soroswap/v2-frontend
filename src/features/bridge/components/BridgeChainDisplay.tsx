@@ -2,52 +2,96 @@
 
 import { TokenIcon } from "@/shared/components";
 import { cn } from "@/shared/lib/utils/cn";
-import { Base, Stellar } from "./icons/chains";
+import {
+  base,
+  bsc,
+  ethereum,
+  polygon,
+  rozoSolana,
+  rozoStellar,
+  TokenLogo,
+} from "@rozoai/intent-common";
+import { IndependentField } from "../hooks/useBridgeController";
+import BridgeChainStacked from "./BridgeChainStacked";
 
 interface BridgeChainDisplayProps {
-  chain: "stellar" | "base";
+  isTokenSwitched: boolean;
+  independentField: IndependentField;
   className?: string;
 }
 
-const usdcToken = {
-  code: "USDC",
-  issuer: "GA5ZSEJYB37JRC5AVCIA5MOP4RHTM335X2KGX3IHOJAPP5RE34K4KZVN",
-  contract: "CCW67TSZV3SSS2HXMBQ5JFGCKJNXKZM7UQUWUZPUTHXSTZLEO7SJMI75",
-  name: "USD Coin",
-  org: "Centre Consortium LLC",
-  domain: "centre.io",
-  icon: "https://ipfs.io/ipfs/bafkreibpzncuhbk5ozhdw7xkcdoyf3xhwhcwcf6sj7axjzimxw6vm6pvyy",
-  decimals: 7,
-};
-
 export const BridgeChainDisplay = ({
-  chain,
+  isTokenSwitched,
+  independentField,
   className,
 }: BridgeChainDisplayProps) => {
+  const isFrom = independentField === "from";
+
+  // Determine which chains to show based on position and switch state
+  const getExcludeChains = () => {
+    if (!isTokenSwitched) {
+      // From: Base/Solana/Polygon, To: Stellar
+      return isFrom
+        ? [rozoStellar.chainId]
+        : [
+            base.chainId,
+            rozoSolana.chainId,
+            ethereum.chainId,
+            bsc.chainId,
+            polygon.chainId,
+          ];
+    } else {
+      // From: Stellar, To: Base (ONLY)
+      return isFrom
+        ? [
+            base.chainId,
+            rozoSolana.chainId,
+            ethereum.chainId,
+            bsc.chainId,
+            polygon.chainId,
+          ]
+        : [
+            rozoStellar.chainId,
+            rozoSolana.chainId,
+            ethereum.chainId,
+            bsc.chainId,
+            polygon.chainId,
+          ];
+    }
+  };
+
+  const getTokenSymbol = () => {
+    return !isTokenSwitched && isFrom ? "USDC/USDT" : "USDC";
+  };
+
   return (
     <div
       className={cn(
-        "border-surface-alt bg-surface-alt text-primary flex h-[43.5px] min-w-fit cursor-default items-center gap-2 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap sm:text-sm",
+        "border-surface-alt bg-surface-alt text-primary flex h-[33.5px] min-w-fit cursor-default items-center gap-2 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap sm:h-[43.5px] sm:text-sm",
         className,
       )}
     >
       <TokenIcon
-        src={usdcToken.icon}
-        alt={`${usdcToken.name} logo`}
-        name={usdcToken.name}
-        code={usdcToken.code}
-        size={29.5}
+        src={TokenLogo.USDC}
+        alt="USDC"
+        name="USDC"
+        code="USDC"
+        className="z-10 size-5 bg-transparent sm:size-6"
       />
-      <p className="text-primary text-sm font-bold">{usdcToken.code}</p>
-      <div className="flex items-center gap-1">
-        <span className="text-secondary text-xs">on</span>
-        {chain === "stellar" ? (
-          <Stellar width={20} height={20} className="rounded-full" />
-        ) : (
-          <Base width={20} height={20} className="rounded-full" />
-        )}
-        <p className="text-primary text-sm font-bold capitalize">{chain}</p>
-      </div>
+      {!isTokenSwitched && isFrom && (
+        <TokenIcon
+          src={TokenLogo.USDT}
+          alt="USDT"
+          name="USDT"
+          code="USDT"
+          className="-ml-4 size-5 bg-transparent sm:size-6"
+        />
+      )}
+      <p className="text-primary text-xs font-bold sm:text-sm">
+        {getTokenSymbol()}
+      </p>
+      <span className="text-secondary text-xs">on</span>
+      <BridgeChainStacked excludeChains={getExcludeChains()} />
     </div>
   );
 };

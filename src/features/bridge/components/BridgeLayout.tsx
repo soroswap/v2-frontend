@@ -124,6 +124,8 @@ export const BridgeLayout = () => {
               parseFloat(typedValue || "0") > 0
             }
             token={usdcToken}
+            isTokenSwitched={isTokenSwitched}
+            independentField={"from"}
           />
 
           <RotateArrowButton
@@ -150,6 +152,8 @@ export const BridgeLayout = () => {
           }
           token={usdcToken}
           variant="outline"
+          isTokenSwitched={isTokenSwitched}
+          independentField={"to"}
         />
 
         {/* EVM Address Input - Only show when bridging from Stellar to Base */}

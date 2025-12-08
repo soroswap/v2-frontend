@@ -4,6 +4,7 @@ import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { cn } from "@/shared/lib/utils/cn";
 import { AssetInfo } from "@soroswap/sdk";
 import { Loader2 } from "lucide-react";
+import { IndependentField } from "../hooks/useBridgeController";
 import { BridgeChainDisplay } from "./BridgeChainDisplay";
 import { BridgePricePanel } from "./BridgePricePanel";
 
@@ -19,6 +20,8 @@ export const BridgePanel = ({
   chain,
   isLoading,
   token,
+  isTokenSwitched,
+  independentField,
 }: {
   label: string;
   amount: string | undefined;
@@ -27,11 +30,13 @@ export const BridgePanel = ({
   chain: "stellar" | "base";
   isLoading: boolean;
   token: AssetInfo | null;
+  isTokenSwitched: boolean;
+  independentField: IndependentField;
 }) => {
   return (
     <div
       className={cn(
-        "rounded-2xl border p-5",
+        "relative rounded-2xl border p-5",
         variant === "outline"
           ? "border-[#2e294a] dark:bg-transparent"
           : "border-[#23243a] bg-white dark:bg-[#10121A]",
@@ -56,14 +61,18 @@ export const BridgePanel = ({
           isLoading={isLoading}
           token={token}
         />
-
-        <BridgeChainDisplay chain={chain} />
       </div>
 
       {/* USD helper */}
       <div className="flex items-end justify-between">
         <BridgePricePanel amount={amount} />
       </div>
+
+      <BridgeChainDisplay
+        className="absolute top-2 right-2"
+        isTokenSwitched={isTokenSwitched}
+        independentField={independentField}
+      />
     </div>
   );
 };
