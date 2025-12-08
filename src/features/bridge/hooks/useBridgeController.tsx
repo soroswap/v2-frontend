@@ -403,10 +403,6 @@ export function useBridgeController() {
       // Get the destination chain details
       const destinationChainUSDC = chainToUSDC[destinationChainId] || baseUSDC;
 
-      const toAddress = isTokenSwitched
-        ? evmAddress
-        : "0x0000000000000000000000000000000000000000";
-
       // Use the "from" amount for payment (the amount user will send)
       // If user typed in "to" field, we need to calculate the "from" amount including fee
       const paymentAmount =

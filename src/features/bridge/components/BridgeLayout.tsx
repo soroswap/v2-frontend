@@ -126,7 +126,6 @@ export const BridgeLayout = () => {
             label="From"
             amount={fromAmount}
             setAmount={handleAmountChange("from")}
-            chain={fromChain}
             isLoading={
               independentField === "to" &&
               (isDebouncingAmount || isFeeLoading) &&
@@ -153,7 +152,6 @@ export const BridgeLayout = () => {
           label="To"
           amount={toAmount}
           setAmount={handleAmountChange("to")}
-          chain={toChain}
           isLoading={
             independentField === "from" &&
             (isDebouncingAmount || isFeeLoading) &&

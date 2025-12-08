@@ -18,7 +18,6 @@ export const BridgePanel = ({
   amount,
   setAmount,
   variant = "default",
-  chain,
   isLoading,
   token,
   isTokenSwitched,
@@ -30,7 +29,6 @@ export const BridgePanel = ({
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
   variant?: "default" | "outline";
-  chain: "stellar" | "base";
   isLoading: boolean;
   token: AssetInfo | null;
   isTokenSwitched: boolean;

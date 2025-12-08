@@ -23,10 +23,9 @@ interface BridgeChainSelectorProps {
 // Supported chains (excluding Stellar and Solana)
 export const supportedPayoutChains = Array.from(supportedPayoutTokens.entries())
   .filter(
-    ([chainId, _tokens]) =>
-      ![rozoStellar.chainId, solana.chainId].includes(chainId),
+    ([chainId]) => ![rozoStellar.chainId, solana.chainId].includes(chainId),
   )
-  .map(([chainId, _tokens]) => getChainById(chainId));
+  .map(([chainId]) => getChainById(chainId));
 
 export const BridgeChainSelector = ({
   value,
@@ -44,9 +43,7 @@ export const BridgeChainSelector = ({
       <button
         onClick={() => setOpen(!open)}
         className={cn(
-          "border-surface-alt bg-surface-alt text-primary hover:bg-surface-hover",
-          "flex h-[33.5px] min-w-fit cursor-pointer items-center gap-1.5 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap sm:h-[43.5px] sm:gap-2 sm:px-3 sm:text-sm",
-          "transition-all focus:outline-none",
+          "border-surface-alt bg-surface-alt text-primary flex h-[33.5px] min-w-fit cursor-pointer items-center gap-2 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap sm:h-[43.5px] sm:text-sm",
           className,
         )}
       >
@@ -55,10 +52,10 @@ export const BridgeChainSelector = ({
           alt="USDC"
           name="USDC"
           code="USDC"
-          className="z-10 size-5 sm:size-6"
+          className="z-10 size-5 bg-transparent sm:size-6"
         />
-        <span className="text-primary text-xs font-bold sm:text-sm">USDC</span>
-        <span className="text-secondary text-[10px] sm:text-xs">on</span>
+        <p className="text-primary text-xs font-bold sm:text-sm">USDC</p>
+        <span className="text-secondary text-xs">on</span>
         <div className="flex size-5 items-center justify-center overflow-hidden rounded-full sm:size-6">
           {chainToLogo[selectedChain.chainId]}
         </div>
