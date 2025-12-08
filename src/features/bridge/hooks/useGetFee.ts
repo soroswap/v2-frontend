@@ -1,7 +1,9 @@
+import { FeeType } from "@rozoai/intent-common";
 import { useQuery } from "@tanstack/react-query";
 
 export interface GetFeeParams {
   amount: number;
+  type?: FeeType;
   appId?: string;
   currency?: string;
 }
@@ -13,7 +15,8 @@ export interface GetFeeResponse {
   fee: number;
   feePercentage: string;
   minimumFee: string;
-  amount_out: number;
+  amountIn: number;
+  amountOut: number;
 }
 
 export interface GetFeeError {
@@ -24,8 +27,13 @@ export interface GetFeeError {
 }
 
 const fetchFee = async (params: GetFeeParams): Promise<GetFeeResponse> => {
+  if (params.amount <= 0) {
+    throw new Error("Amount must be greater than 0");
+  }
+
   const queryParams = new URLSearchParams({
     amount: params.amount.toString(),
+    type: params.type ?? "exactout",
     ...(params.appId && { appId: params.appId }),
     ...(params.currency && { currency: params.currency }),
   });
@@ -38,6 +46,7 @@ const fetchFee = async (params: GetFeeParams): Promise<GetFeeResponse> => {
     const errorData = await response.json().catch(() => null);
 
     if (errorData && errorData.error) {
+      // Throw the error data so we can access it in the component
       throw errorData;
     }
 
@@ -46,7 +55,13 @@ const fetchFee = async (params: GetFeeParams): Promise<GetFeeResponse> => {
     );
   }
 
-  return response.json();
+  const data = await response.json();
+
+  if (!data) {
+    throw new Error("Invalid response: data is undefined");
+  }
+
+  return data;
 };
 
 export const useGetFee = (
@@ -57,9 +72,15 @@ export const useGetFee = (
   },
 ) => {
   return useQuery({
-    queryKey: ["fee", params.amount, params.appId, params.currency],
+    queryKey: [
+      "fee",
+      params.amount,
+      params.appId,
+      params.currency,
+      params.type,
+    ],
     queryFn: () => fetchFee(params),
-    enabled: options?.enabled ?? true,
+    enabled: (options?.enabled ?? true) && params.amount > 0,
     refetchInterval: options?.refetchInterval,
     staleTime: 30000, // 30 seconds
     retry: false, // Don't retry on error

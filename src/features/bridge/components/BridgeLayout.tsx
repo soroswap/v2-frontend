@@ -45,7 +45,7 @@ export const BridgeLayout = () => {
     fee,
     isFeeLoading,
     feeError,
-    isAmountChanging,
+    isDebouncingAmount,
     handleAmountChange,
     handleSwitchChains,
     handleEvmAddressChange,
@@ -90,7 +90,7 @@ export const BridgeLayout = () => {
 
   const buttonContent = isConfigLoading
     ? "Preparing bridge..."
-    : isAmountChanging || isFeeLoading
+    : isDebouncingAmount || isFeeLoading
       ? "Calculating fee..."
       : `Bridge USDC to ${!controllerIsTokenSwitched ? "Stellar" : "Base"}`;
 
@@ -119,7 +119,7 @@ export const BridgeLayout = () => {
             chain={fromChain}
             isLoading={
               independentField === "to" &&
-              (isAmountChanging || isFeeLoading) &&
+              (isDebouncingAmount || isFeeLoading) &&
               typedValue !== "" &&
               parseFloat(typedValue || "0") > 0
             }
@@ -144,7 +144,7 @@ export const BridgeLayout = () => {
           chain={toChain}
           isLoading={
             independentField === "from" &&
-            (isAmountChanging || isFeeLoading) &&
+            (isDebouncingAmount || isFeeLoading) &&
             typedValue !== "" &&
             parseFloat(typedValue || "0") > 0
           }

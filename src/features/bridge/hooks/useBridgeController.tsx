@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
+import { useDebounce } from "@/shared/hooks";
 import {
   baseUSDC,
   ExternalPaymentOptions,
@@ -9,18 +10,12 @@ import {
 } from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { BRIDGE_APP_ID } from "../constants/bridge";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
+import { useBridgeValidation } from "./useBridgeValidation";
 import { GetFeeError, useGetFee } from "./useGetFee";
 import { useUSDCTrustline } from "./useUSDCTrustline";
 
@@ -143,23 +138,20 @@ export function useBridgeController() {
     null,
   );
   const [isConfigLoading, setIsConfigLoading] = useState<boolean>(false);
-  const configTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resetPaymentRef = useRef(resetPayment);
   useEffect(() => {
     resetPaymentRef.current = resetPayment;
   }, [resetPayment]);
 
-  // Fee state with debounce
-  const [debouncedAmount, setDebouncedAmount] = useState<number>(0);
-  const [isAmountChanging, setIsAmountChanging] = useState<boolean>(false);
-  const feeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isFeeLoadingStable, setIsFeeLoadingStable] = useState<boolean>(false);
-  const feeLoadingStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Debounce amount for fee fetching
+  const amount = parseFloat(typedValue || "0");
+  const { debouncedValue: debouncedAmount, isDebouncing: isDebouncingAmount } =
+    useDebounce(amount, 400);
 
-  // First fee fetch - this might be for "from" amount or an estimate for "to" amount
+  // Single fee fetch - the API returns both amountIn and amountOut
   const {
-    data: initialFeeData,
-    isLoading: isInitialFeeLoading,
+    data: feeData,
+    isLoading: isFeeLoading,
     error: feeError,
   } = useGetFee(
     {
@@ -172,154 +164,43 @@ export function useBridgeController() {
     },
   );
 
-  // When in "to" mode, calculate the actual "from" amount and fetch the correct fee
-  const calculatedFromAmount =
-    independentField === "to" && initialFeeData
-      ? parseFloat(typedValue || "0") + initialFeeData.fee
-      : 0;
-
-  // Second fee fetch - for the actual "from" amount when in "to" mode
-  const {
-    data: refinedFeeData,
-    isLoading: isRefinedFeeLoading,
-    error: refinedFeeError,
-  } = useGetFee(
-    {
-      amount: calculatedFromAmount,
-      type: FeeType.ExactIn, // When calculating "from" amount, we use ExactIn
-      appId: BRIDGE_APP_ID,
-    },
-    {
-      enabled:
-        independentField === "to" &&
-        calculatedFromAmount > 0 &&
-        !!initialFeeData,
-    },
-  );
-
-  // Use the appropriate fee data based on independent field
-  const feeData =
-    independentField === "to" && refinedFeeData
-      ? refinedFeeData
-      : initialFeeData;
-
-  // When in "to" mode, consider both loading states to prevent flickering
-  // The loading should be true if either query is still loading
-  const rawIsFeeLoading =
-    independentField === "to"
-      ? isInitialFeeLoading || isRefinedFeeLoading
-      : isInitialFeeLoading;
-
-  // Use the refined error when in "to" mode (since that's the actual amount being sent),
-  // otherwise use the initial error
-  const effectiveFeeError =
-    independentField === "to" && refinedFeeError ? refinedFeeError : feeError;
-
-  // Stabilize loading state to prevent flickering on errors
-  // Keep loading state true for a brief moment after error to smooth transition
-  useEffect(() => {
-    if (feeLoadingStableTimeoutRef.current) {
-      clearTimeout(feeLoadingStableTimeoutRef.current);
-    }
-
-    if (rawIsFeeLoading) {
-      setIsFeeLoadingStable(true);
-    } else if (effectiveFeeError) {
-      // If there's an error but we were loading, keep loading state for a brief moment
-      // to prevent flickering
-      feeLoadingStableTimeoutRef.current = setTimeout(() => {
-        setIsFeeLoadingStable(false);
-      }, 150); // Small delay to prevent flickering
-    } else {
-      setIsFeeLoadingStable(false);
-    }
-
-    return () => {
-      if (feeLoadingStableTimeoutRef.current) {
-        clearTimeout(feeLoadingStableTimeoutRef.current);
-      }
-    };
-  }, [rawIsFeeLoading, effectiveFeeError]);
-
-  const isFeeLoading = rawIsFeeLoading || isFeeLoadingStable;
-
-  // Debounce effect for fee fetching
-  useEffect(() => {
-    if (feeTimeoutRef.current) {
-      clearTimeout(feeTimeoutRef.current);
-    }
-
-    const amount = parseFloat(typedValue || "0");
-
-    // Mark that the amount is changing (user is typing)
-    setIsAmountChanging(true);
-    // Reset stable loading state when amount changes
-    setIsFeeLoadingStable(false);
-    if (feeLoadingStableTimeoutRef.current) {
-      clearTimeout(feeLoadingStableTimeoutRef.current);
-    }
-
-    if (amount > 0) {
-      feeTimeoutRef.current = setTimeout(() => {
-        setDebouncedAmount(amount);
-        setIsAmountChanging(false);
-      }, 300); // 300ms debounce for more responsive UX
-    } else {
-      setDebouncedAmount(0);
-      setIsAmountChanging(false);
-    }
-
-    return () => {
-      if (feeTimeoutRef.current) {
-        clearTimeout(feeTimeoutRef.current);
-      }
-    };
-  }, [typedValue]);
-
   // ---------------------------------------------------------------------------
   // Derived values
   // ---------------------------------------------------------------------------
 
-  // Only use fee data if it matches the current debounced amount
-  // This prevents showing old fee values when amount changes
   const currentAmount = parseFloat(typedValue || "0");
 
-  // When in "to" mode, we need to check if the refined fee is valid
-  // When in "from" mode, check if the initial fee matches the typed amount
+  // Check if fee data is valid and matches current input
   const isFeeValid =
-    !effectiveFeeError &&
-    (independentField === "from"
-      ? feeData &&
-        feeData.amount === debouncedAmount &&
-        debouncedAmount === currentAmount
-      : independentField === "to" && feeData && refinedFeeData
-        ? debouncedAmount === currentAmount && !isRefinedFeeLoading
-        : false);
+    !feeError &&
+    feeData &&
+    feeData.amount === debouncedAmount &&
+    debouncedAmount === currentAmount;
 
   const fee = isFeeValid && feeData ? feeData.fee : 0;
 
-  // Calculate the dependent amount based on independent field
-  // If user is typing in "from" field -> calculate "to" amount (subtract fee)
-  // If user is typing in "to" field -> calculate "from" amount (add fee)
+  // Show calculated amounts when we have valid fee data and user is not typing
   const shouldShowCalculatedAmount =
     typedValue &&
     !isNaN(currentAmount) &&
     currentAmount > 0 &&
-    !isAmountChanging &&
+    !isDebouncingAmount &&
     !isFeeLoading &&
     isFeeValid;
 
+  // Calculate dependent amount based on independent field
+  // The API returns both amountIn and amountOut, so we use those directly
   const toAmount =
     independentField === "from"
-      ? shouldShowCalculatedAmount
-        ? Math.max(0, currentAmount - fee).toFixed(2)
+      ? shouldShowCalculatedAmount && feeData
+        ? feeData.amountOut.toFixed(2)
         : ""
       : typedValue;
 
   const fromAmount =
     independentField === "to"
-      ? shouldShowCalculatedAmount
-        ? (currentAmount + fee).toFixed(2)
+      ? shouldShowCalculatedAmount && feeData
+        ? feeData.amountIn.toFixed(2)
         : ""
       : typedValue;
 
@@ -327,6 +208,19 @@ export function useBridgeController() {
   const isTokenSwitched = fromChain === "stellar"; // Stellar -> Base
   const availableBalance =
     parseFloat(trustlineData.trustlineStatus.balance) || 0;
+
+  // Unified validation
+  const validation = useBridgeValidation({
+    isConnected,
+    bridgeStateType,
+    isTokenSwitched,
+    evmAddress,
+    evmAddressError,
+    typedValue,
+    isDebouncingAmount,
+    isFeeLoading,
+    feeError: feeError as GetFeeError | null,
+  });
 
   // ---------------------------------------------------------------------------
   // Public handlers exposed to the UI layer.
@@ -404,8 +298,6 @@ export function useBridgeController() {
   // ---------------------------------------------------------------------------
   // Payment config creation
   // ---------------------------------------------------------------------------
-  const lastConfigSignatureRef = useRef<string | null>(null);
-
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) {
       console.debug("[Bridge] createPaymentConfig: no userAddress");
@@ -434,9 +326,9 @@ export function useBridgeController() {
     }
 
     // Check if there's a fee error (e.g., amount too high)
-    if (effectiveFeeError) {
+    if (feeError) {
       console.debug("[Bridge] createPaymentConfig: fee error", {
-        effectiveFeeError,
+        feeError,
       });
       setIntentConfig(null);
       setIsConfigLoading(false);
@@ -492,34 +384,13 @@ export function useBridgeController() {
               description: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
             },
           ],
-        } as any,
+        },
       };
-
-      const currentSignature = JSON.stringify({
-        userAddress,
-        typedValue,
-        independentField,
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-        bridgeStateType,
-        fee,
-      });
-
-      // Skip rebuilding if nothing relevant changed and we already have config
-      if (lastConfigSignatureRef.current === currentSignature && intentConfig) {
-        setIsConfigLoading(false);
-        console.debug(
-          "[Bridge] createPaymentConfig: unchanged config, skipping",
-        );
-        return;
-      }
 
       await resetPaymentRef.current(config as never);
       setIntentConfig(config);
       setIsConfigLoading(false);
       console.debug("[Bridge] createPaymentConfig: config set", { config });
-      lastConfigSignatureRef.current = currentSignature;
     } catch (error) {
       console.error("Failed to create payment config:", error);
       setIntentConfig(null);
@@ -533,88 +404,37 @@ export function useBridgeController() {
     isTokenSwitched,
     evmAddress,
     evmAddressError,
-    intentConfig,
     fee,
+    feeError,
   ]);
 
-  // Debounced effect for config creation
+  // Create payment config when validation passes
   useEffect(() => {
-    // Only create config if user is connected
-    if (!isConnected) {
-      console.debug("[Bridge] debounce: not connected");
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // Only create config when bridge is ready (no trustline/account blockers)
-    if (bridgeStateType !== "ready") {
-      console.debug("[Bridge] debounce: bridgeStateType not ready", {
-        bridgeStateType,
+    // Use validation to determine if we should create config
+    if (!validation.canBridge) {
+      console.debug("[Bridge] Cannot bridge, clearing config", {
+        reason: validation.disabledReason,
       });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
     }
 
-    // Only create config if we have valid input
-    if (!typedValue || parseFloat(typedValue) <= 0) {
-      console.debug("[Bridge] debounce: invalid typedValue", { typedValue });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // Check if there's a fee error (e.g., amount too high)
-    if (effectiveFeeError) {
-      console.debug("[Bridge] debounce: fee error", { effectiveFeeError });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // If bridging to Base, we need EVM address
-    if (isTokenSwitched && (!evmAddress || evmAddressError)) {
-      console.debug("[Bridge] debounce: EVM address invalid/missing", {
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-      });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    if (configTimeoutRef.current) {
-      clearTimeout(configTimeoutRef.current);
-    }
-
-    const timeoutId = setTimeout(() => {
-      console.debug("[Bridge] debounce: creating payment config", {
-        typedValue,
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-      });
-      createPaymentConfig();
-    }, 150);
-
-    configTimeoutRef.current = timeoutId;
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-    // We intentionally exclude createPaymentConfig to avoid effect retriggering due to function identity changes
+    // Create config when all validations pass
+    console.debug("[Bridge] Creating payment config", {
+      typedValue,
+      isTokenSwitched,
+      evmAddress,
+    });
+    createPaymentConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    validation.canBridge,
     typedValue,
     evmAddress,
     isTokenSwitched,
-    evmAddressError,
-    isConnected,
-    bridgeStateType,
+    independentField,
+    fee,
   ]);
 
   // Reset all input states when user disconnects
@@ -664,40 +484,11 @@ export function useBridgeController() {
     ],
   );
 
-  // Button disabled state
-  const getActionButtonDisabled = useMemo(() => {
-    if (!isConnected) return true;
-    if (bridgeStateType !== "ready") return true;
-    if (isTokenSwitched && (!evmAddress || !!evmAddressError)) return true;
-    if (!typedValue || parseFloat(typedValue) <= 0) return true;
-    // Disable button while fee is being fetched or if there's a fee error
-    if (isFeeLoading) return true;
-    if (effectiveFeeError) return true;
-    return false;
-  }, [
-    isConnected,
-    bridgeStateType,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    typedValue,
-    isFeeLoading,
-    effectiveFeeError,
-  ]);
+  // Button disabled state - use unified validation
+  const getActionButtonDisabled = validation.shouldDisableButton;
 
   // Centralized debug logger for button state and related variables
   useEffect(() => {
-    const disabledBecause = {
-      notConnected: !isConnected,
-      notReady: bridgeStateType !== "ready",
-      evmInvalid: isTokenSwitched && (!evmAddress || !!evmAddressError),
-      invalidAmount: !typedValue || parseFloat(typedValue) <= 0,
-      loadingConfig: isConfigLoading,
-      noIntentConfig: !intentConfig,
-      feeLoading: isFeeLoading,
-      feeError: !!effectiveFeeError,
-    };
-
     console.groupCollapsed("[Bridge] Debug State");
     console.debug({
       isConnected,
@@ -710,10 +501,11 @@ export function useBridgeController() {
       isConfigLoading,
       hasIntentConfig: !!intentConfig,
       fee,
+      isDebouncingAmount,
       isFeeLoading,
-      feeError: effectiveFeeError,
+      feeError,
+      validation,
       getActionButtonDisabled,
-      disabledBecause,
     });
     console.groupEnd();
   }, [
@@ -727,8 +519,10 @@ export function useBridgeController() {
     isConfigLoading,
     intentConfig,
     fee,
+    isDebouncingAmount,
     isFeeLoading,
-    effectiveFeeError,
+    feeError,
+    validation,
     getActionButtonDisabled,
   ]);
 
@@ -761,8 +555,8 @@ export function useBridgeController() {
     // fee data
     fee,
     isFeeLoading,
-    feeError: effectiveFeeError as GetFeeError | null,
-    isAmountChanging,
+    feeError: feeError as GetFeeError | null,
+    isDebouncingAmount,
 
     // handlers
     handleAmountChange,
