@@ -3,10 +3,17 @@
 import { useUserContext } from "@/contexts";
 import { useDebounce } from "@/shared/hooks";
 import {
+  base,
   baseUSDC,
+  ethereum,
+  ethereumUSDC,
   ExternalPaymentOptions,
   FeeType,
-  rozoStellarUSDC,
+  polygon,
+  polygonUSDC,
+  rozoSolana,
+  rozoSolanaUSDC,
+  validateAddressForChain,
 } from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
@@ -31,6 +38,7 @@ interface BridgeState {
   toChain: "stellar" | "base";
   evmAddress: string;
   evmAddressError: string;
+  destinationChainId: number;
 }
 
 type PaymentCompletedEvent = {
@@ -44,6 +52,7 @@ const initialBridgeState: BridgeState = {
   toChain: "stellar",
   evmAddress: "",
   evmAddressError: "",
+  destinationChainId: base.chainId, // Default to Base
 };
 
 /**
@@ -53,7 +62,8 @@ type BridgeAction =
   | { type: "TYPE_INPUT"; field: IndependentField; typedValue: string }
   | { type: "SWITCH_CHAINS" }
   | { type: "SET_EVM_ADDRESS"; address: string }
-  | { type: "SET_EVM_ADDRESS_ERROR"; error: string };
+  | { type: "SET_EVM_ADDRESS_ERROR"; error: string }
+  | { type: "SET_DESTINATION_CHAIN"; chainId: number };
 
 function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
   switch (action.type) {
@@ -86,6 +96,14 @@ function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
         evmAddressError: action.error,
       };
 
+    case "SET_DESTINATION_CHAIN":
+      return {
+        ...state,
+        destinationChainId: action.chainId,
+        // evmAddress: "", // Clear address when chain changes
+        evmAddressError: "",
+      };
+
     default:
       return state;
   }
@@ -109,6 +127,14 @@ const usdcToken: AssetInfo = {
   decimals: 7,
 };
 
+// Mapping of chainId to USDC token for each supported chain
+const chainToUSDC: Record<number, { chainId: number; token: string }> = {
+  [base.chainId]: baseUSDC,
+  [ethereum.chainId]: ethereumUSDC,
+  [rozoSolana.chainId]: rozoSolanaUSDC,
+  [polygon.chainId]: polygonUSDC,
+};
+
 export function useBridgeController() {
   const { address: userAddress } = useUserContext();
   const { resetPayment } = useRozoPayUI();
@@ -127,6 +153,7 @@ export function useBridgeController() {
     toChain,
     evmAddress,
     evmAddressError,
+    destinationChainId,
   } = bridgeState;
 
   // Trustline and bridge state
@@ -249,40 +276,54 @@ export function useBridgeController() {
   }, []);
 
   /**
-   * Validate and set EVM address
+   * Validate address based on selected chain
    */
-  const validateEvmAddress = useCallback((address: string) => {
-    if (!address) {
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
-      return false;
-    }
-
-    try {
-      if (!isEVMAddress(address)) {
-        dispatchBridge({
-          type: "SET_EVM_ADDRESS_ERROR",
-          error: "Invalid EVM address format",
-        });
+  const validateEvmAddress = useCallback(
+    (address: string) => {
+      if (!address) {
+        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
         return false;
       }
 
-      const normalizedAddress = getEVMAddress(address);
-      if (normalizedAddress !== address) {
-        dispatchBridge({ type: "SET_EVM_ADDRESS", address: normalizedAddress });
-      } else {
-        dispatchBridge({ type: "SET_EVM_ADDRESS", address });
-      }
+      try {
+        // Use validateAddressForChain to validate based on the selected destination chain
+        const isValid = validateAddressForChain(destinationChainId, address);
 
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
-      return true;
-    } catch {
-      dispatchBridge({
-        type: "SET_EVM_ADDRESS_ERROR",
-        error: "Invalid EVM address format",
-      });
-      return false;
-    }
-  }, []);
+        if (!isValid) {
+          dispatchBridge({
+            type: "SET_EVM_ADDRESS_ERROR",
+            error: "Invalid address format for selected chain",
+          });
+          return false;
+        }
+
+        // Normalize EVM addresses if applicable
+        if (isEVMAddress(address)) {
+          const normalizedAddress = getEVMAddress(address);
+          if (normalizedAddress !== address) {
+            dispatchBridge({
+              type: "SET_EVM_ADDRESS",
+              address: normalizedAddress,
+            });
+          } else {
+            dispatchBridge({ type: "SET_EVM_ADDRESS", address });
+          }
+        } else {
+          dispatchBridge({ type: "SET_EVM_ADDRESS", address });
+        }
+
+        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+        return true;
+      } catch {
+        dispatchBridge({
+          type: "SET_EVM_ADDRESS_ERROR",
+          error: "Invalid address format for selected chain",
+        });
+        return false;
+      }
+    },
+    [destinationChainId],
+  );
 
   const handleEvmAddressChange = useCallback(
     (value: string) => {
@@ -294,6 +335,13 @@ export function useBridgeController() {
     },
     [evmAddressError],
   );
+
+  /**
+   * Handle destination chain change from the chain selector
+   */
+  const handleDestinationChainChange = useCallback((chainId: number) => {
+    dispatchBridge({ type: "SET_DESTINATION_CHAIN", chainId });
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Payment config creation
@@ -352,6 +400,9 @@ export function useBridgeController() {
     setIsConfigLoading(true);
 
     try {
+      // Get the destination chain details
+      const destinationChainUSDC = chainToUSDC[destinationChainId] || baseUSDC;
+
       const toAddress = isTokenSwitched
         ? evmAddress
         : "0x0000000000000000000000000000000000000000";
@@ -367,21 +418,23 @@ export function useBridgeController() {
 
       const config: IntentPayConfig = {
         appId: BRIDGE_APP_ID,
-        toChain: isTokenSwitched ? rozoStellarUSDC.chainId : baseUSDC.chainId,
-        toAddress: isTokenSwitched ? userAddress : toAddress,
-        toToken: isTokenSwitched ? rozoStellarUSDC.token : baseUSDC.token,
+        toChain: isTokenSwitched
+          ? destinationChainUSDC.chainId
+          : baseUSDC.chainId,
+        toAddress: isTokenSwitched ? evmAddress : userAddress,
+        toToken: isTokenSwitched ? destinationChainUSDC.token : baseUSDC.token,
         toUnits: paymentAmount,
-        intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+        intent: `Bridge ${amountFormatted} USDC`,
         feeType:
           independentField === "from" ? FeeType.ExactIn : FeeType.ExactOut,
         paymentOptions: isTokenSwitched
           ? [ExternalPaymentOptions.Stellar]
-          : [ExternalPaymentOptions.Ethereum],
+          : [ExternalPaymentOptions.Ethereum, ExternalPaymentOptions.Solana],
         metadata: {
           items: [
             {
               name: "Soroswap Bridge",
-              description: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+              description: `Bridge ${amountFormatted} USDC`,
             },
           ],
         },
@@ -404,6 +457,7 @@ export function useBridgeController() {
     isTokenSwitched,
     evmAddress,
     evmAddressError,
+    destinationChainId,
     fee,
     feeError,
   ]);
@@ -434,6 +488,7 @@ export function useBridgeController() {
     evmAddress,
     isTokenSwitched,
     independentField,
+    destinationChainId,
     fee,
   ]);
 
@@ -539,6 +594,7 @@ export function useBridgeController() {
     toAmount,
     evmAddress,
     evmAddressError,
+    destinationChainId,
     isConnected,
     isTokenSwitched,
     availableBalance,
@@ -563,6 +619,7 @@ export function useBridgeController() {
     handleSwitchChains,
     handleEvmAddressChange,
     validateEvmAddress,
+    handleDestinationChainChange,
     handlePaymentCompleted,
 
     // token info

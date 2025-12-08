@@ -6,6 +6,7 @@ import { AssetInfo } from "@soroswap/sdk";
 import { Loader2 } from "lucide-react";
 import { IndependentField } from "../hooks/useBridgeController";
 import { BridgeChainDisplay } from "./BridgeChainDisplay";
+import { BridgeChainSelector } from "./BridgeChainSelector";
 import { BridgePricePanel } from "./BridgePricePanel";
 
 /* -------------------------------------------------------------------------- */
@@ -22,6 +23,8 @@ export const BridgePanel = ({
   token,
   isTokenSwitched,
   independentField,
+  destinationChainId,
+  onDestinationChainChange,
 }: {
   label: string;
   amount: string | undefined;
@@ -32,6 +35,8 @@ export const BridgePanel = ({
   token: AssetInfo | null;
   isTokenSwitched: boolean;
   independentField: IndependentField;
+  destinationChainId?: number;
+  onDestinationChainChange?: (chainId: number) => void;
 }) => {
   return (
     <div
@@ -68,11 +73,22 @@ export const BridgePanel = ({
         <BridgePricePanel amount={amount} />
       </div>
 
-      <BridgeChainDisplay
-        className="absolute top-2 right-2"
-        isTokenSwitched={isTokenSwitched}
-        independentField={independentField}
-      />
+      {isTokenSwitched && independentField === "to" ? (
+        <div className="absolute top-2 right-2">
+          <BridgeChainSelector
+            value={destinationChainId || 1}
+            onChange={(chainId) => {
+              onDestinationChainChange?.(chainId);
+            }}
+          />
+        </div>
+      ) : (
+        <BridgeChainDisplay
+          className="absolute top-2 right-2"
+          isTokenSwitched={isTokenSwitched}
+          independentField={independentField}
+        />
+      )}
     </div>
   );
 };

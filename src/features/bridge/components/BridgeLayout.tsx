@@ -12,6 +12,7 @@ import { Clipboard } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useBridgeController } from "../hooks/useBridgeController";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
+import { supportedPayoutChains } from "./BridgeChainSelector";
 import { BridgeHistory } from "./BridgeHistory";
 import { BridgePanel } from "./BridgePanel";
 import { BridgeQuoteDetails } from "./BridgeQuoteDetails";
@@ -34,6 +35,7 @@ export const BridgeLayout = () => {
     toAmount,
     evmAddress,
     evmAddressError,
+    destinationChainId,
     isConnected,
     isTokenSwitched: controllerIsTokenSwitched,
     availableBalance,
@@ -50,6 +52,7 @@ export const BridgeLayout = () => {
     handleSwitchChains,
     handleEvmAddressChange,
     validateEvmAddress,
+    handleDestinationChainChange,
     handlePaymentCompleted,
     usdcToken,
   } = useBridgeController();
@@ -88,11 +91,18 @@ export const BridgeLayout = () => {
     }
   };
 
+  // Get selected chain name for display
+  const selectedChain =
+    supportedPayoutChains.find((c) => c.chainId === destinationChainId) || null;
+  const destinationChainName = controllerIsTokenSwitched
+    ? selectedChain?.name || "Base"
+    : "Stellar";
+
   const buttonContent = isConfigLoading
     ? "Preparing bridge..."
     : isDebouncingAmount || isFeeLoading
       ? "Calculating fee..."
-      : `Bridge USDC to ${!controllerIsTokenSwitched ? "Stellar" : "Base"}`;
+      : `Bridge USDC to ${destinationChainName}`;
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,18 +164,20 @@ export const BridgeLayout = () => {
           variant="outline"
           isTokenSwitched={isTokenSwitched}
           independentField={"to"}
+          destinationChainId={destinationChainId}
+          onDestinationChainChange={handleDestinationChainChange}
         />
 
-        {/* EVM Address Input - Only show when bridging from Stellar to Base */}
+        {/* Address Input - Show when bridging from Stellar to other chains */}
         {isConnected && controllerIsTokenSwitched && (
-          <div className="flex flex-col gap-2">
+          <div className="mb-4 flex flex-col gap-2">
             <label className="text-primary text-sm font-medium">
-              EVM Address (Base)
+              {destinationChainName} Address
             </label>
             <div className="relative">
               <input
                 type="text"
-                placeholder="0x..."
+                placeholder={`Enter ${destinationChainName} address...`}
                 value={evmAddress}
                 onChange={(e) => handleEvmAddressChange(e.target.value)}
                 onBlur={(e) => validateEvmAddress(e.target.value)}
@@ -246,8 +258,7 @@ export const BridgeLayout = () => {
                       onClick={show}
                       className="w-full gap-2 py-6 text-base text-white"
                     >
-                      Bridge USDC to{" "}
-                      {!controllerIsTokenSwitched ? "Stellar" : "Base"}
+                      Bridge USDC to {destinationChainName}
                     </TheButton>
                   )}
                 </RozoPayButton.Custom>
