@@ -12,6 +12,7 @@ import {
   polygonUSDC,
   rozoSolana,
   rozoSolanaUSDC,
+  rozoStellarUSDC,
   validateAddressForChain,
 } from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
@@ -438,9 +439,11 @@ export function useBridgeController() {
         appId: BRIDGE_APP_ID,
         toChain: isTokenSwitched
           ? destinationChainUSDC.chainId
-          : baseUSDC.chainId,
+          : rozoStellarUSDC.chainId,
         toAddress: isTokenSwitched ? evmAddress : userAddress,
-        toToken: isTokenSwitched ? destinationChainUSDC.token : baseUSDC.token,
+        toToken: isTokenSwitched
+          ? destinationChainUSDC.token
+          : rozoStellarUSDC.token,
         toUnits: paymentAmount,
         intent: `Bridge ${amountFormatted} USDC`,
         feeType:
