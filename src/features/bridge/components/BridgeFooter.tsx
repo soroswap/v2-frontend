@@ -143,20 +143,12 @@ export const BridgeFooter = () => {
           </a>
 
           <Link
-            href="https://bridge.rozo.ai/faq"
+            href="https://docs.rozo.ai/contact/faqs"
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-primary/80 text-xs transition-colors sm:text-base"
           >
             FAQs
-          </Link>
-          <Link
-            href="https://docs.rozo.ai"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
-          >
-            Docs
           </Link>
           <Link
             href="https://bridge.rozo.ai/terms"
