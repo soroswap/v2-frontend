@@ -42,7 +42,8 @@ export const BridgeHistory = ({ walletAddress }: BridgeHistoryProps) => {
     } finally {
       setIsLoading(false);
     }
-  }, [walletAddress]); // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-line react-hooks/exhaustive-deps
+  }, [walletAddress]);
 
   // Load history on mount and when wallet address changes
   useEffect(() => {

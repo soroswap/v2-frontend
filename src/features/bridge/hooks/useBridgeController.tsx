@@ -1,7 +1,6 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { useDebounce } from "@/shared/hooks";
 import {
   base,
   baseUSDC,
@@ -109,6 +108,29 @@ function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
   }
 }
 
+function useDebounce<T>(value: T, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Mark as debouncing when value changes
+    setIsDebouncing(true);
+
+    // Set up the debounce timer
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+      setIsDebouncing(false);
+    }, delay);
+
+    // Cleanup function automatically handles timeout clearing
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return { debouncedValue, isDebouncing };
+}
+
 // -----------------------------------------------------------------------------
 // Hook definition
 // -----------------------------------------------------------------------------
@@ -173,7 +195,7 @@ export function useBridgeController() {
   // Debounce amount for fee fetching
   const amount = parseFloat(typedValue || "0");
   const { debouncedValue: debouncedAmount, isDebouncing: isDebouncingAmount } =
-    useDebounce(amount, 400);
+    useDebounce(amount, 300);
 
   // Single fee fetch - the API returns both amountIn and amountOut
   const {
