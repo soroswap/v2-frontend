@@ -366,6 +366,14 @@ export function useBridgeController() {
     dispatchBridge({ type: "SET_DESTINATION_CHAIN", chainId });
   }, []);
 
+  // Re-validate address when destination chain changes
+  useEffect(() => {
+    if (evmAddress) {
+      validateEvmAddress(evmAddress);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinationChainId, evmAddress]);
+
   // ---------------------------------------------------------------------------
   // Payment config creation
   // ---------------------------------------------------------------------------
