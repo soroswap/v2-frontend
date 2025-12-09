@@ -13,7 +13,7 @@ export default function BridgePage() {
             className="text-sm leading-relaxed"
             style={{ color: "var(--color-info-text)" }}
           >
-            This bridge is currently in <b>Alpha Phase</b> and may contain
+            This bridge is currently in <b>Beta Phase</b> and may contain
             unexpected behavior. Start with a small amount first to verify
             everything works as expected. Please contact our team if you
             encounter issues.

@@ -108,15 +108,6 @@ export const BridgeFooter = () => {
               </div>
             </a>
           </div>
-
-          <Link
-            href="https://bridge.rozo.ai/faq"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
-          >
-            FAQs
-          </Link>
           <a
             href="https://discord.com/invite/EfWejgTbuU"
             target="_blank"
@@ -150,6 +141,23 @@ export const BridgeFooter = () => {
               ></path>
             </svg>
           </a>
+
+          <Link
+            href="https://bridge.rozo.ai/faq"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
+          >
+            FAQs
+          </Link>
+          <Link
+            href="https://docs.rozo.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary/80 text-xs transition-colors sm:text-base"
+          >
+            Docs
+          </Link>
           <Link
             href="https://bridge.rozo.ai/terms"
             target="_blank"
