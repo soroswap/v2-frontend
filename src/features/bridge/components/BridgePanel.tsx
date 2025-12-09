@@ -48,12 +48,6 @@ export const BridgePanel = ({
       {/* Panel header */}
       <div className="mb-2 flex items-center justify-between">
         <p className="text-base font-medium text-[#A0A3C4]">{label}</p>
-        {isLoading && (
-          <div className="flex items-center gap-1.5 text-xs text-[#A0A3C4]">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            <span>Calculating...</span>
-          </div>
-        )}
       </div>
 
       {/* Amount + chain */}
@@ -69,6 +63,13 @@ export const BridgePanel = ({
       {/* USD helper */}
       <div className="flex items-end justify-between">
         <BridgePricePanel amount={amount} />
+
+        {isLoading && (
+          <div className="flex items-center gap-1.5 text-xs text-[#A0A3C4]">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            <span>Calculating...</span>
+          </div>
+        )}
       </div>
 
       {isTokenSwitched && independentField === "to" ? (
