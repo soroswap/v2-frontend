@@ -8,10 +8,13 @@ import {
   ethereumUSDC,
   ExternalPaymentOptions,
   FeeType,
+  getChainName,
+  PaymentCompletedEvent,
   polygon,
   polygonUSDC,
   rozoSolana,
   rozoSolanaUSDC,
+  rozoStellar,
   rozoStellarUSDC,
   validateAddressForChain,
 } from "@rozoai/intent-common";
@@ -19,6 +22,7 @@ import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { BRIDGE_APP_ID } from "../constants/bridge";
+import { BridgeHistoryChain } from "../types/history";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
@@ -36,22 +40,18 @@ interface BridgeState {
   independentField: IndependentField;
   fromChain: "stellar" | "base";
   toChain: "stellar" | "base";
-  evmAddress: string;
-  evmAddressError: string;
+  destinationAddress: string;
+  destinationAddressError: string;
   destinationChainId: number;
 }
-
-type PaymentCompletedEvent = {
-  rozoPaymentId?: string;
-};
 
 const initialBridgeState: BridgeState = {
   typedValue: "",
   independentField: "from",
   fromChain: "base",
   toChain: "stellar",
-  evmAddress: "",
-  evmAddressError: "",
+  destinationAddress: "",
+  destinationAddressError: "",
   destinationChainId: base.chainId, // Default to Base
 };
 
@@ -61,8 +61,8 @@ const initialBridgeState: BridgeState = {
 type BridgeAction =
   | { type: "TYPE_INPUT"; field: IndependentField; typedValue: string }
   | { type: "SWITCH_CHAINS" }
-  | { type: "SET_EVM_ADDRESS"; address: string }
-  | { type: "SET_EVM_ADDRESS_ERROR"; error: string }
+  | { type: "SET_DESTINATION_ADDRESS"; address: string }
+  | { type: "SET_DESTINATION_ADDRESS_ERROR"; error: string }
   | { type: "SET_DESTINATION_CHAIN"; chainId: number };
 
 function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
@@ -80,28 +80,28 @@ function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
         fromChain: state.toChain,
         toChain: state.fromChain,
         // Keep independent field the same - the calculation will adjust automatically
-        evmAddress: "", // Clear EVM address when switching
-        evmAddressError: "",
+        destinationAddress: "", // Clear destination address when switching
+        destinationAddressError: "",
       };
 
-    case "SET_EVM_ADDRESS":
+    case "SET_DESTINATION_ADDRESS":
       return {
         ...state,
-        evmAddress: action.address,
+        destinationAddress: action.address,
       };
 
-    case "SET_EVM_ADDRESS_ERROR":
+    case "SET_DESTINATION_ADDRESS_ERROR":
       return {
         ...state,
-        evmAddressError: action.error,
+        destinationAddressError: action.error,
       };
 
     case "SET_DESTINATION_CHAIN":
       return {
         ...state,
         destinationChainId: action.chainId,
-        // evmAddress: "", // Clear address when chain changes
-        evmAddressError: "",
+        // Keep the address but clear the error - validation will run and set appropriate error if needed
+        destinationAddressError: "",
       };
 
     default:
@@ -130,6 +130,33 @@ function useDebounce<T>(value: T, delay: number) {
   }, [value, delay]);
 
   return { debouncedValue, isDebouncing };
+}
+
+/**
+ * Normalize chain name to match BridgeHistoryItem type
+ */
+function normalizeChainName(chainId: number | null): BridgeHistoryChain {
+  if (chainId === null) {
+    return "Ethereum"; // Default for unknown source chains
+  }
+
+  // Map chain IDs to history chain names
+  const chainIdMap: Record<number, BridgeHistoryChain> = {
+    [rozoStellar.chainId]: "Stellar",
+    [base.chainId]: "Base",
+    [ethereum.chainId]: "Ethereum",
+    [polygon.chainId]: "Polygon",
+    [rozoSolana.chainId]: "Solana",
+  };
+
+  // Check mapping first
+  if (chainIdMap[chainId]) {
+    return chainIdMap[chainId];
+  }
+
+  // Fallback: try to match by chain name
+  const chainName = getChainName(chainId);
+  return (chainName ?? "Ethereum") as BridgeHistoryChain;
 }
 
 // -----------------------------------------------------------------------------
@@ -174,8 +201,8 @@ export function useBridgeController() {
     independentField,
     fromChain,
     toChain,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     destinationChainId,
   } = bridgeState;
 
@@ -264,8 +291,8 @@ export function useBridgeController() {
     isConnected,
     bridgeStateType,
     isTokenSwitched,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     typedValue,
     isDebouncingAmount,
     isFeeLoading,
@@ -301,10 +328,18 @@ export function useBridgeController() {
   /**
    * Validate address based on selected chain
    */
-  const validateEvmAddress = useCallback(
+  const validateDestinationAddress = useCallback(
     (address: string) => {
       if (!address) {
-        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
+        return false;
+      }
+
+      if (!destinationChainId) {
+        dispatchBridge({
+          type: "SET_DESTINATION_ADDRESS_ERROR",
+          error: "Please select a destination chain",
+        });
         return false;
       }
 
@@ -314,7 +349,7 @@ export function useBridgeController() {
 
         if (!isValid) {
           dispatchBridge({
-            type: "SET_EVM_ADDRESS_ERROR",
+            type: "SET_DESTINATION_ADDRESS_ERROR",
             error: "Invalid address format for selected chain",
           });
           return false;
@@ -325,21 +360,23 @@ export function useBridgeController() {
           const normalizedAddress = getEVMAddress(address);
           if (normalizedAddress !== address) {
             dispatchBridge({
-              type: "SET_EVM_ADDRESS",
+              type: "SET_DESTINATION_ADDRESS",
               address: normalizedAddress,
             });
           } else {
-            dispatchBridge({ type: "SET_EVM_ADDRESS", address });
+            dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address });
           }
         } else {
-          dispatchBridge({ type: "SET_EVM_ADDRESS", address });
+          dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address });
         }
 
-        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
         return true;
-      } catch {
+      } catch (error) {
+        // Log the error for debugging but don't break the app
+        console.error("[Bridge] Address validation error:", error);
         dispatchBridge({
-          type: "SET_EVM_ADDRESS_ERROR",
+          type: "SET_DESTINATION_ADDRESS_ERROR",
           error: "Invalid address format for selected chain",
         });
         return false;
@@ -348,15 +385,15 @@ export function useBridgeController() {
     [destinationChainId],
   );
 
-  const handleEvmAddressChange = useCallback(
+  const handleDestinationAddressChange = useCallback(
     (value: string) => {
-      dispatchBridge({ type: "SET_EVM_ADDRESS", address: value });
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address: value });
       // Clear error when user starts typing
-      if (evmAddressError) {
-        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+      if (destinationAddressError) {
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
       }
     },
-    [evmAddressError],
+    [destinationAddressError],
   );
 
   /**
@@ -368,11 +405,14 @@ export function useBridgeController() {
 
   // Re-validate address when destination chain changes
   useEffect(() => {
-    if (evmAddress) {
-      validateEvmAddress(evmAddress);
+    if (destinationAddress && destinationChainId) {
+      // Validate the address with the new chain ID
+      // The validation function already uses destinationChainId from closure
+      validateDestinationAddress(destinationAddress);
     }
+    // Only depend on destinationChainId - we want to re-validate when chain changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destinationChainId, evmAddress]);
+  }, [destinationChainId, validateDestinationAddress]);
 
   // ---------------------------------------------------------------------------
   // Payment config creation
@@ -414,13 +454,13 @@ export function useBridgeController() {
       return;
     }
 
-    if (isTokenSwitched && (!evmAddress || evmAddressError)) {
+    if (isTokenSwitched && (!destinationAddress || destinationAddressError)) {
       console.debug(
-        "[Bridge] createPaymentConfig: EVM address invalid/missing",
+        "[Bridge] createPaymentConfig: destination address invalid/missing",
         {
           isTokenSwitched,
-          evmAddress,
-          evmAddressError,
+          destinationAddress,
+          destinationAddressError,
         },
       );
       setIntentConfig(null);
@@ -431,6 +471,57 @@ export function useBridgeController() {
     setIsConfigLoading(true);
 
     try {
+      // Additional validation: Ensure address format matches the selected chain
+      if (isTokenSwitched && destinationAddress) {
+        try {
+          const addressIsValidForChain = validateAddressForChain(
+            destinationChainId,
+            destinationAddress,
+          );
+          if (!addressIsValidForChain) {
+            console.error(
+              "[Bridge] createPaymentConfig: Address format does not match selected chain",
+              {
+                destinationChainId,
+                destinationAddress,
+                isEVMAddress: isEVMAddress(destinationAddress),
+              },
+            );
+            setIntentConfig(null);
+            setIsConfigLoading(false);
+            // Update error state
+            dispatchBridge({
+              type: "SET_DESTINATION_ADDRESS_ERROR",
+              error: "Address format does not match selected chain",
+            });
+            return;
+          }
+        } catch (validationError) {
+          // If validation throws an error (e.g., base58 decode error), catch it here
+          const errorMessage =
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError);
+          console.error(
+            "[Bridge] createPaymentConfig: Address validation error",
+            {
+              error: errorMessage,
+              destinationChainId,
+              destinationAddress,
+            },
+          );
+          setIntentConfig(null);
+          setIsConfigLoading(false);
+          // Update error state with user-friendly message
+          dispatchBridge({
+            type: "SET_DESTINATION_ADDRESS_ERROR",
+            error:
+              "Invalid address for this chain. Please check and try again.",
+          });
+          return;
+        }
+      }
+
       // Get the destination chain details
       const destinationChainUSDC = chainToUSDC[destinationChainId] || baseUSDC;
 
@@ -448,7 +539,7 @@ export function useBridgeController() {
         toChain: isTokenSwitched
           ? destinationChainUSDC.chainId
           : rozoStellarUSDC.chainId,
-        toAddress: isTokenSwitched ? evmAddress : userAddress,
+        toAddress: isTokenSwitched ? destinationAddress : userAddress,
         toToken: isTokenSwitched
           ? destinationChainUSDC.token
           : rozoStellarUSDC.token,
@@ -469,10 +560,41 @@ export function useBridgeController() {
         },
       };
 
-      await resetPaymentRef.current(config as never);
-      setIntentConfig(config);
-      setIsConfigLoading(false);
-      console.debug("[Bridge] createPaymentConfig: config set", { config });
+      try {
+        await resetPaymentRef.current(config as never);
+        setIntentConfig(config);
+        setIsConfigLoading(false);
+        console.debug("[Bridge] createPaymentConfig: config set", { config });
+      } catch (resetError) {
+        // Handle specific address format errors
+        const errorMessage =
+          resetError instanceof Error ? resetError.message : String(resetError);
+        if (
+          errorMessage.includes("base58") ||
+          errorMessage.includes("Non-base58") ||
+          errorMessage.includes("invalid address")
+        ) {
+          console.error(
+            "[Bridge] createPaymentConfig: Address format error from RozoPay",
+            {
+              error: errorMessage,
+              destinationChainId,
+              destinationAddress,
+            },
+          );
+          setIntentConfig(null);
+          setIsConfigLoading(false);
+          // Update error state with a user-friendly message
+          dispatchBridge({
+            type: "SET_DESTINATION_ADDRESS_ERROR",
+            error:
+              "Invalid address for this chain. Please check and try again.",
+          });
+          return;
+        }
+        // Re-throw other errors to be caught by outer catch
+        throw resetError;
+      }
     } catch (error) {
       console.error("Failed to create payment config:", error);
       setIntentConfig(null);
@@ -484,8 +606,8 @@ export function useBridgeController() {
     typedValue,
     independentField,
     isTokenSwitched,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     destinationChainId,
     fee,
     feeError,
@@ -507,14 +629,14 @@ export function useBridgeController() {
     console.debug("[Bridge] Creating payment config", {
       typedValue,
       isTokenSwitched,
-      evmAddress,
+      destinationAddress,
     });
     createPaymentConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     validation.canBridge,
     typedValue,
-    evmAddress,
+    destinationAddress,
     isTokenSwitched,
     independentField,
     destinationChainId,
@@ -525,90 +647,69 @@ export function useBridgeController() {
   useEffect(() => {
     if (!userAddress) {
       dispatchBridge({ type: "TYPE_INPUT", field: "from", typedValue: "" });
-      dispatchBridge({ type: "SET_EVM_ADDRESS", address: "" });
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address: "" });
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
       setIntentConfig(null);
       setIsConfigLoading(false);
     }
   }, [userAddress]);
 
   // Payment completed handler
-  const handlePaymentCompleted = useCallback(
-    (e: PaymentCompletedEvent) => {
-      if (userAddress && e.rozoPaymentId) {
-        const destinationAddress = isTokenSwitched ? evmAddress : userAddress;
-        const fromChainName = isTokenSwitched ? "Stellar" : "Base";
-        const toChainName = isTokenSwitched ? "Base" : "Stellar";
+  const handlePaymentCompleted = (e: PaymentCompletedEvent) => {
+    console.debug("[Bridge] Payment completed", { e });
+    if (userAddress && e.rozoPaymentId) {
+      try {
+        // Withdraw
+        if (isTokenSwitched) {
+          const sourceChain = e.chainId ? getChainName(e.chainId) : null;
+          const fromChainName = sourceChain ?? "Stellar";
+          const toChainName = normalizeChainName(destinationChainId);
+          const sentAmount =
+            independentField === "from"
+              ? typedValue
+              : (parseFloat(typedValue) + fee).toFixed(2);
 
-        // Save the "from" amount (the amount user actually sent)
-        const sentAmount =
-          independentField === "from"
-            ? typedValue
-            : (parseFloat(typedValue) + fee).toFixed(2);
+          saveBridgeHistory({
+            walletAddress: userAddress,
+            paymentId: e.rozoPaymentId,
+            amount: sentAmount,
+            destinationAddress: destinationAddress,
+            fromChain: fromChainName as BridgeHistoryChain,
+            toChain: toChainName,
+            type: "withdraw",
+          });
+        } else {
+          // Deposit
+          const sourceChain = e.chainId ? getChainName(e.chainId) : null;
+          const fromChainName = sourceChain ?? "Any Chains";
+          const toChainName = normalizeChainName(destinationChainId);
+          const sentAmount =
+            independentField === "from"
+              ? typedValue
+              : (parseFloat(typedValue) + fee).toFixed(2);
 
-        saveBridgeHistory(
-          userAddress,
-          e.rozoPaymentId,
-          sentAmount,
-          destinationAddress,
-          fromChainName,
-          toChainName,
-        );
+          saveBridgeHistory({
+            walletAddress: userAddress,
+            paymentId: e.rozoPaymentId,
+            amount: sentAmount,
+            destinationAddress: destinationAddress,
+            fromChain: fromChainName as BridgeHistoryChain,
+            toChain: toChainName,
+            type: "deposit",
+          });
+        }
 
         window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
+      } catch (error) {
+        console.error("[Bridge] Failed to save payment history:", error);
+        // Still dispatch the event even if history save fails
+        window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
       }
-    },
-    [
-      userAddress,
-      isTokenSwitched,
-      evmAddress,
-      typedValue,
-      independentField,
-      fee,
-    ],
-  );
+    }
+  };
 
   // Button disabled state - use unified validation
   const getActionButtonDisabled = validation.shouldDisableButton;
-
-  // Centralized debug logger for button state and related variables
-  useEffect(() => {
-    console.groupCollapsed("[Bridge] Debug State");
-    console.debug({
-      isConnected,
-      bridgeStateType,
-      isTokenSwitched,
-      evmAddress,
-      evmAddressError,
-      typedValue,
-      independentField,
-      isConfigLoading,
-      hasIntentConfig: !!intentConfig,
-      fee,
-      isDebouncingAmount,
-      isFeeLoading,
-      feeError,
-      validation,
-      getActionButtonDisabled,
-    });
-    console.groupEnd();
-  }, [
-    isConnected,
-    bridgeStateType,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    typedValue,
-    independentField,
-    isConfigLoading,
-    intentConfig,
-    fee,
-    isDebouncingAmount,
-    isFeeLoading,
-    feeError,
-    validation,
-    getActionButtonDisabled,
-  ]);
 
   // ---------------------------------------------------------------------------
   // Return – the public API of this hook.
@@ -621,8 +722,8 @@ export function useBridgeController() {
     toChain,
     fromAmount,
     toAmount,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     destinationChainId,
     isConnected,
     isTokenSwitched,
@@ -646,8 +747,8 @@ export function useBridgeController() {
     // handlers
     handleAmountChange,
     handleSwitchChains,
-    handleEvmAddressChange,
-    validateEvmAddress,
+    handleDestinationAddressChange,
+    validateDestinationAddress,
     handleDestinationChainChange,
     handlePaymentCompleted,
 

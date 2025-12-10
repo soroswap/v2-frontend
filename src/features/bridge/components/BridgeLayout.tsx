@@ -7,8 +7,9 @@ import {
   TheButton,
 } from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
+import { rozoStellarUSDC } from "@rozoai/intent-common";
 import { RozoPayButton, useRozoConnectStellar } from "@rozoai/intent-pay";
-import { Clipboard } from "lucide-react";
+import { Clipboard, Clock } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useBridgeController } from "../hooks/useBridgeController";
 import { BridgeBalanceDisplay } from "./BridgeBalanceDisplay";
@@ -23,18 +24,18 @@ export const BridgeLayout = () => {
   const { setConnector, disconnect, setPublicKey } = useRozoConnectStellar();
 
   const [isTokenSwitched, setIsTokenSwitched] = useState<boolean>(false);
+  // Modal can only be opened by button click, never automatically
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
 
   const hasInitialized = useRef(false);
 
   const {
     typedValue,
     independentField,
-    fromChain,
-    toChain,
     fromAmount,
     toAmount,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     destinationChainId,
     isConnected,
     isTokenSwitched: controllerIsTokenSwitched,
@@ -50,8 +51,8 @@ export const BridgeLayout = () => {
     isDebouncingAmount,
     handleAmountChange,
     handleSwitchChains,
-    handleEvmAddressChange,
-    validateEvmAddress,
+    handleDestinationAddressChange,
+    validateDestinationAddress,
     handleDestinationChainChange,
     handlePaymentCompleted,
     usdcToken,
@@ -84,7 +85,7 @@ export const BridgeLayout = () => {
     try {
       const text = await navigator.clipboard.readText();
       if (text) {
-        handleEvmAddressChange(text);
+        handleDestinationAddressChange(text);
       }
     } catch (error) {
       console.error("Failed to paste address:", error);
@@ -108,6 +109,15 @@ export const BridgeLayout = () => {
     <div className="flex flex-col gap-6">
       <div className="mb-4 flex items-center justify-between">
         <p className="text-primary text-xl sm:text-2xl">Bridge</p>
+        {isConnected && trustlineData.trustlineStatus.exists && (
+          <button
+            onClick={() => setIsHistoryModalOpen(true)}
+            className="text-secondary hover:text-primary flex cursor-pointer items-center gap-2 text-sm transition-colors"
+          >
+            <Clock className="h-4 w-4" />
+            History
+          </button>
+        )}
       </div>
 
       <div className="flex flex-col gap-2">
@@ -168,7 +178,7 @@ export const BridgeLayout = () => {
 
         {/* Address Input - Show when bridging from Stellar to other chains */}
         {isConnected && controllerIsTokenSwitched && (
-          <div className="mb-4 flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             <label className="text-primary text-sm font-medium">
               {destinationChainName} Address
             </label>
@@ -176,12 +186,12 @@ export const BridgeLayout = () => {
               <input
                 type="text"
                 placeholder={`Enter ${destinationChainName} address...`}
-                value={evmAddress}
-                onChange={(e) => handleEvmAddressChange(e.target.value)}
-                onBlur={(e) => validateEvmAddress(e.target.value)}
+                value={destinationAddress}
+                onChange={(e) => handleDestinationAddressChange(e.target.value)}
+                onBlur={(e) => validateDestinationAddress(e.target.value)}
                 className={cn(
                   "w-full rounded-lg border px-3 py-2 pr-12 text-sm focus:outline-none",
-                  evmAddressError
+                  destinationAddressError
                     ? "border-red-500 bg-red-50 text-red-900 placeholder:text-red-400 focus:border-red-500"
                     : "bg-surface-subtle border-surface-alt text-primary placeholder:text-secondary focus:border-brand",
                 )}
@@ -194,38 +204,9 @@ export const BridgeLayout = () => {
                 <Clipboard className="text-secondary h-4 w-4" />
               </button>
             </div>
-            {evmAddressError && (
-              <p className="text-xs text-red-500">{evmAddressError}</p>
+            {destinationAddressError && (
+              <p className="text-xs text-red-500">{destinationAddressError}</p>
             )}
-          </div>
-        )}
-
-        <BridgeQuoteDetails
-          amount={fromAmount}
-          fromChain={fromChain}
-          toChain={toChain}
-          fee={fee}
-        />
-
-        {/* Error alert for API validation (e.g., amount too high) */}
-        {feeError && typeof feeError === "object" && "error" in feeError && (
-          <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
-            <svg
-              className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-            <p className="text-sm text-[var(--color-warning-text)]">
-              {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
-            </p>
           </div>
         )}
 
@@ -248,6 +229,7 @@ export const BridgeLayout = () => {
                   connectedWalletOnly={controllerIsTokenSwitched}
                   paymentOptions={intentConfig.paymentOptions}
                   onPaymentCompleted={handlePaymentCompleted}
+                  onPayoutCompleted={trustlineData.refreshBalance}
                   resetOnSuccess
                   showProcessingPayout
                 >
@@ -270,13 +252,55 @@ export const BridgeLayout = () => {
               )}
             </>
           )}
+
+          {intentConfig && (
+            <BridgeQuoteDetails
+              amount={fromAmount}
+              fromChain={isTokenSwitched ? null : rozoStellarUSDC.chainId}
+              toChain={
+                isTokenSwitched
+                  ? rozoStellarUSDC.chainId
+                  : intentConfig?.toChain
+              }
+              fee={fee}
+              isTokenSwitched={isTokenSwitched}
+              destinationChainId={destinationChainId}
+            />
+          )}
+
+          {/* Error alert for API validation (e.g., amount too high) */}
+          {feeError && typeof feeError === "object" && "error" in feeError && (
+            <div className="flex items-start gap-2 rounded-lg border border-[var(--color-warning-border)] bg-[var(--color-warning-bg)] p-3">
+              <svg
+                className="mt-0.5 h-4 w-4 flex-shrink-0 text-[var(--color-warning-text)]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <p className="text-sm text-[var(--color-warning-text)]">
+                {`Maximum bridge amount is ${feeError.maxAllowed} USDC. Please enter a lower amount.`}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {isConnected && trustlineData.trustlineStatus.exists && (
-        <div className="mt-8">
-          <BridgeHistory walletAddress={userAddress!} />
-        </div>
+      {isConnected && trustlineData.trustlineStatus.exists && userAddress && (
+        <BridgeHistory
+          isModal
+          isOpen={isHistoryModalOpen}
+          onClose={() => {
+            setIsHistoryModalOpen(false);
+          }}
+          walletAddress={userAddress}
+        />
       )}
     </div>
   );

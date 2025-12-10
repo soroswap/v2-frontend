@@ -5,8 +5,8 @@ interface UseBridgeValidationProps {
   isConnected: boolean;
   bridgeStateType: string;
   isTokenSwitched: boolean;
-  evmAddress: string;
-  evmAddressError: string;
+  destinationAddress: string;
+  destinationAddressError: string;
   typedValue: string;
   isDebouncingAmount: boolean;
   isFeeLoading: boolean;
@@ -28,8 +28,8 @@ export const useBridgeValidation = ({
   isConnected,
   bridgeStateType,
   isTokenSwitched,
-  evmAddress,
-  evmAddressError,
+  destinationAddress,
+  destinationAddressError,
   typedValue,
   isDebouncingAmount,
   isFeeLoading,
@@ -56,13 +56,13 @@ export const useBridgeValidation = ({
       };
     }
 
-    // Check EVM address if bridging to Base
-    if (isTokenSwitched && (!evmAddress || !!evmAddressError)) {
+    // Check destination address if bridging to other chains
+    if (isTokenSwitched && (!destinationAddress || !!destinationAddressError)) {
       return {
         canBridge: false,
         shouldDisableButton: true,
         shouldShowFee: false,
-        disabledReason: "Invalid EVM address",
+        disabledReason: "Invalid destination address",
       };
     }
 
@@ -108,8 +108,8 @@ export const useBridgeValidation = ({
     isConnected,
     bridgeStateType,
     isTokenSwitched,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
     typedValue,
     isDebouncingAmount,
     isFeeLoading,
