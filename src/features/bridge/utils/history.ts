@@ -2,14 +2,15 @@ import { BridgeHistoryItem, BridgeHistoryStorage } from "../types/history";
 
 export const SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY = "soroswap_bridge_history";
 
-export const saveBridgeHistory = (
-  walletAddress: string,
-  paymentId: string,
-  amount: string,
-  destinationAddress: string,
-  fromChain: "Stellar" | "Base" | "Ethereum" | "Polygon" | "Solana",
-  toChain: "Stellar" | "Base" | "Ethereum" | "Polygon" | "Solana",
-): void => {
+export const saveBridgeHistory = ({
+  walletAddress,
+  paymentId,
+  amount,
+  destinationAddress,
+  fromChain,
+  toChain,
+  type,
+}: Omit<BridgeHistoryItem, "id" | "completedAt">): void => {
   try {
     const existingData = getBridgeHistory();
 
@@ -32,6 +33,7 @@ export const saveBridgeHistory = (
       toChain,
       completedAt: new Date().toISOString(),
       walletAddress,
+      type,
     };
 
     const updatedData: BridgeHistoryStorage = {

@@ -49,6 +49,5 @@ export const useBridgeState = (trustlineData: UseUSDCTrustlineReturn) => {
   return {
     bridgeStateType: bridgeState.type,
     bridgeStateMessage: bridgeState.message,
-    bridgeStateData: bridgeState,
   };
 };

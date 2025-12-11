@@ -1,49 +1,58 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { ExternalPaymentOptions } from "@rozoai/intent-common";
+import {
+  base,
+  baseUSDC,
+  ethereum,
+  ethereumUSDC,
+  ExternalPaymentOptions,
+  FeeType,
+  getChainName,
+  PaymentCompletedEvent,
+  polygon,
+  polygonUSDC,
+  rozoSolana,
+  rozoSolanaUSDC,
+  rozoStellar,
+  rozoStellarUSDC,
+  validateAddressForChain,
+} from "@rozoai/intent-common";
 import { getEVMAddress, isEVMAddress, useRozoPayUI } from "@rozoai/intent-pay";
 import { AssetInfo } from "@soroswap/sdk";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react";
-import { BASE_CONFIG, BRIDGE_APP_ID } from "../constants/bridge";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { BRIDGE_APP_ID } from "../constants/bridge";
+import { BridgeHistoryChain } from "../types/history";
 import { IntentPayConfig } from "../types/rozo";
 import { saveBridgeHistory } from "../utils/history";
 import { useBridgeState } from "./useBridgeState";
+import { useBridgeValidation } from "./useBridgeValidation";
 import { GetFeeError, useGetFee } from "./useGetFee";
 import { useUSDCTrustline } from "./useUSDCTrustline";
 
 // -----------------------------------------------------------------------------
 // Types & helper utilities
 // -----------------------------------------------------------------------------
-type IndependentField = "from" | "to";
+export type IndependentField = "from" | "to";
 
 interface BridgeState {
   typedValue: string;
   independentField: IndependentField;
   fromChain: "stellar" | "base";
   toChain: "stellar" | "base";
-  evmAddress: string;
-  evmAddressError: string;
+  destinationAddress: string;
+  destinationAddressError: string;
+  destinationChainId: number;
 }
-
-type PaymentCompletedEvent = {
-  rozoPaymentId?: string;
-};
 
 const initialBridgeState: BridgeState = {
   typedValue: "",
   independentField: "from",
   fromChain: "base",
   toChain: "stellar",
-  evmAddress: "",
-  evmAddressError: "",
+  destinationAddress: "",
+  destinationAddressError: "",
+  destinationChainId: base.chainId, // Default to Base
 };
 
 /**
@@ -52,8 +61,9 @@ const initialBridgeState: BridgeState = {
 type BridgeAction =
   | { type: "TYPE_INPUT"; field: IndependentField; typedValue: string }
   | { type: "SWITCH_CHAINS" }
-  | { type: "SET_EVM_ADDRESS"; address: string }
-  | { type: "SET_EVM_ADDRESS_ERROR"; error: string };
+  | { type: "SET_DESTINATION_ADDRESS"; address: string }
+  | { type: "SET_DESTINATION_ADDRESS_ERROR"; error: string }
+  | { type: "SET_DESTINATION_CHAIN"; chainId: number };
 
 function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
   switch (action.type) {
@@ -70,25 +80,83 @@ function bridgeReducer(state: BridgeState, action: BridgeAction): BridgeState {
         fromChain: state.toChain,
         toChain: state.fromChain,
         // Keep independent field the same - the calculation will adjust automatically
-        evmAddress: "", // Clear EVM address when switching
-        evmAddressError: "",
+        destinationAddress: "", // Clear destination address when switching
+        destinationAddressError: "",
       };
 
-    case "SET_EVM_ADDRESS":
+    case "SET_DESTINATION_ADDRESS":
       return {
         ...state,
-        evmAddress: action.address,
+        destinationAddress: action.address,
       };
 
-    case "SET_EVM_ADDRESS_ERROR":
+    case "SET_DESTINATION_ADDRESS_ERROR":
       return {
         ...state,
-        evmAddressError: action.error,
+        destinationAddressError: action.error,
+      };
+
+    case "SET_DESTINATION_CHAIN":
+      return {
+        ...state,
+        destinationChainId: action.chainId,
+        // Keep the address but clear the error - validation will run and set appropriate error if needed
+        destinationAddressError: "",
       };
 
     default:
       return state;
   }
+}
+
+function useDebounce<T>(value: T, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  const [isDebouncing, setIsDebouncing] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Mark as debouncing when value changes
+    setIsDebouncing(true);
+
+    // Set up the debounce timer
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+      setIsDebouncing(false);
+    }, delay);
+
+    // Cleanup function automatically handles timeout clearing
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return { debouncedValue, isDebouncing };
+}
+
+/**
+ * Normalize chain name to match BridgeHistoryItem type
+ */
+function normalizeChainName(chainId: number | null): BridgeHistoryChain {
+  if (chainId === null) {
+    return "Ethereum"; // Default for unknown source chains
+  }
+
+  // Map chain IDs to history chain names
+  const chainIdMap: Record<number, BridgeHistoryChain> = {
+    [rozoStellar.chainId]: "Stellar",
+    [base.chainId]: "Base",
+    [ethereum.chainId]: "Ethereum",
+    [polygon.chainId]: "Polygon",
+    [rozoSolana.chainId]: "Solana",
+  };
+
+  // Check mapping first
+  if (chainIdMap[chainId]) {
+    return chainIdMap[chainId];
+  }
+
+  // Fallback: try to match by chain name
+  const chainName = getChainName(chainId);
+  return (chainName ?? "Ethereum") as BridgeHistoryChain;
 }
 
 // -----------------------------------------------------------------------------
@@ -109,9 +177,15 @@ const usdcToken: AssetInfo = {
   decimals: 7,
 };
 
-export function useBridgeController({
-  onPaymentCompleted,
-}: UseBridgeControllerProps = {}) {
+// Mapping of chainId to USDC token for each supported chain
+const chainToUSDC: Record<number, { chainId: number; token: string }> = {
+  [base.chainId]: baseUSDC,
+  [ethereum.chainId]: ethereumUSDC,
+  [rozoSolana.chainId]: rozoSolanaUSDC,
+  [polygon.chainId]: polygonUSDC,
+};
+
+export function useBridgeController() {
   const { address: userAddress } = useUserContext();
   const { resetPayment } = useRozoPayUI();
 
@@ -127,8 +201,9 @@ export function useBridgeController({
     independentField,
     fromChain,
     toChain,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
+    destinationChainId,
   } = bridgeState;
 
   // Trustline and bridge state
@@ -140,27 +215,25 @@ export function useBridgeController({
     null,
   );
   const [isConfigLoading, setIsConfigLoading] = useState<boolean>(false);
-  const configTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const resetPaymentRef = useRef(resetPayment);
   useEffect(() => {
     resetPaymentRef.current = resetPayment;
   }, [resetPayment]);
 
-  // Fee state with debounce
-  const [debouncedAmount, setDebouncedAmount] = useState<number>(0);
-  const [isAmountChanging, setIsAmountChanging] = useState<boolean>(false);
-  const feeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isFeeLoadingStable, setIsFeeLoadingStable] = useState<boolean>(false);
-  const feeLoadingStableTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Debounce amount for fee fetching
+  const amount = parseFloat(typedValue || "0");
+  const { debouncedValue: debouncedAmount, isDebouncing: isDebouncingAmount } =
+    useDebounce(amount, 300);
 
-  // First fee fetch - this might be for "from" amount or an estimate for "to" amount
+  // Single fee fetch - the API returns both amountIn and amountOut
   const {
-    data: initialFeeData,
-    isLoading: isInitialFeeLoading,
+    data: feeData,
+    isLoading: isFeeLoading,
     error: feeError,
   } = useGetFee(
     {
       amount: debouncedAmount,
+      type: independentField === "from" ? FeeType.ExactIn : FeeType.ExactOut,
       appId: BRIDGE_APP_ID,
     },
     {
@@ -168,153 +241,43 @@ export function useBridgeController({
     },
   );
 
-  // When in "to" mode, calculate the actual "from" amount and fetch the correct fee
-  const calculatedFromAmount =
-    independentField === "to" && initialFeeData
-      ? parseFloat(typedValue || "0") + initialFeeData.fee
-      : 0;
-
-  // Second fee fetch - for the actual "from" amount when in "to" mode
-  const {
-    data: refinedFeeData,
-    isLoading: isRefinedFeeLoading,
-    error: refinedFeeError,
-  } = useGetFee(
-    {
-      amount: calculatedFromAmount,
-      appId: BRIDGE_APP_ID,
-    },
-    {
-      enabled:
-        independentField === "to" &&
-        calculatedFromAmount > 0 &&
-        !!initialFeeData,
-    },
-  );
-
-  // Use the appropriate fee data based on independent field
-  const feeData =
-    independentField === "to" && refinedFeeData
-      ? refinedFeeData
-      : initialFeeData;
-
-  // When in "to" mode, consider both loading states to prevent flickering
-  // The loading should be true if either query is still loading
-  const rawIsFeeLoading =
-    independentField === "to"
-      ? isInitialFeeLoading || isRefinedFeeLoading
-      : isInitialFeeLoading;
-
-  // Use the refined error when in "to" mode (since that's the actual amount being sent),
-  // otherwise use the initial error
-  const effectiveFeeError =
-    independentField === "to" && refinedFeeError ? refinedFeeError : feeError;
-
-  // Stabilize loading state to prevent flickering on errors
-  // Keep loading state true for a brief moment after error to smooth transition
-  useEffect(() => {
-    if (feeLoadingStableTimeoutRef.current) {
-      clearTimeout(feeLoadingStableTimeoutRef.current);
-    }
-
-    if (rawIsFeeLoading) {
-      setIsFeeLoadingStable(true);
-    } else if (effectiveFeeError) {
-      // If there's an error but we were loading, keep loading state for a brief moment
-      // to prevent flickering
-      feeLoadingStableTimeoutRef.current = setTimeout(() => {
-        setIsFeeLoadingStable(false);
-      }, 150); // Small delay to prevent flickering
-    } else {
-      setIsFeeLoadingStable(false);
-    }
-
-    return () => {
-      if (feeLoadingStableTimeoutRef.current) {
-        clearTimeout(feeLoadingStableTimeoutRef.current);
-      }
-    };
-  }, [rawIsFeeLoading, effectiveFeeError]);
-
-  const isFeeLoading = rawIsFeeLoading || isFeeLoadingStable;
-
-  // Debounce effect for fee fetching
-  useEffect(() => {
-    if (feeTimeoutRef.current) {
-      clearTimeout(feeTimeoutRef.current);
-    }
-
-    const amount = parseFloat(typedValue || "0");
-
-    // Mark that the amount is changing (user is typing)
-    setIsAmountChanging(true);
-    // Reset stable loading state when amount changes
-    setIsFeeLoadingStable(false);
-    if (feeLoadingStableTimeoutRef.current) {
-      clearTimeout(feeLoadingStableTimeoutRef.current);
-    }
-
-    if (amount > 0) {
-      feeTimeoutRef.current = setTimeout(() => {
-        setDebouncedAmount(amount);
-        setIsAmountChanging(false);
-      }, 300); // 300ms debounce for more responsive UX
-    } else {
-      setDebouncedAmount(0);
-      setIsAmountChanging(false);
-    }
-
-    return () => {
-      if (feeTimeoutRef.current) {
-        clearTimeout(feeTimeoutRef.current);
-      }
-    };
-  }, [typedValue]);
-
   // ---------------------------------------------------------------------------
   // Derived values
   // ---------------------------------------------------------------------------
 
-  // Only use fee data if it matches the current debounced amount
-  // This prevents showing old fee values when amount changes
   const currentAmount = parseFloat(typedValue || "0");
 
-  // When in "to" mode, we need to check if the refined fee is valid
-  // When in "from" mode, check if the initial fee matches the typed amount
+  // Check if fee data is valid and matches current input
   const isFeeValid =
-    !effectiveFeeError &&
-    (independentField === "from"
-      ? feeData &&
-        feeData.amount === debouncedAmount &&
-        debouncedAmount === currentAmount
-      : independentField === "to" && feeData && refinedFeeData
-        ? debouncedAmount === currentAmount && !isRefinedFeeLoading
-        : false);
+    !feeError &&
+    feeData &&
+    feeData.amount === debouncedAmount &&
+    debouncedAmount === currentAmount;
 
   const fee = isFeeValid && feeData ? feeData.fee : 0;
 
-  // Calculate the dependent amount based on independent field
-  // If user is typing in "from" field -> calculate "to" amount (subtract fee)
-  // If user is typing in "to" field -> calculate "from" amount (add fee)
+  // Show calculated amounts when we have valid fee data and user is not typing
   const shouldShowCalculatedAmount =
     typedValue &&
     !isNaN(currentAmount) &&
     currentAmount > 0 &&
-    !isAmountChanging &&
+    !isDebouncingAmount &&
     !isFeeLoading &&
     isFeeValid;
 
+  // Calculate dependent amount based on independent field
+  // The API returns both amountIn and amountOut, so we use those directly
   const toAmount =
     independentField === "from"
-      ? shouldShowCalculatedAmount
-        ? Math.max(0, currentAmount - fee).toFixed(2)
+      ? shouldShowCalculatedAmount && feeData
+        ? feeData.amountOut.toFixed(2)
         : ""
       : typedValue;
 
   const fromAmount =
     independentField === "to"
-      ? shouldShowCalculatedAmount
-        ? (currentAmount + fee).toFixed(2)
+      ? shouldShowCalculatedAmount && feeData
+        ? feeData.amountIn.toFixed(2)
         : ""
       : typedValue;
 
@@ -322,6 +285,19 @@ export function useBridgeController({
   const isTokenSwitched = fromChain === "stellar"; // Stellar -> Base
   const availableBalance =
     parseFloat(trustlineData.trustlineStatus.balance) || 0;
+
+  // Unified validation
+  const validation = useBridgeValidation({
+    isConnected,
+    bridgeStateType,
+    isTokenSwitched,
+    destinationAddress,
+    destinationAddressError,
+    typedValue,
+    isDebouncingAmount,
+    isFeeLoading,
+    feeError: feeError as GetFeeError | null,
+  });
 
   // ---------------------------------------------------------------------------
   // Public handlers exposed to the UI layer.
@@ -350,78 +326,97 @@ export function useBridgeController({
   }, []);
 
   /**
-   * Validate and set EVM address
+   * Validate address based on selected chain
    */
-  const validateEvmAddress = useCallback((address: string) => {
-    if (!address) {
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
-      return false;
-    }
+  const validateDestinationAddress = useCallback(
+    (address: string) => {
+      if (!address) {
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
+        return false;
+      }
 
-    try {
-      if (!isEVMAddress(address)) {
+      if (!destinationChainId) {
         dispatchBridge({
-          type: "SET_EVM_ADDRESS_ERROR",
-          error: "Invalid EVM address format",
+          type: "SET_DESTINATION_ADDRESS_ERROR",
+          error: "Please select a destination chain",
         });
         return false;
       }
 
-      const normalizedAddress = getEVMAddress(address);
-      if (normalizedAddress !== address) {
-        dispatchBridge({ type: "SET_EVM_ADDRESS", address: normalizedAddress });
-      } else {
-        dispatchBridge({ type: "SET_EVM_ADDRESS", address });
-      }
+      try {
+        // Use validateAddressForChain to validate based on the selected destination chain
+        const isValid = validateAddressForChain(destinationChainId, address);
 
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
-      return true;
-    } catch {
-      dispatchBridge({
-        type: "SET_EVM_ADDRESS_ERROR",
-        error: "Invalid EVM address format",
-      });
-      return false;
-    }
-  }, []);
+        if (!isValid) {
+          dispatchBridge({
+            type: "SET_DESTINATION_ADDRESS_ERROR",
+            error: "Invalid address format for selected chain",
+          });
+          return false;
+        }
 
-  const handleEvmAddressChange = useCallback(
-    (value: string) => {
-      dispatchBridge({ type: "SET_EVM_ADDRESS", address: value });
-      // Clear error when user starts typing
-      if (evmAddressError) {
-        dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+        // Normalize EVM addresses if applicable
+        if (isEVMAddress(address)) {
+          const normalizedAddress = getEVMAddress(address);
+          if (normalizedAddress !== address) {
+            dispatchBridge({
+              type: "SET_DESTINATION_ADDRESS",
+              address: normalizedAddress,
+            });
+          } else {
+            dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address });
+          }
+        } else {
+          dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address });
+        }
+
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
+        return true;
+      } catch (error) {
+        // Log the error for debugging but don't break the app
+        console.error("[Bridge] Address validation error:", error);
+        dispatchBridge({
+          type: "SET_DESTINATION_ADDRESS_ERROR",
+          error: "Invalid address format for selected chain",
+        });
+        return false;
       }
     },
-    [evmAddressError],
+    [destinationChainId],
   );
+
+  const handleDestinationAddressChange = useCallback(
+    (value: string) => {
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address: value });
+      // Clear error when user starts typing
+      if (destinationAddressError) {
+        dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
+      }
+    },
+    [destinationAddressError],
+  );
+
+  /**
+   * Handle destination chain change from the chain selector
+   */
+  const handleDestinationChainChange = useCallback((chainId: number) => {
+    dispatchBridge({ type: "SET_DESTINATION_CHAIN", chainId });
+  }, []);
+
+  // Re-validate address when destination chain changes
+  useEffect(() => {
+    if (destinationAddress && destinationChainId) {
+      // Validate the address with the new chain ID
+      // The validation function already uses destinationChainId from closure
+      validateDestinationAddress(destinationAddress);
+    }
+    // Only depend on destinationChainId - we want to re-validate when chain changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinationChainId, validateDestinationAddress]);
 
   // ---------------------------------------------------------------------------
   // Payment config creation
   // ---------------------------------------------------------------------------
-  const lastConfigSignatureRef = useRef<string | null>(null);
-  const desiredConfigSignature = useMemo(() => {
-    return JSON.stringify({
-      userAddress,
-      bridgeStateType,
-      typedValue,
-      independentField,
-      isTokenSwitched,
-      evmAddress,
-      evmAddressError,
-      fee,
-    });
-  }, [
-    userAddress,
-    bridgeStateType,
-    typedValue,
-    independentField,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    fee,
-  ]);
-
   const createPaymentConfig = useCallback(async () => {
     if (!userAddress) {
       console.debug("[Bridge] createPaymentConfig: no userAddress");
@@ -450,22 +445,22 @@ export function useBridgeController({
     }
 
     // Check if there's a fee error (e.g., amount too high)
-    if (effectiveFeeError) {
+    if (feeError) {
       console.debug("[Bridge] createPaymentConfig: fee error", {
-        effectiveFeeError,
+        feeError,
       });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
     }
 
-    if (isTokenSwitched && (!evmAddress || evmAddressError)) {
+    if (isTokenSwitched && (!destinationAddress || destinationAddressError)) {
       console.debug(
-        "[Bridge] createPaymentConfig: EVM address invalid/missing",
+        "[Bridge] createPaymentConfig: destination address invalid/missing",
         {
           isTokenSwitched,
-          evmAddress,
-          evmAddressError,
+          destinationAddress,
+          destinationAddressError,
         },
       );
       setIntentConfig(null);
@@ -476,9 +471,59 @@ export function useBridgeController({
     setIsConfigLoading(true);
 
     try {
-      const toAddress = isTokenSwitched
-        ? evmAddress
-        : "0x0000000000000000000000000000000000000000";
+      // Additional validation: Ensure address format matches the selected chain
+      if (isTokenSwitched && destinationAddress) {
+        try {
+          const addressIsValidForChain = validateAddressForChain(
+            destinationChainId,
+            destinationAddress,
+          );
+          if (!addressIsValidForChain) {
+            console.error(
+              "[Bridge] createPaymentConfig: Address format does not match selected chain",
+              {
+                destinationChainId,
+                destinationAddress,
+                isEVMAddress: isEVMAddress(destinationAddress),
+              },
+            );
+            setIntentConfig(null);
+            setIsConfigLoading(false);
+            // Update error state
+            dispatchBridge({
+              type: "SET_DESTINATION_ADDRESS_ERROR",
+              error: "Address format does not match selected chain",
+            });
+            return;
+          }
+        } catch (validationError) {
+          // If validation throws an error (e.g., base58 decode error), catch it here
+          const errorMessage =
+            validationError instanceof Error
+              ? validationError.message
+              : String(validationError);
+          console.error(
+            "[Bridge] createPaymentConfig: Address validation error",
+            {
+              error: errorMessage,
+              destinationChainId,
+              destinationAddress,
+            },
+          );
+          setIntentConfig(null);
+          setIsConfigLoading(false);
+          // Update error state with user-friendly message
+          dispatchBridge({
+            type: "SET_DESTINATION_ADDRESS_ERROR",
+            error:
+              "Invalid address for this chain. Please check and try again.",
+          });
+          return;
+        }
+      }
+
+      // Get the destination chain details
+      const destinationChainUSDC = chainToUSDC[destinationChainId] || baseUSDC;
 
       // Use the "from" amount for payment (the amount user will send)
       // If user typed in "to" field, we need to calculate the "from" amount including fee
@@ -489,57 +534,67 @@ export function useBridgeController({
 
       const amountFormatted = Number(paymentAmount).toFixed(2);
 
-      const config = {
+      const config: IntentPayConfig = {
         appId: BRIDGE_APP_ID,
-        toChain: Number(BASE_CONFIG.chainId),
-        toAddress: toAddress as `0x${string}`,
-        toToken: BASE_CONFIG.tokenAddress as `0x${string}`,
-        toStellarAddress: isTokenSwitched ? undefined : userAddress,
+        toChain: isTokenSwitched
+          ? destinationChainUSDC.chainId
+          : rozoStellarUSDC.chainId,
+        toAddress: isTokenSwitched ? destinationAddress : userAddress,
+        toToken: isTokenSwitched
+          ? destinationChainUSDC.token
+          : rozoStellarUSDC.token,
         toUnits: paymentAmount,
-        intent: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+        intent: `Bridge ${amountFormatted} USDC`,
+        feeType:
+          independentField === "from" ? FeeType.ExactIn : FeeType.ExactOut,
         paymentOptions: isTokenSwitched
           ? [ExternalPaymentOptions.Stellar]
-          : [ExternalPaymentOptions.Ethereum],
+          : [ExternalPaymentOptions.Ethereum, ExternalPaymentOptions.Solana],
         metadata: {
           items: [
             {
               name: "Soroswap Bridge",
-              description: `Bridge ${amountFormatted} USDC to ${isTokenSwitched ? "Base" : "Stellar"}`,
+              description: `Bridge ${amountFormatted} USDC`,
             },
           ],
-          payer: {
-            paymentOptions: isTokenSwitched
-              ? [ExternalPaymentOptions.Stellar]
-              : [ExternalPaymentOptions.Ethereum],
-          },
         },
       };
 
-      const currentSignature = JSON.stringify({
-        userAddress,
-        typedValue,
-        independentField,
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-        bridgeStateType,
-        fee,
-      });
-
-      // Skip rebuilding if nothing relevant changed and we already have config
-      if (lastConfigSignatureRef.current === currentSignature && intentConfig) {
+      try {
+        await resetPaymentRef.current(config as never);
+        setIntentConfig(config);
         setIsConfigLoading(false);
-        console.debug(
-          "[Bridge] createPaymentConfig: unchanged config, skipping",
-        );
-        return;
+        console.debug("[Bridge] createPaymentConfig: config set", { config });
+      } catch (resetError) {
+        // Handle specific address format errors
+        const errorMessage =
+          resetError instanceof Error ? resetError.message : String(resetError);
+        if (
+          errorMessage.includes("base58") ||
+          errorMessage.includes("Non-base58") ||
+          errorMessage.includes("invalid address")
+        ) {
+          console.error(
+            "[Bridge] createPaymentConfig: Address format error from RozoPay",
+            {
+              error: errorMessage,
+              destinationChainId,
+              destinationAddress,
+            },
+          );
+          setIntentConfig(null);
+          setIsConfigLoading(false);
+          // Update error state with a user-friendly message
+          dispatchBridge({
+            type: "SET_DESTINATION_ADDRESS_ERROR",
+            error:
+              "Invalid address for this chain. Please check and try again.",
+          });
+          return;
+        }
+        // Re-throw other errors to be caught by outer catch
+        throw resetError;
       }
-
-      await resetPaymentRef.current(config as never);
-      setIntentConfig(config);
-      setIsConfigLoading(false);
-      console.debug("[Bridge] createPaymentConfig: config set", { config });
-      lastConfigSignatureRef.current = currentSignature;
     } catch (error) {
       console.error("Failed to create payment config:", error);
       setIntentConfig(null);
@@ -551,210 +606,110 @@ export function useBridgeController({
     typedValue,
     independentField,
     isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    intentConfig,
+    destinationAddress,
+    destinationAddressError,
+    destinationChainId,
     fee,
+    feeError,
   ]);
 
-  // Debounced effect for config creation
+  // Create payment config when validation passes
   useEffect(() => {
-    // Only create config if user is connected
-    if (!isConnected) {
-      console.debug("[Bridge] debounce: not connected");
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // Only create config when bridge is ready (no trustline/account blockers)
-    if (bridgeStateType !== "ready") {
-      console.debug("[Bridge] debounce: bridgeStateType not ready", {
-        bridgeStateType,
+    // Use validation to determine if we should create config
+    if (!validation.canBridge) {
+      console.debug("[Bridge] Cannot bridge, clearing config", {
+        reason: validation.disabledReason,
       });
       setIntentConfig(null);
       setIsConfigLoading(false);
       return;
     }
 
-    // Only create config if we have valid input
-    if (!typedValue || parseFloat(typedValue) <= 0) {
-      console.debug("[Bridge] debounce: invalid typedValue", { typedValue });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // Check if there's a fee error (e.g., amount too high)
-    if (effectiveFeeError) {
-      console.debug("[Bridge] debounce: fee error", { effectiveFeeError });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    // If bridging to Base, we need EVM address
-    if (isTokenSwitched && (!evmAddress || evmAddressError)) {
-      console.debug("[Bridge] debounce: EVM address invalid/missing", {
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-      });
-      setIntentConfig(null);
-      setIsConfigLoading(false);
-      return;
-    }
-
-    if (configTimeoutRef.current) {
-      clearTimeout(configTimeoutRef.current);
-    }
-
-    const timeoutId = setTimeout(() => {
-      console.debug("[Bridge] debounce: creating payment config", {
-        typedValue,
-        isTokenSwitched,
-        evmAddress,
-        evmAddressError,
-      });
-      createPaymentConfig();
-    }, 150);
-
-    configTimeoutRef.current = timeoutId;
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-    // We intentionally exclude createPaymentConfig to avoid effect retriggering due to function identity changes
+    // Create config when all validations pass
+    console.debug("[Bridge] Creating payment config", {
+      typedValue,
+      isTokenSwitched,
+      destinationAddress,
+    });
+    createPaymentConfig();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    validation.canBridge,
     typedValue,
-    evmAddress,
+    destinationAddress,
     isTokenSwitched,
-    evmAddressError,
-    isConnected,
-    bridgeStateType,
-    desiredConfigSignature,
+    independentField,
+    destinationChainId,
+    fee,
   ]);
 
   // Reset all input states when user disconnects
   useEffect(() => {
     if (!userAddress) {
       dispatchBridge({ type: "TYPE_INPUT", field: "from", typedValue: "" });
-      dispatchBridge({ type: "SET_EVM_ADDRESS", address: "" });
-      dispatchBridge({ type: "SET_EVM_ADDRESS_ERROR", error: "" });
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS", address: "" });
+      dispatchBridge({ type: "SET_DESTINATION_ADDRESS_ERROR", error: "" });
       setIntentConfig(null);
       setIsConfigLoading(false);
     }
   }, [userAddress]);
 
   // Payment completed handler
-  const handlePaymentCompleted = useCallback(
-    (e: PaymentCompletedEvent) => {
-      if (userAddress && e.rozoPaymentId) {
-        const destinationAddress = isTokenSwitched ? evmAddress : userAddress;
-        const fromChainName = isTokenSwitched ? "Stellar" : "Base";
-        const toChainName = isTokenSwitched ? "Base" : "Stellar";
+  const handlePaymentCompleted = (e: PaymentCompletedEvent) => {
+    console.debug("[Bridge] Payment completed", { e });
+    if (userAddress && e.rozoPaymentId) {
+      try {
+        // Withdraw
+        if (isTokenSwitched) {
+          const sourceChain = e.chainId ? getChainName(e.chainId) : null;
+          const fromChainName = sourceChain ?? "Stellar";
+          const toChainName = normalizeChainName(destinationChainId);
+          const sentAmount =
+            independentField === "from"
+              ? typedValue
+              : (parseFloat(typedValue) + fee).toFixed(2);
 
-        // Save the "from" amount (the amount user actually sent)
-        const sentAmount =
-          independentField === "from"
-            ? typedValue
-            : (parseFloat(typedValue) + fee).toFixed(2);
+          saveBridgeHistory({
+            walletAddress: userAddress,
+            paymentId: e.rozoPaymentId,
+            amount: sentAmount,
+            destinationAddress: destinationAddress,
+            fromChain: fromChainName as BridgeHistoryChain,
+            toChain: toChainName,
+            type: "withdraw",
+          });
+        } else {
+          // Deposit
+          const sourceChain = e.chainId ? getChainName(e.chainId) : null;
+          const fromChainName = sourceChain ?? "Any Chains";
+          const toChainName = normalizeChainName(destinationChainId);
+          const sentAmount =
+            independentField === "from"
+              ? typedValue
+              : (parseFloat(typedValue) + fee).toFixed(2);
 
-        saveBridgeHistory(
-          userAddress,
-          e.rozoPaymentId,
-          sentAmount,
-          destinationAddress,
-          fromChainName,
-          toChainName,
-        );
+          saveBridgeHistory({
+            walletAddress: userAddress,
+            paymentId: e.rozoPaymentId,
+            amount: sentAmount,
+            destinationAddress: destinationAddress,
+            fromChain: fromChainName as BridgeHistoryChain,
+            toChain: toChainName,
+            type: "deposit",
+          });
+        }
 
         window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
+      } catch (error) {
+        console.error("[Bridge] Failed to save payment history:", error);
+        // Still dispatch the event even if history save fails
+        window.dispatchEvent(new CustomEvent("bridge-payment-completed"));
       }
+    }
+  };
 
-      onPaymentCompleted?.(e);
-    },
-    [
-      userAddress,
-      isTokenSwitched,
-      evmAddress,
-      typedValue,
-      independentField,
-      fee,
-      onPaymentCompleted,
-    ],
-  );
-
-  // Button disabled state
-  const getActionButtonDisabled = useMemo(() => {
-    if (!isConnected) return true;
-    if (bridgeStateType !== "ready") return true;
-    if (isTokenSwitched && (!evmAddress || !!evmAddressError)) return true;
-    if (!typedValue || parseFloat(typedValue) <= 0) return true;
-    // Disable button while fee is being fetched or if there's a fee error
-    if (isFeeLoading) return true;
-    if (effectiveFeeError) return true;
-    return false;
-  }, [
-    isConnected,
-    bridgeStateType,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    typedValue,
-    isFeeLoading,
-    effectiveFeeError,
-  ]);
-
-  // Centralized debug logger for button state and related variables
-  useEffect(() => {
-    const disabledBecause = {
-      notConnected: !isConnected,
-      notReady: bridgeStateType !== "ready",
-      evmInvalid: isTokenSwitched && (!evmAddress || !!evmAddressError),
-      invalidAmount: !typedValue || parseFloat(typedValue) <= 0,
-      loadingConfig: isConfigLoading,
-      noIntentConfig: !intentConfig,
-      feeLoading: isFeeLoading,
-      feeError: !!effectiveFeeError,
-    };
-
-    console.groupCollapsed("[Bridge] Debug State");
-    console.debug({
-      isConnected,
-      bridgeStateType,
-      isTokenSwitched,
-      evmAddress,
-      evmAddressError,
-      typedValue,
-      independentField,
-      isConfigLoading,
-      hasIntentConfig: !!intentConfig,
-      fee,
-      isFeeLoading,
-      feeError: effectiveFeeError,
-      getActionButtonDisabled,
-      disabledBecause,
-    });
-    console.groupEnd();
-  }, [
-    isConnected,
-    bridgeStateType,
-    isTokenSwitched,
-    evmAddress,
-    evmAddressError,
-    typedValue,
-    independentField,
-    isConfigLoading,
-    intentConfig,
-    fee,
-    isFeeLoading,
-    effectiveFeeError,
-    getActionButtonDisabled,
-  ]);
+  // Button disabled state - use unified validation
+  const getActionButtonDisabled = validation.shouldDisableButton;
 
   // ---------------------------------------------------------------------------
   // Return – the public API of this hook.
@@ -767,8 +722,9 @@ export function useBridgeController({
     toChain,
     fromAmount,
     toAmount,
-    evmAddress,
-    evmAddressError,
+    destinationAddress,
+    destinationAddressError,
+    destinationChainId,
     isConnected,
     isTokenSwitched,
     availableBalance,
@@ -785,14 +741,15 @@ export function useBridgeController({
     // fee data
     fee,
     isFeeLoading,
-    feeError: effectiveFeeError as GetFeeError | null,
-    isAmountChanging,
+    feeError: feeError as GetFeeError | null,
+    isDebouncingAmount,
 
     // handlers
     handleAmountChange,
     handleSwitchChains,
-    handleEvmAddressChange,
-    validateEvmAddress,
+    handleDestinationAddressChange,
+    validateDestinationAddress,
+    handleDestinationChainChange,
     handlePaymentCompleted,
 
     // token info

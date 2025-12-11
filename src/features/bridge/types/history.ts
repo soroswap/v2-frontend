@@ -1,12 +1,20 @@
+export type BridgeHistoryChain =
+  | "Stellar"
+  | "Base"
+  | "Ethereum"
+  | "Polygon"
+  | "Solana";
+
 export interface BridgeHistoryItem {
   id: string;
   paymentId: string;
   amount: string;
   destinationAddress: string;
-  fromChain: "Stellar" | "Base" | "Ethereum" | "Polygon" | "Solana";
-  toChain: "Stellar" | "Base" | "Ethereum" | "Polygon" | "Solana";
+  fromChain: BridgeHistoryChain;
+  toChain: BridgeHistoryChain;
   completedAt: string;
   walletAddress: string;
+  type: "deposit" | "withdraw";
 }
 
 export interface BridgeHistoryStorage {

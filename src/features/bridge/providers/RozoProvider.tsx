@@ -58,6 +58,7 @@ export function RozoProvider({ children }: { children: ReactNode }) {
           stellarKit={kit}
           stellarWalletPersistence={false}
           mode={stableMode}
+          debugMode
         >
           {children}
         </RozoPayProvider>

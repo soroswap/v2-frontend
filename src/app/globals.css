@@ -42,10 +42,6 @@
   --color-warning-border: oklch(from var(--color-warning) l c h / 0.3);
   --color-warning-text: var(--color-warning);
 
-  --color-info-bg: #dbeafe;
-  --color-info-border: #3b82f6;
-  --color-info-text: #1e40af;
-
   --color-icon-muted: #9aa0a6;
 
   /* Legacy variables mapped to tokens for backward compatibility */
@@ -89,10 +85,6 @@
   --color-warning-bg: oklch(from var(--color-warning) l c h / 0.1);
   --color-warning-border: oklch(from var(--color-warning) l c h / 0.3);
   --color-warning-text: var(--color-warning);
-
-  --color-info-bg: #1e3a8a;
-  --color-info-border: #3b82f6;
-  --color-info-text: #93c5fd;
 
   --color-icon-muted: #a0a3c4;
 

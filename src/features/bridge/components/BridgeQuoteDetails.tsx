@@ -1,14 +1,17 @@
 "use client";
 
 import { cn } from "@/shared/lib/utils/cn";
+import { getChainName } from "@rozoai/intent-common";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
 
 interface BridgeQuoteDetailsProps {
   amount: string | undefined;
-  fromChain: "stellar" | "base";
-  toChain: "stellar" | "base";
+  fromChain: number | null;
+  toChain: number;
   fee: number;
+  isTokenSwitched: boolean;
+  destinationChainId: number;
   className?: string;
 }
 
@@ -17,6 +20,8 @@ export const BridgeQuoteDetails = ({
   fromChain,
   toChain,
   fee,
+  isTokenSwitched,
+  destinationChainId,
   className,
 }: BridgeQuoteDetailsProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -26,6 +31,33 @@ export const BridgeQuoteDetails = ({
   }
 
   const conversionRate = 1; // 1:1 for USDC bridge
+
+  // isTokenSwitched === false: Stellar Deposit (From Any Chains to Stellar)
+  // isTokenSwitched === true: Stellar Withdraw (From Stellar to {Selected Chain})
+  const isStellarDeposit = !isTokenSwitched;
+  const isStellarWithdraw = isTokenSwitched;
+
+  // Determine header text based on direction
+  const headerText = isStellarDeposit
+    ? "From Any Chains, To Stellar"
+    : isStellarWithdraw
+      ? `${amount} USDC From Stellar = ${amount} USDC ${getChainName(destinationChainId)}`
+      : fromChain !== null
+        ? `1 USDC on ${getChainName(fromChain)} = ${conversionRate.toFixed(6)} USDC on ${getChainName(toChain)}`
+        : `1 USDC = ${conversionRate.toFixed(6)} USDC on ${getChainName(toChain)}`;
+
+  const fromChainName = isStellarDeposit
+    ? "Any Chains"
+    : isStellarWithdraw
+      ? "Stellar"
+      : fromChain !== null
+        ? getChainName(fromChain)
+        : "Unknown";
+  const toChainName = isStellarDeposit
+    ? "Stellar"
+    : isStellarWithdraw
+      ? getChainName(destinationChainId)
+      : getChainName(toChain);
 
   return (
     <div
@@ -39,9 +71,7 @@ export const BridgeQuoteDetails = ({
         onClick={() => setIsOpen(!isOpen)}
         className="hover:bg-brand/5 flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors"
       >
-        <p className="text-secondary text-sm">
-          1 USDC on {fromChain} = {conversionRate.toFixed(6)} USDC on {toChain}
-        </p>
+        <p className="text-secondary text-sm">{headerText}</p>
         <div
           className={cn(
             "transition-transform duration-200",
@@ -105,13 +135,13 @@ export const BridgeQuoteDetails = ({
           {/* From Chain */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">From</p>
-            <p className="text-primary text-sm capitalize">{fromChain}</p>
+            <p className="text-primary text-sm capitalize">{fromChainName}</p>
           </div>
 
           {/* To Chain */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">To</p>
-            <p className="text-primary text-sm capitalize">{toChain}</p>
+            <p className="text-primary text-sm capitalize">{toChainName}</p>
           </div>
         </div>
       </div>
