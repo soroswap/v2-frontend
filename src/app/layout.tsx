@@ -6,6 +6,7 @@ import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
 import { ThemeProvider } from "next-themes";
 import { Footer } from "@/shared/components/Footer";
+import { PostHogProvider } from "@/shared/providers/PostHogProvider";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -35,19 +36,21 @@ export default function RootLayout({
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} bg-main font-sans antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          storageKey="soroswap-theme"
-        >
-          <UserProvider>
-            <Navbar />
-            {children}
-            <Footer />
-          </UserProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="soroswap-theme"
+          >
+            <UserProvider>
+              <Navbar />
+              {children}
+              <Footer />
+            </UserProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
