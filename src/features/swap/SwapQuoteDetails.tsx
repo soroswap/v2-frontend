@@ -189,7 +189,7 @@ export const SwapQuoteDetails = ({
           {/* Expected Output */}
           <div className="flex items-center justify-between">
             <p className="text-secondary text-sm">
-              Expected {`${quote.tradeType === TradeType.EXACT_IN ? 'output' : 'input'}`}
+              Expected {quote.tradeType === TradeType.EXACT_IN ? 'output' : 'input'}
             </p>
             <div className="flex items-center gap-1">
               <p className="text-primary text-sm">{getExpectedOutput()}</p>

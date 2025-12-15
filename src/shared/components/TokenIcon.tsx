@@ -66,7 +66,7 @@ export const TokenIcon = ({
   return (
     <div
       className={cn(
-        "flex shrink-0 px-5 items-center justify-center rounded-full font-bold text-white",
+        "flex shrink-0 items-center justify-center rounded-full font-bold text-white",
         className,
       )}
       style={{
