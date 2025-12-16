@@ -1,5 +1,3 @@
-//eslint-disable-next-line react-hooks/exhaustive-deps
-
 import { AssetInfo } from "@soroswap/sdk";
 import { useTokensList } from "./useTokensList";
 import { useUserAssetList } from "./useUserAssetList";
@@ -9,7 +7,10 @@ export const useAllTokensList = () => {
   const { tokensList } = useTokensList();
   const userTokenList = useUserAssetList();
 
-  const allTokens = [...tokensList, ...userTokenList];
+  const allTokens = useMemo(
+    () => [...tokensList, ...userTokenList],
+    [tokensList, userTokenList],
+  );
 
   // Dictionary for 0(1) lookups by contract
   const tokenMapAllTokens = useMemo(() => {

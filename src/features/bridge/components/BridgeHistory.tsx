@@ -57,7 +57,6 @@ export const BridgeHistory = ({
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 
   // Load history on mount and when wallet address changes
@@ -90,7 +89,7 @@ export const BridgeHistory = ({
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("bridge-payment-completed", handleCustomEvent);
     };
-  }, []);
+  }, [loadHistory]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
