@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { CheckIcon, XIcon } from "lucide-react";
 import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { network } from "@/shared/lib/environmentVars";
@@ -23,7 +24,15 @@ export const EarnVaultModal = ({
   onClose,
   operationType = "deposit",
 }: EarnVaultModalProps) => {
+  const [mounted, setMounted] = useState(false);
   const { currentStep } = modalData;
+
+  // Mount portal on client side only
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   const getActualErrorMessage = (error: EarnVaultError | undefined) => {
     if (!error?.message) return "Something went wrong. Please try again.";
 
@@ -132,8 +141,8 @@ export const EarnVaultModal = ({
     currentStep,
   );
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-surface-page border-brand flex min-h-72 w-full max-w-md flex-col rounded-2xl border p-6 shadow-xl">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
@@ -182,4 +191,8 @@ export const EarnVaultModal = ({
       </div>
     </div>
   );
+
+  // Use portal to render modal at document body level
+  if (!mounted) return null;
+  return createPortal(modalContent, document.body);
 };
