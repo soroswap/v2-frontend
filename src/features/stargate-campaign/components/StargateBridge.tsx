@@ -98,7 +98,7 @@ export function StargateBridge({
         "relative flex h-full flex-col justify-between overflow-hidden rounded-3xl p-6 md:p-8",
         "bg-surface/70 backdrop-blur-xl",
         "border border-primary/5",
-        "shadow-lg shadow-(--color-brand)/5",
+        "shadow-lg shadow-brand/5",
         className,
       )}
     >
@@ -115,7 +115,7 @@ export function StargateBridge({
       )}
 
       {/* Top gradient line */}
-      <div className="pointer-events-none absolute top-0 left-0 h-1 w-full bg-linear-to-r from-transparent via--brand to-transparent opacity-20" />
+      <div className="pointer-events-none absolute top-0 left-0 h-1 w-full bg-linear-to-r from-transparent via-brand to-transparent opacity-20" />
 
       <div>
         {/* Header */}
@@ -134,7 +134,7 @@ export function StargateBridge({
               className={cn(
                 "relative rounded-2xl p-4",
                 "border border-primary/10",
-                "bg-surfaceubtle)]/50",
+                "bg-surface-subtle/50",
                 "transition-colors focus-within:border-brand",
               )}
             >
@@ -173,7 +173,7 @@ export function StargateBridge({
             <div
               className={cn(
                 "rounded-full border-4 border-surface p-2",
-                "bg-surfaceubtle)]",
+                "bg-surface-subtle",
               )}
             >
               <ArrowDown className="text-brand h-5 w-5" />
@@ -189,7 +189,7 @@ export function StargateBridge({
               className={cn(
                 "relative rounded-2xl p-4 opacity-90",
                 "border border-primary/10",
-                "bg-surfaceubtle)]/50",
+                "bg-surface-subtle/50",
               )}
             >
               <div className="mb-1 flex items-center justify-between">
@@ -256,7 +256,7 @@ export function StargateBridge({
                 className={cn(
                   "group w-full gap-2 py-4 text-white",
                   "shadow-lg shadow-(--color-brand)/20",
-                  "transition-all hover:shadow-xl hover:shadow-(--color-brand)/30",
+                  "transition-all hover:shadow-xl hover:shadow-brand/30",
                 )}
               >
                 <span>Bridge Funds</span>

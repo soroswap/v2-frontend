@@ -21,24 +21,13 @@ export function StargateLayout() {
     trustlineData,
   } = useStargateCampaign();
 
-  // Debug: log campaign state
-  console.log("[StargateLayout] Campaign State:", {
-    showStepper: campaignState.showStepper,
-    currentStep: campaignState.currentStep,
-    stellarConnected: campaignState.stellarConnected,
-    hasUSDCOnStellar: campaignState.hasUSDCOnStellar,
-    hasVaultPosition: campaignState.hasVaultPosition,
-    stellarUSDCBalance,
-    vaultHoldings,
-  });
-
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-6">
 
       {/* Stepper - conditionally shown, or spacer when hidden */}
       {campaignState.showStepper ? (
         <StargateStepper
-          className="mt-18"
+          className="mt-20"
           currentStep={campaignState.currentStep}
           visible={true}
         />

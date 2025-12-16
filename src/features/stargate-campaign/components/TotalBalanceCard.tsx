@@ -39,7 +39,7 @@ export function TotalBalanceCard({
         "relative overflow-hidden rounded-3xl p-6",
         "bg-surface/70 backdrop-blur-xl",
         "border border-primary/5",
-        "shadow-xl shadow-(--color-brand)/5",
+        "shadow-xl shadow-brand/5",
         className,
       )}
     >

@@ -198,12 +198,16 @@ export function WalletsPanel({
             "text-secondary transition-colors",
             "hover:bg-surface-hover/50",
           )}
-          href={'https://discord.gg/8qHbAYmZ8g'}
+          href="https://discord.gg/8qHbAYmZ8g"
+          rel="noopener noreferrer"
           target="_blank"
         >
           <div className="flex items-center gap-3">
             <HelpCircle className="text-secondary h-5 w-5" />
-            <span className="text-sm font-medium">Help & Support</span>
+            <span className="text-sm font-medium">Help & Support
+              <span className="sr-only"> (opens in a new window)</span>
+            </span>
+
           </div>
           <ChevronRight className="text-secondary h-4 w-4" />
         </Link>
