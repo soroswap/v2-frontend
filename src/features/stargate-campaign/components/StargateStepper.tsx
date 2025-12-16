@@ -7,6 +7,7 @@ import {
   CAMPAIGN_STEP_LABELS,
   type CampaignStepValue,
 } from "../constants";
+import { glassCard, stepper } from "../styles";
 
 interface StargateStepperProps {
   /** Current step in the campaign (1-5) */
@@ -28,12 +29,9 @@ export function StargateStepper({
       aria-label="Campaign progress"
       aria-hidden={!visible}
       className={cn(
-        // Liquid glass effect
+        glassCard.base,
+        glassCard.shadow,
         "rounded-2xl p-4",
-        "bg-surface/70 backdrop-blur-xl",
-        "border border-primary/5",
-        "shadow-lg shadow-brand/5",
-        // Hide content but keep space
         !visible && "pointer-events-none opacity-0",
         className,
       )}
@@ -52,30 +50,15 @@ export function StargateStepper({
               {/* Step with label */}
               <div className="relative flex flex-col items-center">
                 {/* Outer glow for completed steps */}
-                {isCompleted && (
-                  <div className="absolute h-8 w-8 animate-pulse rounded-full bg-brand/20 blur-md" />
-                )}
+                {isCompleted && <div className={stepper.glow} />}
 
                 {/* Step indicator */}
                 <div
                   className={cn(
-                    "relative z-10 flex h-8 w-8 items-center justify-center rounded-full",
-                    "transition-all duration-300",
-                    isCompleted && [
-                      "bg-brand",
-                      "shadow-[0_0_20px_4px] shadow-brand/40",
-                      "ring-2 ring-brand/30 ring-offset-2 ring-offset-transparent",
-                    ],
-                    isCurrent && [
-                      "border-2 border-brand",
-                      "bg-surface",
-                      "shadow-lg shadow-brand/20",
-                    ],
-                    !isCompleted &&
-                    !isCurrent && [
-                      "border border-primary/10",
-                      "bg-surface-alt/50",
-                    ],
+                    stepper.step.base,
+                    isCompleted && stepper.step.completed,
+                    isCurrent && stepper.step.current,
+                    !isCompleted && !isCurrent && stepper.step.upcoming,
                   )}
                 >
                   {isCompleted ? (
@@ -95,11 +78,10 @@ export function StargateStepper({
                 {/* Step label - only show on larger screens */}
                 <span
                   className={cn(
-                    "mt-2 hidden text-center text-[10px] font-medium sm:block",
-                    "max-w-20 leading-tight",
-                    isCompleted && "text-brand",
-                    isCurrent && "text-primary",
-                    !isCompleted && !isCurrent && "text-secondary",
+                    stepper.label.base,
+                    isCompleted && stepper.label.completed,
+                    isCurrent && stepper.label.current,
+                    !isCompleted && !isCurrent && stepper.label.upcoming,
                   )}
                 >
                   {CAMPAIGN_STEP_LABELS[stepValue]}
@@ -110,10 +92,8 @@ export function StargateStepper({
               {!isLast && (
                 <div
                   className={cn(
-                    "h-0.5 w-12 sm:w-20",
-                    isCompleted
-                      ? "bg-brand"
-                      : "bg-primary/10",
+                    stepper.connector.base,
+                    isCompleted ? stepper.connector.completed : stepper.connector.upcoming,
                   )}
                 />
               )}

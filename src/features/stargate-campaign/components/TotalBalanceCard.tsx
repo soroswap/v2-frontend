@@ -3,6 +3,7 @@
 import { cn } from "@/shared/lib/utils";
 import { formatCurrency, formatUnits } from "@/shared/lib/utils";
 import { TrendingUp, Wallet } from "lucide-react";
+import { glassCard, decorations, skeleton } from "../styles";
 
 interface TotalBalanceCardProps {
   /** User's vault holdings in smallest units */
@@ -35,22 +36,15 @@ export function TotalBalanceCard({
   return (
     <article
       className={cn(
-        // Liquid glass effect
-        "relative overflow-hidden rounded-3xl p-6",
-        "bg-surface/70 backdrop-blur-xl",
-        "border border-primary/5",
-        "shadow-xl shadow-brand/5",
+        glassCard.base,
+        glassCard.shadowXl,
+        glassCard.padding.default,
+        "overflow-hidden",
         className,
       )}
     >
       {/* Decorative gradient blur */}
-      <div
-        className={cn(
-          "pointer-events-none absolute -bottom-10 -right-10",
-          "h-40 w-40 rounded-full blur-3xl",
-          "bg-brand/10",
-        )}
-      />
+      <div className={cn(decorations.bottomBlur)} />
 
       <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
         {/* Main Balance */}
@@ -60,7 +54,7 @@ export function TotalBalanceCard({
               Total Earn Balance
             </p>
             {isLoading ? (
-              <div className="bg-surface-skeleton-start h-9 w-40 animate-pulse rounded-lg" />
+              <div className={cn(skeleton.base, skeleton.bg, "h-9 w-40 rounded-lg")} />
             ) : (
               <h2 className="text-primary text-3xl font-bold">
                 {formatCurrency(holdingsNumber, "", "$")}
@@ -87,7 +81,7 @@ export function TotalBalanceCard({
               Est. Weekly Earnings
             </p>
             {isLoading ? (
-              <div className="bg-surface-skeleton-start h-6 w-20 animate-pulse rounded" />
+              <div className={cn(skeleton.base, skeleton.bg, "h-6 w-20")} />
             ) : (
               <>
                 <h3 className="text-primary mb-0.5 text-xl font-bold">
@@ -106,7 +100,7 @@ export function TotalBalanceCard({
               Current APY
             </p>
             {isLoading ? (
-              <div className="bg-surface-skeleton-start h-6 w-16 animate-pulse rounded" />
+              <div className={cn(skeleton.base, skeleton.bg, "h-6 w-16")} />
             ) : (
               <>
                 <h3 className="text-primary mb-0.5 text-xl font-bold">

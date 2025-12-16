@@ -11,6 +11,17 @@ import { cn, formatUnits } from "@/shared/lib/utils";
 import { Diamond, PlusCircle, MinusCircle, Info, Lock } from "lucide-react";
 import { useState, useCallback } from "react";
 import { CAMPAIGN_USDC_VAULT } from "../constants";
+import {
+  glassCard,
+  lockOverlay,
+  inputField,
+  decorations,
+  statsBox,
+  iconContainer,
+  apyBadge,
+  sectionHeader,
+  buttonEffects,
+} from "../styles";
 
 type EarnTab = "deposit" | "withdraw" | "about";
 
@@ -131,44 +142,35 @@ export function StargateEarn({
   return (
     <article
       className={cn(
-        // Liquid glass effect
-        "relative flex h-full flex-col justify-between rounded-3xl p-6 md:p-8",
-        "bg-surface/70 backdrop-blur-xl",
-        "border border-primary/5",
-        "shadow-lg shadow-brand/5",
+        glassCard.base,
+        glassCard.shadow,
+        glassCard.padding.responsive,
+        "flex h-full flex-col justify-between",
         className,
       )}
     >
       {/* Lock Overlay - shown when disabled */}
       {!isEnabled && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl bg-black/60 backdrop-blur-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface/80">
-            <Lock className="h-8 w-8 text-secondary" />
+        <div className={cn(lockOverlay.container)}>
+          <div className={cn(lockOverlay.iconContainer)}>
+            <Lock className={lockOverlay.icon} />
           </div>
-          <p className="text-secondary mt-4 text-center text-sm font-medium">
-            Bridge USDC to Stellar first
-          </p>
+          <p className={lockOverlay.text}>Bridge USDC to Stellar first</p>
         </div>
       )}
 
       {/* Decorative gradient */}
-      <div className="pointer-events-none absolute top-0 right-0 h-32 w-32 rounded-bl-full bg-brand/10 blur-2xl" />
+      <div className={cn(decorations.topGradientLine, 'h-0.5')} />
 
       <div>
         {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <h2 className="text-primary text-xl font-bold">Earn</h2>
+        <div className={sectionHeader.container}>
+          <h2 className={sectionHeader.title}>Earn</h2>
         </div>
 
         {/* Vault Info */}
         <div className="mb-6 flex items-center gap-3">
-          <div
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-xl",
-              "bg-linear-to-br from-indigo-500 to-brand",
-              "shadow-lg shadow-indigo-500/20",
-            )}
-          >
+          <div className={cn(iconContainer.gradient, iconContainer.lg)}>
             <Diamond className="h-6 w-6 text-white" />
           </div>
           <div className="flex-1">
@@ -177,51 +179,25 @@ export function StargateEarn({
             </div>
             <p className="text-secondary text-xs">Earn Yield</p>
           </div>
-          <span
-            className={cn(
-              "rounded-md px-2 py-1 text-[10px] font-bold",
-              "bg-blue-100 text-blue-600",
-              "dark:bg-blue-900/30 dark:text-blue-400",
-            )}
-          >
-            EST APY {vaultAPY.toFixed(1)}%
-          </span>
+          <span className={cn(apyBadge)}>EST APY {vaultAPY.toFixed(1)}%</span>
         </div>
 
         {/* Stats Grid */}
         <div className="mb-4 grid grid-cols-2 gap-3">
-          <div
-            className={cn(
-              "rounded-xl p-2.5 text-center",
-              "border border-primary/5",
-              "bg-surface-alt/50",
-            )}
-          >
-            <p className="text-secondary mb-1 text-[10px] font-medium uppercase tracking-wider">
-              My Holdings
-            </p>
+          <div className={cn(statsBox.container)}>
+            <p className={statsBox.label}>My Holdings</p>
             {isLoading ? (
               <div className="bg-surface-skeleton-start mx-auto h-5 w-16 animate-pulse rounded" />
             ) : (
-              <p className="text-primary text-base font-bold">
-                ${holdingsNumber.toFixed(2)}
-              </p>
+                <p className={statsBox.value}>${holdingsNumber.toFixed(2)}</p>
             )}
           </div>
-          <div
-            className={cn(
-              "rounded-xl p-2.5 text-center",
-              "border border-primary/5",
-              "bg-surface-alt/50",
-            )}
-          >
-            <p className="text-secondary mb-1 text-[10px] font-medium uppercase tracking-wider">
-              Total Deposits
-            </p>
+          <div className={cn(statsBox.container)}>
+            <p className={statsBox.label}>Total Deposits</p>
             {isLoading ? (
               <div className="bg-surface-skeleton-start mx-auto h-5 w-16 animate-pulse rounded" />
             ) : (
-              <p className="text-primary text-base font-bold">
+                <p className={statsBox.value}>
                 ${(tvlNumber / 1000000).toFixed(1)}M
               </p>
             )}
@@ -271,27 +247,17 @@ export function StargateEarn({
           </div>
         ) : (
           <div>
-            <label className="text-secondary mb-2 block text-xs font-medium">
+              <label className={inputField.label}>
               {activeTab === "deposit" ? "Deposit" : "Withdraw"} Amount
             </label>
-            <div
-              className={cn(
-                "rounded-2xl p-4",
-                "border border-primary/10",
-                "bg-surface-subtle/50",
-                "transition-colors focus-within:border-brand",
-              )}
-            >
+              <div className={cn(inputField.container)}>
               <input
                 type="text"
                 value={amount}
                 onChange={(e) => handleAmountChange(e.target.value)}
                 placeholder="0.00"
                 disabled={!isEnabled}
-                className={cn(
-                  "text-primary mb-2 w-full bg-transparent text-3xl font-bold outline-none",
-                  "placeholder:text-secondary",
-                )}
+                  className={cn(inputField.input, "mb-2")}
               />
               <div className="text-secondary flex items-center justify-between text-xs">
                 <span>Available Balance</span>
@@ -314,11 +280,7 @@ export function StargateEarn({
               <TheButton
                 onClick={activeTab === "deposit" ? handleDeposit : handleWithdraw}
                 disabled={!amount || parseFloat(amount) <= 0 || !isEnabled}
-                className={cn(
-                  "w-full py-4 text-white",
-                  "shadow-lg shadow-brand/20",
-                  "transition-all hover:shadow-xl hover:shadow-brand/30",
-                )}
+                  className={cn("w-full py-4 text-white", buttonEffects.glow)}
               >
                 {activeTab === "deposit" ? "Deposit & Earn" : "Withdraw"}
               </TheButton>

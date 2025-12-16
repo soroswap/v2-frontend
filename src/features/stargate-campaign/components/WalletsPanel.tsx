@@ -10,6 +10,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
+import { glassCard, quickActionLink, skeleton } from "../styles";
 
 /** Minimum XLM balance required to operate on Stellar */
 const MIN_XLM_BALANCE = 4.5;
@@ -33,7 +34,7 @@ export function WalletsPanel({
   const { address: stellarAddress, connectWallet } = useUserContext();
 
   // Balance is already formatted from Horizon API (e.g., "1.9800000")
-  const balanceNumber = parseFloat(stellarUSDCBalance || "0");
+  const usdcBalanceNumber = parseFloat(stellarUSDCBalance || "0");
   const xlmBalanceNumber = parseFloat(stellarXLMBalance || "0");
   const hasLowXLMBalance = stellarAddress && xlmBalanceNumber < MIN_XLM_BALANCE;
 
@@ -41,13 +42,7 @@ export function WalletsPanel({
     <div className={cn("flex flex-col gap-4", className)}>
       {/* Wallets Card */}
       <article
-        className={cn(
-          // Liquid glass effect
-          "rounded-3xl p-6",
-          "bg-surface/70 backdrop-blur-xl",
-          "border border-primary/5",
-          "shadow-lg shadow-brand/5",
-        )}
+        className={cn(glassCard.base, glassCard.shadow, glassCard.padding.default)}
       >
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
@@ -58,14 +53,19 @@ export function WalletsPanel({
                 "h-1.5 w-1.5 rounded-full",
                 !stellarAddress && "bg-gray-400",
                 stellarAddress && !hasLowXLMBalance && "bg-green-500",
-                hasLowXLMBalance && "bg-yellow-500",
+                hasLowXLMBalance && xlmBalanceNumber !== 0 && "bg-yellow-500",
+                hasLowXLMBalance && xlmBalanceNumber === 0 && "bg-red-500",
               )}
             />
-            {hasLowXLMBalance && (
+            {hasLowXLMBalance && xlmBalanceNumber !== 0 ? (
               <span className="text-[10px] font-medium text-yellow-500">
                 Warning
               </span>
-            )}
+            ) : hasLowXLMBalance && xlmBalanceNumber === 0 ? (
+              <span className="text-[10px] font-medium text-gray-400">
+                Wallet not funded
+              </span>
+            ) : null}
           </div>
         </div>
 
@@ -102,9 +102,6 @@ export function WalletsPanel({
                     <h4 className="text-primary text-sm font-semibold">
                       Stellar
                     </h4>
-                    <span className="text-secondary text-[10px] uppercase">
-                      USDC
-                    </span>
                   </div>
                   <p className="text-secondary font-mono text-[10px]">
                     {formatAddress(stellarAddress)}
@@ -113,14 +110,25 @@ export function WalletsPanel({
               </div>
               <div className="text-right">
                 {isLoading ? (
-                  <div className="bg-surface-skeleton-start h-4 w-20 animate-pulse rounded" />
+                  <span>
+                    <div className={cn(skeleton.base, skeleton.bg, "h-4 w-20")} />
+                    <div className={cn(skeleton.base, skeleton.bg, "h-4 w-20")} />
+                  </span>
                 ) : (
-                  <p className="text-primary text-sm font-bold">
-                    {balanceNumber.toFixed(2)}{" "}
-                    <span className="text-secondary text-[10px] font-normal">
-                      USDC
+                    <span>
+                      <p className="text-primary text-sm font-bold">
+                        {xlmBalanceNumber.toFixed(2)}{" "}
+                        <span className="text-secondary text-[10px] font-normal">
+                          XLM
+                        </span>
+                      </p>
+                      <p className="text-primary text-sm font-bold">
+                        {usdcBalanceNumber.toFixed(2)}{" "}
+                        <span className="text-secondary text-[10px] font-normal">
+                          USDC
+                        </span>
+                      </p>
                     </span>
-                  </p>
                 )}
               </div>
             </div>
@@ -155,12 +163,24 @@ export function WalletsPanel({
               <ChevronRight className="text-secondary h-4 w-4" />
             </button>
           )}
-          {stellarAddress && hasLowXLMBalance && (
+          {stellarAddress && hasLowXLMBalance && xlmBalanceNumber === 0 && (
+            <div className="mt-2 flex items-start gap-1.5 rounded-md bg-red-500/10 p-2">
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-red-500" />
+              <p className="text-[10px] leading-tight text-red-600 dark:text-red-400">
+                Wallet not funded. Please deposit at least {MIN_XLM_BALANCE} XLM to{" "}
+                <span className="font-mono font-medium">
+                  {formatAddress(stellarAddress)}
+                </span>{" "}
+                to activate your account.
+              </p>
+            </div>
+          )}
+          {stellarAddress && hasLowXLMBalance && xlmBalanceNumber > 0 && (
             <div className="mt-2 flex items-start gap-1.5 rounded-md bg-yellow-500/10 p-2">
               <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-yellow-500" />
               <p className="text-[10px] leading-tight text-yellow-600 dark:text-yellow-400">
                 Insufficient XLM balance to operate on Stellar. Please
-                deposit at least 5 XLM to{" "}
+                deposit at least {MIN_XLM_BALANCE} XLM to{" "}
                 <span className="font-mono font-medium">
                   {formatAddress(stellarAddress)}
                 </span>{" "}
@@ -173,16 +193,7 @@ export function WalletsPanel({
 
       {/* Quick Actions */}
       <div className="flex flex-col gap-2">
-        <Link
-          className={cn(
-            "flex w-full items-center justify-between rounded-xl p-4",
-            "bg-surface/50 backdrop-blur-md",
-            "border border-primary/5",
-            "text-secondary transition-colors",
-            "hover:bg-surface-hover/50",
-          )}
-          href={'/privacy'}
-        >
+        <Link className={cn(quickActionLink)} href="/privacy">
           <div className="flex items-center gap-3">
             <Shield className="text-secondary h-5 w-5" />
             <span className="text-sm font-medium">Security & Privacy</span>
@@ -191,23 +202,17 @@ export function WalletsPanel({
         </Link>
 
         <Link
-          className={cn(
-            "flex w-full items-center justify-between rounded-xl p-4",
-            "bg-surface/50 backdrop-blur-md",
-            "border border-primary/5",
-            "text-secondary transition-colors",
-            "hover:bg-surface-hover/50",
-          )}
+          className={cn(quickActionLink)}
           href="https://discord.gg/8qHbAYmZ8g"
           rel="noopener noreferrer"
           target="_blank"
         >
           <div className="flex items-center gap-3">
             <HelpCircle className="text-secondary h-5 w-5" />
-            <span className="text-sm font-medium">Help & Support
+            <span className="text-sm font-medium">
+              Help & Support
               <span className="sr-only"> (opens in a new window)</span>
             </span>
-
           </div>
           <ChevronRight className="text-secondary h-4 w-4" />
         </Link>

@@ -6,6 +6,16 @@ import { ConnectWallet, TheButton } from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
 import { RozoPayButton, useRozoConnectStellar } from "@rozoai/intent-pay";
 import { ArrowDown, Loader2, Lock } from "lucide-react";
+import {
+  glassCard,
+  lockOverlay,
+  inputField,
+  decorations,
+  arrowDivider,
+  tokenBadge,
+  sectionHeader,
+  buttonEffects,
+} from "../styles";
 import { useCallback, useEffect, useRef } from "react";
 
 interface StargateBridgeProps {
@@ -94,50 +104,38 @@ export function StargateBridge({
   return (
     <article
       className={cn(
-        // Liquid glass effect
-        "relative flex h-full flex-col justify-between overflow-hidden rounded-3xl p-6 md:p-8",
-        "bg-surface/70 backdrop-blur-xl",
-        "border border-primary/5",
-        "shadow-lg shadow-brand/5",
+        glassCard.base,
+        glassCard.shadow,
+        glassCard.padding.responsive,
+        "flex h-full flex-col justify-between overflow-hidden",
         className,
       )}
     >
       {/* Lock Overlay - shown when disabled */}
       {!isEnabled && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-3xl bg-black/60 backdrop-blur-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface/80">
-            <Lock className="h-8 w-8 text-secondary" />
+        <div className={cn(lockOverlay.container)}>
+          <div className={cn(lockOverlay.iconContainer)}>
+            <Lock className={lockOverlay.icon} />
           </div>
-          <p className="text-secondary mt-4 text-center text-sm font-medium">
-            Connect Stellar wallet to bridge
-          </p>
+          <p className={lockOverlay.text}>Connect Stellar wallet to bridge</p>
         </div>
       )}
 
       {/* Top gradient line */}
-      <div className="pointer-events-none absolute top-0 left-0 h-1 w-full bg-linear-to-r from-transparent via-brand to-transparent opacity-20" />
+      <div className={cn(decorations.topGradientLine, 'h-0.5')} />
 
       <div>
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-primary text-xl font-bold">Bridge Assets</h2>
+        <div className={sectionHeader.container}>
+          <h2 className={sectionHeader.title}>Bridge Assets</h2>
         </div>
 
         {/* Amount Input Section */}
         <div className="space-y-4">
           {/* From Input */}
           <div>
-            <label className="text-secondary mb-2 block text-xs font-medium">
-              Amount to bridge
-            </label>
-            <div
-              className={cn(
-                "relative rounded-2xl p-4",
-                "border border-primary/10",
-                "bg-surface-subtle/50",
-                "transition-colors focus-within:border-brand",
-              )}
-            >
+            <label className={inputField.label}>Amount to bridge</label>
+            <div className={cn(inputField.container, "relative")}>
               <div className="mb-2 flex items-center justify-between">
                 <input
                   type="text"
@@ -145,23 +143,13 @@ export function StargateBridge({
                   onChange={(e) => handleFromAmountChange(e.target.value)}
                   placeholder="0.00"
                   disabled={!isEnabled}
-                  className={cn(
-                    "text-primary w-full bg-transparent text-3xl font-bold outline-none",
-                    "placeholder:text-secondary",
-                  )}
+                  className={cn(inputField.input)}
                 />
               </div>
               <div className="flex items-center justify-between text-sm">
-                <div
-                  className={cn(
-                    "flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 shadow-sm",
-                    "bg-surface",
-                  )}
-                >
-                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-[10px] text-white">
-                    $
-                  </div>
-                  <span className="text-primary font-medium">USDC</span>
+                <div className={cn(tokenBadge.container)}>
+                  <div className={tokenBadge.icon}>$</div>
+                  <span className={tokenBadge.text}>USDC</span>
                 </div>
                 <span className="text-secondary">on Any Chain</span>
               </div>
@@ -169,29 +157,16 @@ export function StargateBridge({
           </div>
 
           {/* Arrow */}
-          <div className="relative z-10 -my-2 flex justify-center">
-            <div
-              className={cn(
-                "rounded-full border-4 border-surface p-2",
-                "bg-surface-subtle",
-              )}
-            >
-              <ArrowDown className="text-brand h-5 w-5" />
+          <div className={arrowDivider.container}>
+            <div className={cn(arrowDivider.circle)}>
+              <ArrowDown className={arrowDivider.icon} />
             </div>
           </div>
 
           {/* To Output */}
           <div>
-            <label className="text-secondary mb-2 block text-xs font-medium">
-              You will receive
-            </label>
-            <div
-              className={cn(
-                "relative rounded-2xl p-4 opacity-90",
-                "border border-primary/10",
-                "bg-surface-subtle/50",
-              )}
-            >
+            <label className={inputField.label}>You will receive</label>
+            <div className={cn(inputField.containerReadonly, "relative")}>
               <div className="mb-1 flex items-center justify-between">
                 {isCalculating ? (
                   <div className="flex items-center gap-2">
@@ -253,11 +228,7 @@ export function StargateBridge({
             {({ show }) => (
               <TheButton
                 onClick={show}
-                className={cn(
-                  "group w-full gap-2 py-4 text-white",
-                  "shadow-lg shadow-(--color-brand)/20",
-                  "transition-all hover:shadow-xl hover:shadow-brand/30",
-                )}
+                    className={cn("group w-full gap-2 py-4 text-white", buttonEffects.glow)}
               >
                 <span>Bridge Funds</span>
                 <ArrowDown className="h-4 w-4 -rotate-90 transition-transform group-hover:translate-x-1" />

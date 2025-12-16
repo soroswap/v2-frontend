@@ -3,6 +3,7 @@
 import { ConnectWallet } from "@/shared/components";
 import { cn } from "@/shared/lib/utils";
 import { Sparkles } from "lucide-react";
+import { iconContainer } from "../styles";
 
 interface StargateHeaderProps {
   className?: string;
@@ -18,13 +19,7 @@ export function StargateHeader({ className }: StargateHeaderProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3">
-        <div
-          className={cn(
-            "flex h-10 w-10 items-center justify-center rounded-xl",
-            "bg-linear-to-tr from-brand to-blue-500",
-            "shadow-lg shadow-brand/20",
-          )}
-        >
+        <div className={cn(iconContainer.gradientBrandBlue, iconContainer.md)}>
           <Sparkles className="h-5 w-5 text-white" />
         </div>
         <h1 className="text-primary text-xl font-bold tracking-tight">
@@ -38,7 +33,7 @@ export function StargateHeader({ className }: StargateHeaderProps) {
         className={cn(
           "h-10 min-w-fit px-4 text-sm",
           // Liquid glass effect
-          "bg-surface/70 backdrop-blur-md",
+          "bg-surface/70 backdrop-blur-3xl",
           "border border-primary/10",
           "hover:bg-surface-hover/80",
           "hover:shadow-lg hover:shadow-brand/10",
