@@ -10,7 +10,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
 
 const NAV_LINKS = [
-  { name: "Swap", href: "/" },
+  { name: "Swap", href: "/swap" },
   { name: "Pools", href: "/pools" },
   { name: "Earn", href: "/earn" },
   { name: "Bridge", href: "/bridge" },
