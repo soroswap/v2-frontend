@@ -166,7 +166,7 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
                 const value = v ?? "0";
                 // Limit to 7 total digits (excluding decimal point)
                 const digitCount = value.replace(/[^\d]/g, "").length;
-                if (digitCount >= 18) {
+                if (digitCount >= 20) {
                   return; // Don't update if total digits exceed 7
                 }
                 setAmount(value);
