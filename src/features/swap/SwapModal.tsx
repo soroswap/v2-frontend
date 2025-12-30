@@ -1,15 +1,14 @@
 "use client";
 
-import { ReactNode } from "react";
-import { SwapStep, SwapModalState } from "@/features/swap/hooks/useSwap";
-import { CheckIcon, XIcon } from "lucide-react";
-import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
-import { network } from "@/shared/lib/environmentVars";
-import { SwapError } from "@/features/swap/hooks/useSwap";
+import { SwapError, SwapModalState, SwapStep } from "@/features/swap/hooks/useSwap";
 import { RotateArrowButton, TokenIcon } from "@/shared/components";
+import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { useTokensList } from "@/shared/hooks";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
+import { network } from "@/shared/lib/environmentVars";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
+import { CheckIcon, XIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface SwapModalProps {
   state: SwapModalState;
@@ -137,8 +136,8 @@ export const SwapModal = ({
     [SwapStep.SUCCESS]: (
       <div className="flex flex-col gap-4">
         {currentStep === SwapStep.SUCCESS && state.data && (
-          <div className="flex flex-col gap-4">
-            <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+          <div className="relative flex flex-col">
+            <div className="bg-surface-alt relative z-0 flex items-center gap-2 rounded-lg p-3">
               <TokenIcon
                 src={combinedTokenMap[state.data.assetIn]?.icon}
                 name={combinedTokenMap[state.data.assetIn]?.name}
@@ -150,10 +149,10 @@ export const SwapModal = ({
                 {combinedTokenMap[state.data.assetIn]?.code}
               </p>
             </div>
-            <div className="relative flex items-center gap-2">
+            <div className="relative z-10 my-2 flex justify-center">
               <RotateArrowButton isLoading={false} disabled={false} />
             </div>
-            <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+            <div className="bg-surface-alt relative z-0 flex items-center gap-2 rounded-lg p-3">
               <TokenIcon
                 src={combinedTokenMap[state.data.assetOut]?.icon}
                 name={combinedTokenMap[state.data.assetOut]?.name}
@@ -176,16 +175,6 @@ export const SwapModal = ({
               className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
             >
               View on Stellar.Expert
-            </a>
-          )}
-          {transactionHash && (
-            <a
-              href={`https://stellarchain.io/transactions/${transactionHash}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
-            >
-              View on StellarChain.io
             </a>
           )}
           {transactionHash && (
