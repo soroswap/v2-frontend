@@ -248,11 +248,11 @@ export function useSwap(options?: UseSwapOptions) {
         const actualAmountIn =
           txData.result?.type === "swap"
             ? txData.result.amountIn
-            : quote.amountIn;
+            : String(quote.amountIn);
         const actualAmountOut =
           txData.result?.type === "swap"
             ? txData.result.amountOut
-            : quote.amountOut;
+            : String(quote.amountOut);
 
         const result: SwapResult = {
           txHash: txData.txHash,
