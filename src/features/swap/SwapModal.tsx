@@ -135,23 +135,66 @@ export const SwapModal = ({
       </div>
     ),
     [SwapStep.SUCCESS]: (
-      <div className="flex flex-col gap-2">
-        {transactionHash && (
-          <a
-            href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
-          >
-            View on Stellar.Expert
-          </a>
-        )}
-        {transactionHash && (
-          <div className="flex items-center justify-center gap-2">
-            <p>Copy Transaction Hash </p>
-            <CopyAndPasteButton textToCopy={transactionHash} />
+      <div className="flex flex-col gap-4">
+        {currentStep === SwapStep.SUCCESS && state.data && (
+          <div className="flex flex-col gap-4">
+            <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+              <TokenIcon
+                src={combinedTokenMap[state.data.assetIn]?.icon}
+                name={combinedTokenMap[state.data.assetIn]?.name}
+                code={combinedTokenMap[state.data.assetIn]?.code}
+                size={32}
+              />
+              <p>
+                {formatUnits({ value: state.data.amountIn })}{" "}
+                {combinedTokenMap[state.data.assetIn]?.code}
+              </p>
+            </div>
+            <div className="relative flex items-center gap-2">
+              <RotateArrowButton isLoading={false} disabled={false} />
+            </div>
+            <div className="bg-surface-alt relative flex items-center gap-2 rounded-lg p-3">
+              <TokenIcon
+                src={combinedTokenMap[state.data.assetOut]?.icon}
+                name={combinedTokenMap[state.data.assetOut]?.name}
+                code={combinedTokenMap[state.data.assetOut]?.code}
+                size={32}
+              />
+              <p>
+                {formatUnits({ value: state.data.amountOut })}{" "}
+                {combinedTokenMap[state.data.assetOut]?.code}
+              </p>
+            </div>
           </div>
         )}
+        <div className="flex flex-col gap-2">
+          {transactionHash && (
+            <a
+              href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
+            >
+              View on Stellar.Expert
+            </a>
+          )}
+          {transactionHash && (
+            <a
+              href={`https://stellarchain.io/transactions/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
+            >
+              View on StellarChain.io
+            </a>
+          )}
+          {transactionHash && (
+            <div className="flex items-center justify-center gap-2">
+              <p>Copy transaction hash</p>
+              <CopyAndPasteButton textToCopy={transactionHash} />
+            </div>
+          )}
+        </div>
       </div>
     ),
     [SwapStep.ERROR]: (

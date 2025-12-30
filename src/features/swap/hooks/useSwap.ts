@@ -28,8 +28,14 @@ export interface SwapError {
 export interface SwapResult {
   txHash: string;
   success: boolean;
-  /** Amount received from the swap (if available) */
-  amountOut?: string;
+  /** Input token contract address */
+  assetIn: string;
+  /** Output token contract address */
+  assetOut: string;
+  /** Actual amount sent (in stroops/smallest unit) */
+  amountIn: string;
+  /** Actual amount received (in stroops/smallest unit) */
+  amountOut: string;
 }
 
 // Specific data for the CREATE_TRUSTLINE step
@@ -237,14 +243,24 @@ export function useSwap(options?: UseSwapOptions) {
         setIsLoading(false);
 
         const txData = sendResult.data;
+
+        // Get actual amounts from transaction result, fallback to quote amounts
+        const actualAmountIn =
+          txData.result?.type === "swap"
+            ? txData.result.amountIn
+            : quote.amountIn;
+        const actualAmountOut =
+          txData.result?.type === "swap"
+            ? txData.result.amountOut
+            : quote.amountOut;
+
         const result: SwapResult = {
           txHash: txData.txHash,
           success: txData.success,
-          // Extract amountOut if this is a swap result
-          amountOut:
-            txData.result?.type === "swap"
-              ? txData.result.amountOut
-              : undefined,
+          assetIn: quote.assetIn,
+          assetOut: quote.assetOut,
+          amountIn: actualAmountIn,
+          amountOut: actualAmountOut,
         };
 
         updateStep(SwapStep.SUCCESS, {
