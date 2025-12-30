@@ -3,9 +3,6 @@ import { SendTransactionResponse } from "@soroswap/sdk";
 import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
 
-// Re-export the SDK type for use in other parts of the frontend
-export type { SendTransactionResponse };
-
 export interface SendTransactionResponseData {
   code: string;
   data: SendTransactionResponse;
