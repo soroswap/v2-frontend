@@ -1,28 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
+import { SendTransactionResponse } from "@soroswap/sdk";
 import { ALLOWED_ORIGINS, soroswapClient } from "@/shared/lib/server";
 import { network, SOROSWAP } from "@/shared/lib/environmentVars";
-
-//TODO: Check the response from sendTransaction
-export interface SendTransactionResponse {
-  status: string;
-  txHash: string;
-  hash?: string;
-  successful?: boolean;
-  latestLedger: number;
-  latestLedgerCloseTime: string;
-  oldestLedger: number;
-  oldestLedgerCloseTime: string;
-  ledger: number;
-  createdAt: string;
-  applicationOrder: number;
-  feeBump: boolean;
-  envelopeXdr: any;
-  resultXdr: any;
-  resultMetaXdr: any;
-  returnValue: any;
-  diagnosticEventsXdr: any;
-}
 
 export interface SendTransactionResponseData {
   code: string;
@@ -56,16 +35,21 @@ export async function POST(request: NextRequest) {
   try {
     const xdr: string = await request.json();
 
-    const sendTransactionResponse: SendTransactionResponseData =
+    const sendTransactionResponse: SendTransactionResponse =
       await soroswapClient.send(xdr, false, SOROSWAP.NETWORK);
 
     return NextResponse.json({
       code: "SEND_TRANSACTION_SUCCESS",
       data: sendTransactionResponse,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[API ERROR]", error);
 
-    return NextResponse.json(error, { status: 500 | error.statusCode });
+    const statusCode =
+      error && typeof error === "object" && "statusCode" in error
+        ? (error.statusCode as number)
+        : 500;
+
+    return NextResponse.json(error, { status: statusCode });
   }
 }

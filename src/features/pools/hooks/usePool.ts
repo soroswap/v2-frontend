@@ -192,7 +192,7 @@ export function usePool(options?: UsePoolOptions) {
 
         const result: PoolResult = {
           txHash: sendResult.data.txHash,
-          success: sendResult.data.status === "success" ? true : false,
+          success: sendResult.data.success,
         };
 
         options?.onSuccess?.(result);
@@ -244,7 +244,7 @@ export function usePool(options?: UsePoolOptions) {
 
         const result: PoolResult = {
           txHash: sendResult.data.txHash,
-          success: sendResult.data.status === "success" ? true : false,
+          success: sendResult.data.success,
         };
 
         options?.onSuccess?.(result);

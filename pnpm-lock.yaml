@@ -4,10 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  '@types/react': 19.2.7
-  '@types/react-dom': 19.2.3
-
 importers:
 
   .:
@@ -25,8 +21,8 @@ importers:
         specifier: 0.1.4
         version: 0.1.4(6bc0fb300f5ab6b37fe23369862ef2d5)
       '@soroswap/sdk':
-        specifier: 0.3.8
-        version: 0.3.8
+        specifier: 0.4.0-alpha.0
+        version: 0.4.0-alpha.0
       '@stellar/stellar-sdk':
         specifier: 14.1.1
         version: 14.1.1
@@ -73,9 +69,6 @@ importers:
         specifier: ^5.0.9
         version: 5.0.9(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.4.0(react@19.2.3))
     devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3.3.3
-        version: 3.3.3
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.1.18
@@ -667,7 +660,7 @@ packages:
   '@lit/react@1.0.8':
     resolution: {integrity: sha512-p2+YcF+JE67SRX3mMlJ1TKCSTsgyOVdAwd/nxp3NuV1+Cb6MWALbN6nT7Ld4tpmYofcE5kcaSY1YBB9erY+6fw==}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': 17 || 18 || 19
 
   '@lit/reactive-element@1.6.3':
     resolution: {integrity: sha512-QuTgnG52Poic7uM1AN5yJ09QMe0O28e10XzSvWDz02TJiiKee4stsiownEIadWm8nYzyDAyT+gKzUoZmiWQtsQ==}
@@ -1063,7 +1056,7 @@ packages:
     resolution: {integrity: sha512-f5zpJg9gzh7JtCbsIwV+4kP3eI0QBuA93JGmwFRd4onQ3DnCjV2J5pYqdWtM95sjSKK1dyik59Gj01lLeKqs1Q==}
     engines: {node: '>= 20.19.4'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': ^19.1.1
       react: '*'
       react-native: '*'
     peerDependenciesMeta:
@@ -1863,8 +1856,8 @@ packages:
   '@solana/web3.js@1.98.4':
     resolution: {integrity: sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw==}
 
-  '@soroswap/sdk@0.3.8':
-    resolution: {integrity: sha512-tkb4PouwxvenZItqosyU+cYLPGc5UQW31u1+X0j07BKjLxVMga6ONExX3VT6gvsvlqUnSEUgsX2VL2QSosIJNQ==}
+  '@soroswap/sdk@0.4.0-alpha.0':
+    resolution: {integrity: sha512-aI6u/+uPtiBsL9N50dVXl98uaYlY37LVjH7qoBPngUPm5N6h86B4HnYue0CIViWVSFtx/Swlu7mDY7hvK+tOvw==}
     engines: {node: '>=22.0.0'}
 
   '@stablelib/aead@1.0.1':
@@ -2250,7 +2243,7 @@ packages:
   '@types/react-dom@19.2.3':
     resolution: {integrity: sha512-jp2L/eY6fn+KgVVQAOqYItbF0VY/YApe5Mz2F0aykSO8gx31bYCZyvSeYxCHKvzHG5eZjc+zyaS5BrBWya2+kQ==}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': ^19.2.0
 
   '@types/react@19.2.7':
     resolution: {integrity: sha512-MWtvHrGZLFttgeEj28VXHxpmwYbor/ATPYbBfSFZEIRK0ecCFLl2Qo55z52Hss+UV9CRN7trSeq1zbgx7YDWWg==}
@@ -5174,7 +5167,7 @@ packages:
     engines: {node: '>= 20.19.4'}
     hasBin: true
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': ^19.1.1
       react: ^19.1.1
     peerDependenciesMeta:
       '@types/react':
@@ -5942,7 +5935,7 @@ packages:
     resolution: {integrity: sha512-1XfIxnUXzyswPAPXo1P3Pdx2mq/pIqZICkWN60Hby0d9Iqb+MEIpqgYVlbflvHdrp2YR/q3jyKWRPJJ100yxaw==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=16.8'
       react: '>=16.8'
     peerDependenciesMeta:
       '@types/react':
@@ -5954,7 +5947,7 @@ packages:
     resolution: {integrity: sha512-Qik0o+DSy741TmkqmRfjq+0xpZBXi/Y6+fXZLn0xNF1z/waFMbE3rkivv5Zcf9RrMUp6zswf2J7sbh2KBlba5A==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=16.8'
       react: '>=16.8'
     peerDependenciesMeta:
       '@types/react':
@@ -5966,7 +5959,7 @@ packages:
     resolution: {integrity: sha512-DwJhCDpujuQuKdJ2H84VbTjEJJteaSmqsuUltsfbfdbotVfNeTE4K/qc/Wi57I9x8/2ed4JNdjEna7O6PfavRg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=18.0.0'
       react: '>=18.0.0'
     peerDependenciesMeta:
       '@types/react':
@@ -6193,7 +6186,7 @@ packages:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=16.8'
       immer: '>=9.0.6'
       react: '>=16.8'
     peerDependenciesMeta:
@@ -6208,7 +6201,7 @@ packages:
     resolution: {integrity: sha512-LE+VcmbartOPM+auOjCCLQOsQ05zUTp8RkgwRzefUk+2jISdMMFnxvyTjA4YNWr5ZGXYbVsEMZosttuxUBkojQ==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=18.0.0'
       immer: '>=9.0.6'
       react: '>=18.0.0'
       use-sync-external-store: '>=1.2.0'
@@ -6226,7 +6219,7 @@ packages:
     resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=18.0.0'
       immer: '>=9.0.6'
       react: '>=18.0.0'
       use-sync-external-store: '>=1.2.0'
@@ -6244,7 +6237,7 @@ packages:
     resolution: {integrity: sha512-ALBtUj0AfjJt3uNRQoL1tL2tMvj6Gp/6e39dnfT6uzpelGru8v1tPOGBzayOWbPJvujM8JojDk3E1LxeFisBNg==}
     engines: {node: '>=12.20.0'}
     peerDependencies:
-      '@types/react': 19.2.7
+      '@types/react': '>=18.0.0'
       immer: '>=9.0.6'
       react: '>=18.0.0'
       use-sync-external-store: '>=1.2.0'
@@ -9348,7 +9341,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@soroswap/sdk@0.3.8':
+  '@soroswap/sdk@0.4.0-alpha.0':
     dependencies:
       axios: 1.13.2
     transitivePeerDependencies:
