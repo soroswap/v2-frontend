@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useState, useCallback, MouseEvent, useEffect } from "react";
+import { useState, useCallback, useMemo, MouseEvent, useEffect } from "react";
 import {
   TheButton,
   ConnectWallet,
@@ -22,6 +22,7 @@ import { PoolModal } from "@/features/pools/components/PoolModal";
 import { useParams } from "next/navigation";
 import { usePools } from "@/features/pools/hooks/usePools";
 import { useUserPoolPositions } from "@/features/pools/hooks/useUserPoolPositions";
+import { useUserBalances } from "@/shared/hooks";
 
 const getSwapButtonText = (step: PoolStep): string => {
   switch (step) {
@@ -39,6 +40,13 @@ const getSwapButtonText = (step: PoolStep): string => {
 export default function PoolsAddLiquidityPage() {
   const { address: userAddress } = useUserContext();
   const params = useParams();
+
+  // Balance hook for fetching user token balances
+  const {
+    getAvailableAmount,
+    isLoading: isBalanceLoading,
+    revalidate: revalidateBalances,
+  } = useUserBalances(userAddress);
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [addLiquidityResult, setAddLiquidityResult] =
@@ -75,9 +83,10 @@ export default function PoolsAddLiquidityPage() {
     onSuccess: (result: PoolResult) => {
       setAddLiquidityResult(result);
       setIsSwapModalOpen(true);
-      // Revalidate pools and user positions after successful add liquidity
+      // Revalidate pools, user positions, and balances after successful add liquidity
       revalidatePools();
       revalidateUserPositions();
+      revalidateBalances();
     },
     onError: (error: PoolError) => {
       console.error("Pool failed:", error);
@@ -90,6 +99,46 @@ export default function PoolsAddLiquidityPage() {
       }
     },
   });
+
+  // Get token balances
+  const tokenABalance = useMemo(() => {
+    if (!TOKEN_A?.contract) return undefined;
+    return getAvailableAmount(TOKEN_A.contract);
+  }, [TOKEN_A?.contract, getAvailableAmount]);
+
+  const tokenBBalance = useMemo(() => {
+    if (!TOKEN_B?.contract) return undefined;
+    return getAvailableAmount(TOKEN_B.contract);
+  }, [TOKEN_B?.contract, getAvailableAmount]);
+
+  // Check insufficient balance for TOKEN_A
+  const hasInsufficientTokenA = useMemo(() => {
+    const amountA =
+      independentField === "TOKEN_A" ? typedValue : derived_TOKEN_A_Amount;
+    if (!tokenABalance || !amountA) return false;
+    return Number(amountA) > Number(tokenABalance);
+  }, [tokenABalance, typedValue, independentField, derived_TOKEN_A_Amount]);
+
+  // Check insufficient balance for TOKEN_B
+  const hasInsufficientTokenB = useMemo(() => {
+    const amountB =
+      independentField === "TOKEN_B" ? typedValue : derived_TOKEN_B_Amount;
+    if (!tokenBBalance || !amountB) return false;
+    return Number(amountB) > Number(tokenBBalance);
+  }, [tokenBBalance, typedValue, independentField, derived_TOKEN_B_Amount]);
+
+  const hasInsufficientBalance = hasInsufficientTokenA || hasInsufficientTokenB;
+
+  // Handle percentage button click for TOKEN_A
+  const handlePercentageClickA = useCallback(
+    (percentage: number) => {
+      if (!tokenABalance || Number(tokenABalance) === 0) return;
+      const calculatedAmount = (Number(tokenABalance) * percentage) / 100;
+      const formattedAmount = calculatedAmount.toFixed(7).replace(/\.?0+$/, "");
+      handleAmountChange("TOKEN_A")(formattedAmount);
+    },
+    [tokenABalance, handleAmountChange],
+  );
 
   // Update URL when tokens change without triggering re-renders
   useEffect(() => {
@@ -154,6 +203,10 @@ export default function PoolsAddLiquidityPage() {
               oppositeToken={TOKEN_B}
               onSelectToken={handleTokenSelect("TOKEN_A")}
               isLoading={isQuoteLoading}
+              balance={tokenABalance}
+              isBalanceLoading={isBalanceLoading}
+              showPercentageButtons={true}
+              onPercentageClick={handlePercentageClickA}
             />
 
             <div className="flex items-center justify-center">
@@ -174,6 +227,8 @@ export default function PoolsAddLiquidityPage() {
             onSelectToken={handleTokenSelect("TOKEN_B")}
             isLoading={isQuoteLoading}
             variant="outline"
+            balance={tokenBBalance}
+            isBalanceLoading={isBalanceLoading}
           />
 
           <div className="flex flex-col gap-2">
@@ -185,7 +240,8 @@ export default function PoolsAddLiquidityPage() {
                   !TOKEN_A ||
                   !TOKEN_B ||
                   TOKEN_A.contract === TOKEN_B.contract ||
-                  !typedValue
+                  !typedValue ||
+                  hasInsufficientBalance
                 }
                 onClick={onAddLiquidityPool}
                 className="bg-brand hover:bg-brand/80 disabled:bg-surface-alt relative flex h-14 w-full items-center justify-center rounded-2xl p-4 text-[20px] font-bold text-white disabled:cursor-default disabled:text-[#6d7179] dark:disabled:bg-[#2e303b]"
@@ -194,9 +250,13 @@ export default function PoolsAddLiquidityPage() {
                   ? "Select a token"
                   : !typedValue
                     ? "Enter an amount"
-                    : isSwapLoading
-                      ? getSwapButtonText(currentStep)
-                      : "Add liquidity"}
+                    : hasInsufficientTokenA
+                      ? `Insufficient ${TOKEN_A.code} balance`
+                      : hasInsufficientTokenB
+                        ? `Insufficient ${TOKEN_B.code} balance`
+                        : isSwapLoading
+                          ? getSwapButtonText(currentStep)
+                          : "Add liquidity"}
               </TheButton>
             )}
           </div>
