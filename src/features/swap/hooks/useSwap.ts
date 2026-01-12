@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { BuildQuoteResponse, QuoteResponse } from "@soroswap/sdk";
-import { useCallback, useState } from "react";
 import {
+  BuildQuoteResponse,
+  QuoteResponse,
   SendTransactionResponse,
-  SendTransactionResponseData,
-} from "@/app/api/send/route";
+} from "@soroswap/sdk";
+import { useCallback, useState } from "react";
+import { SendTransactionResponseData } from "@/app/api/send/route";
 import { useUserContext } from "@/contexts";
 
 export enum SwapStep {
@@ -21,15 +22,20 @@ export enum SwapStep {
 export interface SwapError {
   step: SwapStep;
   message: string;
-  details?: any;
+  details?: unknown;
 }
 
-//TODO: Check the response from sendTransaction
 export interface SwapResult {
-  txHash?: string;
-  hash?: string;
+  txHash: string;
   success: boolean;
-  successful?: boolean;
+  /** Input token contract address */
+  assetIn: string;
+  /** Output token contract address */
+  assetOut: string;
+  /** Actual amount sent (in stroops/smallest unit) */
+  amountIn: string;
+  /** Actual amount received (in stroops/smallest unit) */
+  amountOut: string;
 }
 
 // Specific data for the CREATE_TRUSTLINE step
@@ -60,6 +66,7 @@ export type SwapModalState = {
     ? { currentStep: K; data?: undefined }
     : { currentStep: K; data: SwapModalDataMap[K] };
 }[SwapStep];
+
 export interface UseSwapOptions {
   onSuccess?: (result: SwapResult) => void;
   onError?: (error: SwapError) => void;
@@ -85,7 +92,7 @@ export function useSwap(options?: UseSwapOptions) {
   );
 
   const handleError = useCallback(
-    (step: SwapStep, message: string, details?: any) => {
+    (step: SwapStep, message: string, details?: unknown) => {
       const swapError: SwapError = { step, message, details };
       console.log("swapError Handle Error= ", swapError);
       setError(swapError);
@@ -126,7 +133,6 @@ export function useSwap(options?: UseSwapOptions) {
           ) {
             // Prevent infinite recursion
             if (retryCount > 2) {
-              //TODO: Handle better this.
               handleError(
                 SwapStep.CREATE_TRUSTLINE,
                 "Failed to create trustline after multiple attempts",
@@ -233,16 +239,30 @@ export function useSwap(options?: UseSwapOptions) {
           data: sendResult.data,
         });
 
-        // Success
+        // Success - extract swap result with type narrowing
         setIsLoading(false);
 
+        const txData = sendResult.data;
+
+        // Get actual amounts from transaction result, fallback to quote amounts
+        const actualAmountIn =
+          txData.result?.type === "swap"
+            ? txData.result.amountIn
+            : String(quote.amountIn);
+        const actualAmountOut =
+          txData.result?.type === "swap"
+            ? txData.result.amountOut
+            : String(quote.amountOut);
+
         const result: SwapResult = {
-          txHash: sendResult.data.txHash || sendResult.data.hash,
-          success:
-            sendResult.data.status === "success" || sendResult.data.successful
-              ? true
-              : false,
+          txHash: txData.txHash,
+          success: txData.success,
+          assetIn: quote.assetIn,
+          assetOut: quote.assetOut,
+          amountIn: actualAmountIn,
+          amountOut: actualAmountOut,
         };
+
         updateStep(SwapStep.SUCCESS, {
           currentStep: SwapStep.SUCCESS,
           data: result,
@@ -250,11 +270,12 @@ export function useSwap(options?: UseSwapOptions) {
 
         options?.onSuccess?.(result);
         return result;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Only handle error here if it hasn't been handled by buildXdr
         // buildXdr will handle its own errors and call handleError directly
         if (currentStep !== SwapStep.ERROR) {
-          const errorMessage = error.message || "Unknown error occurred";
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error occurred";
           handleError(currentStep, errorMessage, error);
         }
         throw error;

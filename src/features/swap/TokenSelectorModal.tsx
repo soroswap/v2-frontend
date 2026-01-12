@@ -34,7 +34,7 @@ export const TokenSelectorModal = ({
     const query = value.trim();
     if (!query) return;
     // Only attempt lookup when it's a 56-char address/contract ID or a code:issuer pair
-    if (query.length !== 56 && !query.includes(":")) return;
+    if (query.length !== 56 && !query.includes(":") && !query.includes("-")) return;
 
     setIsSearchingAsset(true);
     try {

@@ -64,8 +64,8 @@ export const envVars = {
     // These are the official deployed router addresses per network
     STELLAR_ROUTER_ADDRESS:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
-        ? "CA4YSDKNIGIV77W6XDUUWFDTPCVUJ5IPZQJDQCPD65DBVG3R3XTOCFZA" // Testnet router
-        : "CBZV3HBP672BV7FF3ZILVT4CNPW3N5V2WTJ2LAGOAYW5R7L2D5SLUDFZ", // Mainnet router
+        ? "CAG7OQAN4YO65ZLOYA5PWJKPYYE5BVH7QSRI4KAW7VBMIH6N6LG5ECSL" // Testnet router
+        : "CDAW42JDSDEI2DXEPP4E7OAYNCRUA4LGCZHXCJ4BV5WVI4O4P77FO4UV", // Mainnet router
     NETWORK:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? Networks.TESTNET
