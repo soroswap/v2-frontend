@@ -179,7 +179,7 @@ export default function SwapPage() {
               resetSwap();
             }}
             error={swapError || undefined}
-            transactionHash={swapResult?.txHash || swapResult?.hash}
+            transactionHash={swapResult?.txHash}
           />
         )}
         {isSettingsModalOpen && (
