@@ -1,19 +1,18 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState, useCallback, MouseEvent } from "react";
-import { cn } from "@/shared/lib/utils/cn";
-import {
-  TheButton,
-  RotateArrowButton,
-  ConnectWallet,
-  SettingsButton,
-} from "@/shared/components/buttons";
-import { SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
-import { SwapPanel } from "@/features/swap";
 import { useUserContext } from "@/contexts";
-import { SwapStep, SwapResult, SwapError } from "@/features/swap/hooks/useSwap";
+import { SwapPanel, SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
+import { SwapError, SwapResult, SwapStep } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
+import {
+  ConnectWallet,
+  RotateArrowButton,
+  SettingsButton,
+  TheButton,
+} from "@/shared/components/buttons";
+import { cn } from "@/shared/lib/utils/cn";
+import dynamic from "next/dynamic";
+import { MouseEvent, useCallback, useState } from "react";
 
 const SwapModal = dynamic(() =>
   import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
@@ -179,7 +178,7 @@ export default function SwapPage() {
               resetSwap();
             }}
             error={swapError || undefined}
-            transactionHash={swapResult?.txHash || swapResult?.hash}
+            transactionHash={swapResult?.txHash}
           />
         )}
         {isSettingsModalOpen && (

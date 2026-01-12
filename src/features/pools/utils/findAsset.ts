@@ -47,16 +47,19 @@ export async function findAsset(assetString: string): Promise<AssetInfo> {
         contract: new Address(assetString),
         method: "name",
         args: [],
+        can_fail: false,
       },
       {
         contract: new Address(assetString),
         method: "symbol",
         args: [],
+        can_fail: false,
       },
       {
         contract: new Address(assetString),
         method: "decimals",
         args: [],
+        can_fail: false,
       },
     ];
 
@@ -88,6 +91,7 @@ export interface Invocation {
   contract: Address;
   method: string;
   args: xdr.ScVal[];
+  can_fail: boolean;
 }
 
 const StellarRouterContractAddress = STELLAR.STELLAR_ROUTER_ADDRESS;
@@ -108,6 +112,7 @@ async function simulateMultipleInvocations(invocations: Invocation[]) {
           new Address(invocation.contract.toString()).toScVal(),
           xdr.ScVal.scvSymbol(invocation.method),
           xdr.ScVal.scvVec(invocation.args),
+          xdr.ScVal.scvBool(invocation.can_fail)
         ]),
       ),
     ),
