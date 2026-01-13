@@ -63,7 +63,32 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">4. Account and Security</h2>
+            <h2 className="text-2xl font-bold">4. Geographic Restrictions </h2>
+          
+            <p>
+              This service is not available in certain jurisdictions due to regulatory
+              restrictions, including those related to international sanctions
+              administered by OFAC and other authorities.
+            </p>
+          
+            <ul className="ml-6 list-disc space-y-2">
+              <li>
+                Users must not be located in, or be residents of, any restricted
+                jurisdiction.
+              </li>
+              <li>
+                Access may be limited based on geolocation or other compliance controls.
+              </li>
+              <li>
+                By using the Exchange, you confirm that you are not in a restricted
+                jurisdiction.
+              </li>
+            </ul>
+          </section>
+
+
+          <section className="flex flex-col gap-4">
+            <h2 className="text-2xl font-bold">5. Account and Security</h2>
             <p>
               While Soroswap is a decentralized exchange that does not require
               user accounts, some features may require interacting with a
@@ -86,7 +111,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">5. Risk Acknowledgment</h2>
+            <h2 className="text-2xl font-bold">6. Risk Acknowledgment</h2>
             <p>
               Cryptocurrency assets are subject to high market risks and
               volatility. Past performance is not indicative of future results.
@@ -106,7 +131,7 @@ export default function TermsPage() {
 
           <section className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold">
-              6. The Stellar Network (Separate from Soroswap)
+              7. The Stellar Network (Separate from Soroswap)
             </h2>
             <p>
               Soroswap operates on the Stellar network. Soroswap is unable to
@@ -119,7 +144,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">7. User Conduct</h2>
+            <h2 className="text-2xl font-bold">8. User Conduct</h2>
             <p>By using Soroswap, you agree to:</p>
             <ul className="ml-6 list-disc space-y-2">
               <li>
@@ -140,7 +165,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">8. No Custodial Services</h2>
+            <h2 className="text-2xl font-bold">9. No Custodial Services</h2>
             <p>
               Soroswap is a non-custodial platform, meaning that we do not hold
               or store any of your funds or assets. All transactions and assets
@@ -155,7 +180,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">9. Limitation of Liability</h2>
+            <h2 className="text-2xl font-bold">10. Limitation of Liability</h2>
             <p>To the maximum extent permitted by law:</p>
             <ul className="ml-6 list-disc space-y-2">
               <li>
@@ -181,7 +206,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">10. Privacy</h2>
+            <h2 className="text-2xl font-bold">11. Privacy</h2>
             <p>
               As a decentralized platform, Soroswap does not collect or store
               personal data. However, by interacting with the platform, you may
@@ -191,7 +216,7 @@ export default function TermsPage() {
           </section>
 
           <section className="flex flex-col gap-4">
-            <h2 className="text-2xl font-bold">11. Disclaimer of Warranty</h2>
+            <h2 className="text-2xl font-bold">12. Disclaimer of Warranty</h2>
             <p>
               Soroswap is open-source software licensed under the Apache-2.0
               license. It is provided free of charge and on an &quot;AS IS&quot; BASIS,
