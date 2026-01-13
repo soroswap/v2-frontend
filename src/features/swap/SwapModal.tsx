@@ -1,15 +1,14 @@
 "use client";
 
-import { ReactNode } from "react";
-import { SwapStep, SwapModalState } from "@/features/swap/hooks/useSwap";
-import { CheckIcon, XIcon } from "lucide-react";
-import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
-import { network } from "@/shared/lib/environmentVars";
-import { SwapError } from "@/features/swap/hooks/useSwap";
+import { SwapError, SwapModalState, SwapStep } from "@/features/swap/hooks/useSwap";
 import { RotateArrowButton, TokenIcon } from "@/shared/components";
+import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButton";
 import { useTokensList } from "@/shared/hooks";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
+import { network } from "@/shared/lib/environmentVars";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
+import { CheckIcon, XIcon } from "lucide-react";
+import { ReactNode } from "react";
 
 interface SwapModalProps {
   state: SwapModalState;
@@ -135,23 +134,56 @@ export const SwapModal = ({
       </div>
     ),
     [SwapStep.SUCCESS]: (
-      <div className="flex flex-col gap-2">
-        {transactionHash && (
-          <a
-            href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
-          >
-            View on Stellar.Expert
-          </a>
-        )}
-        {transactionHash && (
-          <div className="flex items-center justify-center gap-2">
-            <p>Copy Transaction Hash </p>
-            <CopyAndPasteButton textToCopy={transactionHash} />
+      <div className="flex flex-col gap-4">
+        {currentStep === SwapStep.SUCCESS && state.data && (
+          <div className="relative flex flex-col">
+            <div className="bg-surface-alt relative z-0 flex items-center gap-2 rounded-lg p-3">
+              <TokenIcon
+                src={combinedTokenMap[state.data.assetIn]?.icon}
+                name={combinedTokenMap[state.data.assetIn]?.name}
+                code={combinedTokenMap[state.data.assetIn]?.code}
+                size={32}
+              />
+              <p>
+                {formatUnits({ value: state.data.amountIn })}{" "}
+                {combinedTokenMap[state.data.assetIn]?.code}
+              </p>
+            </div>
+            <div className="relative z-10 my-2 flex justify-center">
+              <RotateArrowButton isLoading={false} disabled={false} />
+            </div>
+            <div className="bg-surface-alt relative z-0 flex items-center gap-2 rounded-lg p-3">
+              <TokenIcon
+                src={combinedTokenMap[state.data.assetOut]?.icon}
+                name={combinedTokenMap[state.data.assetOut]?.name}
+                code={combinedTokenMap[state.data.assetOut]?.code}
+                size={32}
+              />
+              <p>
+                {formatUnits({ value: state.data.amountOut })}{" "}
+                {combinedTokenMap[state.data.assetOut]?.code}
+              </p>
+            </div>
           </div>
         )}
+        <div className="flex flex-col gap-2">
+          {transactionHash && (
+            <a
+              href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${transactionHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
+            >
+              View on Stellar.Expert
+            </a>
+          )}
+          {transactionHash && (
+            <div className="flex items-center justify-center gap-2">
+              <p>Copy transaction hash</p>
+              <CopyAndPasteButton textToCopy={transactionHash} />
+            </div>
+          )}
+        </div>
       </div>
     ),
     [SwapStep.ERROR]: (
