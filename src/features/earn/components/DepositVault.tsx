@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useVaultInfo, useVaultBalance } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
@@ -91,6 +91,13 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     },
   });
 
+  const formattedAmount = useMemo(() => {
+    if (!amount) return "0.0000000";
+
+    const [integer, decimals = ""] = amount.split(".");
+    return `${integer}.${decimals.padEnd(7, "0")}`;
+  }, [amount]);
+
   const handleDeposit = async () => {
     if (!address) return;
     setIsOpenModal(true);
@@ -162,23 +169,25 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
             <TokenAmountInput
               token={firstAsset}
               amount={amount}
+              formattedAmount={formattedAmount}
               setAmount={(v) => {
-                const value = v ?? "0";
-                // Limit to 7 total digits (excluding decimal point)
-                const digitCount = value.replace(/[^\d]/g, "").length;
-                if (digitCount >= 20) {
-                  return; // Don't update if total digits exceed 7
-                }
+                const value = v ?? "";
+                const [, decimals = ""] = value.split(".");
+
+                if (decimals.length > 7) return;
+
                 setAmount(value);
               }}
+
               isLoading={false}
               className="bg-surface-alt border-surface-alt text-primary hide-number-spin focus:border-primary focus:ring-primary w-full rounded-lg border p-3 text-2xl font-bold outline-none focus:ring-1"
             />
           </div>
           <span className="text-secondary text-xs">
-            {(parseFloat(amount) < 0.01
-              ? "<$0.01"
-              : "$" + parseFloat(amount) * 1) || "0.00"}
+            {!amount || isNaN(parseFloat(amount))
+              ? "$0.00" : (parseFloat(amount) < 0.01
+                ? "<$0.01"
+                : "$" + parseFloat(amount) * 1) || "0.00"}
           </span>
         </div>
 
@@ -204,7 +213,7 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
             </div>
           </div>
           <span className="text-secondary text-xs">
-            APY {vaultInfo.apy ? `${vaultInfo.apy.toFixed(2)}`: "0"} %
+            APY {vaultInfo.apy ? `${vaultInfo.apy.toFixed(2)}` : "0"} %
           </span>
         </div>
 

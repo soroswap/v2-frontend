@@ -3,10 +3,12 @@
 import { formatNumber } from "@/shared/lib/utils/formatNumber";
 import { AssetInfo } from "@soroswap/sdk";
 import { cn } from "@/shared/lib/utils";
+import { useState } from "react";
 
 export const TokenAmountInput = ({
   amount,
   setAmount,
+  formattedAmount,
   isLoading,
   token,
   className,
@@ -14,11 +16,14 @@ export const TokenAmountInput = ({
 }: {
   amount: string | undefined;
   setAmount: (v: string | undefined) => void;
+  formattedAmount?: string;
   isLoading: boolean;
   token: AssetInfo | null | undefined;
   className?: string;
   disabled?: boolean;
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
+
   // Remove all non-numeric characters except decimal point
   const cleanValue = (value: string): string => {
     return value.replace(/[^\d.]/g, "");
@@ -31,7 +36,13 @@ export const TokenAmountInput = ({
         className,
       )}
       type="text"
-      value={amount !== undefined ? formatNumber(amount) : ""}
+      value={
+        isFocused
+          ? amount ?? ""
+          : formatNumber(formattedAmount ? formattedAmount : amount ? amount : "")
+      }
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       onChange={(e) => {
         const rawValue = cleanValue(e.target.value);
 
