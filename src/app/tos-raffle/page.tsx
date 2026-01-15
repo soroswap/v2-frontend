@@ -37,7 +37,7 @@ export default function RaffleTermsPage() {
             <p>
               An entry constitutes a submission of funds in the form of the USDC
               token to the Soroswap deposit contract{" "}
-              <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm">
+              <code className="break-all rounded bg-white/10 px-1.5 py-0.5 text-sm">
                 CA2FIPJ7U6BG3N7EOZFI74XPJZOEOD4TYWXFVCIO5VDCHTVAGS6F4UKK
               </code>{" "}
               that meets the following criteria:
@@ -119,7 +119,7 @@ export default function RaffleTermsPage() {
               three (3) delivered each week over four (4) weeks. Prizes will be
               delivered to the winning Stellar wallets via the Soroswap deposit
               contract{" "}
-              <code className="rounded bg-white/10 px-1.5 py-0.5 text-sm">
+              <code className="break-all rounded bg-white/10 px-1.5 py-0.5 text-sm">
                 CA2FIPJ7U6BG3N7EOZFI74XPJZOEOD4TYWXFVCIO5VDCHTVAGS6F4UKK
               </code>
               .
