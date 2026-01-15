@@ -26,6 +26,12 @@ export const Footer = () => {
             >
               Privacy Policy
             </Link>
+            <Link
+              href="/tos-raffle"
+              className="hover:text-primary/80 transition-colors"
+            >
+              Raffle Terms
+            </Link>
           </div>
 
           {/* Center - Copyright */}
