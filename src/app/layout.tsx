@@ -2,6 +2,7 @@ import "./globals.css";
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
+import { headers } from "next/headers";
 import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
 import { ThemeProvider } from "next-themes";
@@ -26,11 +27,15 @@ export const metadata: Metadata = {
     "Soroswap Finance is a decentralized exchange on the Stellar blockchain.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isBlockedPage = pathname === "/blocked";
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -45,9 +50,9 @@ export default function RootLayout({
             storageKey="soroswap-theme"
           >
             <UserProvider>
-              <Navbar />
+              {!isBlockedPage && <Navbar />}
               {children}
-              <Footer />
+              {!isBlockedPage && <Footer />}
             </UserProvider>
           </ThemeProvider>
         </PostHogProvider>
