@@ -116,7 +116,7 @@ export default function RaffleTermsPage() {
             <h2 className="text-2xl font-bold">5. Prize</h2>
             <p>
               Prizes will each amount to one hundred (100) USDC tokens, with
-              three (3) delivered each week over four (4) weeks. Prizes will be
+              five (5) delivered each week until february 1st 2026. Prizes will be
               delivered to the winning Stellar wallets via the Soroswap deposit
               contract{" "}
               <code className="break-all rounded bg-white/10 px-1.5 py-0.5 text-sm">
