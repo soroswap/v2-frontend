@@ -134,8 +134,7 @@ export default function RaffleTermsPage() {
           <section className="flex flex-col gap-4">
             <h2 className="text-2xl font-bold">6. Winner Selection</h2>
             <p>
-              Three (3) winners will be selected at random on or around each
-              Friday over four (4) weeks. Odds of winning depend on the number
+              Five (5) winners will be selected at random on or around Friday 16th, Friday 23rd and Sunday 1st. Odds of winning depend on the number of eligible entries received. Odds of winning depend on the number
               of eligible entries received.
             </p>
           </section>
