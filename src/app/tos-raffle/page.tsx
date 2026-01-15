@@ -44,7 +44,7 @@ export default function RaffleTermsPage() {
             </p>
             <ul className="ml-6 list-disc space-y-2">
               <li>
-                The balance submitted is at a minimum one hundred (100) USDC
+                The balance submitted is at a minimum fifty (50) USDC
               </li>
               <li>
                 The deposit is maintained in full for at least seven (7) days
