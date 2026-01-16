@@ -33,11 +33,11 @@ export const RAFFLE_ANNOUNCEMENT: AnnouncementConfig = {
   tosPoints: [
     {
       title: "Eligibility",
-      description: "18+ years old, excludes Palta Labs employees",
+      description: "18+ years old, excludes PaltaLabs employees",
     },
     {
       title: "Entry Period",
-      description: "January 16-31, 2025",
+      description: "January 12-31, 2025",
     },
     {
       title: "How to Enter",
@@ -45,7 +45,7 @@ export const RAFFLE_ANNOUNCEMENT: AnnouncementConfig = {
     },
     {
       title: "Prizes",
-      description: "100 USDC x 3 winners x 4 weeks (Fridays)",
+      description: "100 USDC x 5 winners x 3 weeks",
     },
     {
       title: "Bonus Entries",
