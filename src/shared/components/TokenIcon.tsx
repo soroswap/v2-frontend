@@ -43,20 +43,30 @@ export const TokenIcon = ({
 
   if (hasValidImage) {
     return (
-      <Image
-        src={src}
-        alt={alt || name || code || "Token"}
-        width={size}
-        height={size}
-        className={cn("rounded-full bg-white", className)}
-      />
+      <div
+        className={cn("shrink-0 overflow-hidden rounded-full bg-white", className)}
+        style={{
+          width: size,
+          height: size,
+          minWidth: size,
+          minHeight: size,
+        }}
+      >
+        <Image
+          src={src}
+          alt={alt || name || code || "Token"}
+          width={size}
+          height={size}
+          className="h-full w-full object-contain"
+        />
+      </div>
     );
   }
 
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-full font-bold text-white",
+        "flex shrink-0 items-center justify-center rounded-full font-bold text-white",
         className,
       )}
       style={{

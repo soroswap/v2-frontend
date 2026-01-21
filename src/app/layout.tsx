@@ -2,10 +2,12 @@ import "./globals.css";
 import { ReactNode } from "react";
 import type { Metadata } from "next";
 import { Inter, Darker_Grotesque } from "next/font/google";
+import { headers } from "next/headers";
 import { UserProvider } from "@/contexts";
 import { Navbar } from "@/features/navbar";
 import { ThemeProvider } from "next-themes";
 import { Footer } from "@/shared/components/Footer";
+import { PostHogProvider } from "@/shared/providers/PostHogProvider";
 
 const interSans = Inter({
   variable: "--font-inter",
@@ -25,29 +27,35 @@ export const metadata: Metadata = {
     "Soroswap Finance is a decentralized exchange on the Stellar blockchain.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isBlockedPage = pathname === "/blocked";
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${interSans.variable} ${darkerGrotesque.variable} bg-main font-sans antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          storageKey="soroswap-theme"
-        >
-          <UserProvider>
-            <Navbar />
-            {children}
-            <Footer />
-          </UserProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            storageKey="soroswap-theme"
+          >
+            <UserProvider>
+              {!isBlockedPage && <Navbar />}
+              {children}
+              {!isBlockedPage && <Footer />}
+            </UserProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
