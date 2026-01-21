@@ -180,7 +180,7 @@ export const TokenSelectorModal = ({
       onClick={onClose}
     >
       <div
-        className="border-surface-alt bg-surface relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border p-4 sm:max-w-sm"
+        className="animate-modal-enter border-surface-alt bg-surface relative z-50 flex h-[70vh] w-full max-w-sm flex-col gap-2 rounded-2xl border p-4 sm:max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
