@@ -51,7 +51,7 @@ export const envVars = {
     RPC_URL:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? "https://soroban-testnet.stellar.org"
-        : "https://soroban.stellar.org",
+        : "https://rpc.lightsail.network",
     HORIZON_URL:
       validatedEnv.NEXT_PUBLIC_ENV === "testnet"
         ? "https://horizon-testnet.stellar.org"
