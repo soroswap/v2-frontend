@@ -17,7 +17,7 @@ export const PricePanel = ({
   );
 
   return (
-    <div className="mt-1 h-5 min-w-20 overflow-hidden text-base text-[#A0A3C4] sm:text-lg">
+    <div className="mt-1 h-5 min-w-20 overflow-hidden text-sm text-[#A0A3C4]">
       {isLoading || isLoadingPrice || price === null ? (
         <div className="skeleton h-full w-20" />
       ) : (

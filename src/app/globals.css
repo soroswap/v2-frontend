@@ -115,6 +115,58 @@ body {
   animation: navbar-slide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Percentage buttons - enter animation (slide from top) */
+@keyframes percentage-btn-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Percentage buttons - exit animation (slide to top, faster) */
+@keyframes percentage-btn-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+.percentage-btn {
+  opacity: 0;
+}
+
+.percentage-btn-enter {
+  animation: percentage-btn-enter 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.percentage-btn-exit {
+  animation: percentage-btn-exit 0.12s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Modal enter animation (slide from bottom) */
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-modal-enter {
+  animation: modal-enter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
 @keyframes skeleton-pulse {
   0%,
   100% {

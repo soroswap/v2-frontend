@@ -13,11 +13,13 @@ export const TokenSelector = ({
   oppositeToken,
   placeholder = "Select token",
   onSelect,
+  onModalOpen,
 }: {
   currentToken: AssetInfo | null;
   oppositeToken: AssetInfo | null;
   placeholder?: string;
   onSelect?: (token: AssetInfo | null) => void;
+  onModalOpen?: () => void;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isOpenModalUserCustomAsset, setIsOpenModalUserCustomAsset] =
@@ -27,7 +29,10 @@ export const TokenSelector = ({
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={() => {
+          setIsOpen(true);
+          onModalOpen?.();
+        }}
         className={cn(
           "border-surface-alt bg-surface-alt text-primary hover:bg-surface-hover flex h-[43.5px] min-w-fit cursor-pointer items-center gap-2 rounded-full border px-1.5 py-1.5 text-xs font-bold whitespace-nowrap focus:outline-none sm:text-sm",
           currentToken ? "sm:px-1.5" : "sm:px-4",

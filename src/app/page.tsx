@@ -10,9 +10,10 @@ import {
   SettingsButton,
   TheButton,
 } from "@/shared/components/buttons";
+import { useUserBalances } from "@/shared/hooks";
 import { cn } from "@/shared/lib/utils/cn";
 import dynamic from "next/dynamic";
-import { MouseEvent, useCallback, useState } from "react";
+import { MouseEvent, useCallback, useMemo, useState } from "react";
 
 const SwapModal = dynamic(() =>
   import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
@@ -31,6 +32,13 @@ const getSwapButtonText = (step: SwapStep): string => {
 
 export default function SwapPage() {
   const { address: userAddress } = useUserContext();
+
+  // Balance hook for fetching user token balances
+  const {
+    getAvailableAmount,
+    isLoading: isBalanceLoading,
+    revalidate: revalidateBalances,
+  } = useUserBalances(userAddress);
 
   const [isSwapModalOpen, setIsSwapModalOpen] = useState<boolean>(false);
   const [swapResult, setSwapResult] = useState<SwapResult | null>(null);
@@ -62,6 +70,7 @@ export default function SwapPage() {
     onSuccess: (result: SwapResult) => {
       setSwapResult(result);
       setIsSwapModalOpen(true);
+      revalidateBalances(); // Refresh balances after successful swap
     },
     onError: (error: SwapError) => {
       console.error("Swap failed:", error);
@@ -79,6 +88,39 @@ export default function SwapPage() {
       }
     },
   });
+
+  // Get sell token balance
+  const sellTokenBalance = useMemo(() => {
+    if (!sellToken?.contract) return undefined;
+    return getAvailableAmount(sellToken.contract);
+  }, [sellToken, getAvailableAmount]);
+
+  // Get buy token balance
+  const buyTokenBalance = useMemo(() => {
+    if (!buyToken?.contract) return undefined;
+    return getAvailableAmount(buyToken.contract);
+  }, [buyToken, getAvailableAmount]);
+
+  // Check if user has insufficient balance for the sell token
+  const hasInsufficientBalance = useMemo(() => {
+    if (!sellTokenBalance || !typedValue) return false;
+    const sellAmount =
+      independentField === "sell" ? typedValue : derivedSellAmount;
+    if (!sellAmount) return false;
+    return Number(sellAmount) > Number(sellTokenBalance);
+  }, [sellTokenBalance, typedValue, independentField, derivedSellAmount]);
+
+  // Handle percentage button click for setting sell amount
+  const handlePercentageClick = useCallback(
+    (percentage: number) => {
+      if (!sellTokenBalance || Number(sellTokenBalance) === 0) return;
+      const calculatedAmount = (Number(sellTokenBalance) * percentage) / 100;
+      // Format to 7 decimals (Stellar standard), remove trailing zeros
+      const formattedAmount = calculatedAmount.toFixed(7).replace(/\.?0+$/, "");
+      handleAmountChange("sell")(formattedAmount);
+    },
+    [sellTokenBalance, handleAmountChange],
+  );
 
   const onSwitchTokens = useCallback(() => {
     setIsTokenSwitched((prev: boolean) => !prev);
@@ -112,6 +154,10 @@ export default function SwapPage() {
               oppositeToken={buyToken}
               onSelectToken={handleTokenSelect("sell")}
               isLoading={isQuoteLoading}
+              balance={sellTokenBalance}
+              isBalanceLoading={isBalanceLoading}
+              showPercentageButtons={true}
+              onPercentageClick={handlePercentageClick}
             />
 
             <RotateArrowButton
@@ -135,6 +181,8 @@ export default function SwapPage() {
             onSelectToken={handleTokenSelect("buy")}
             isLoading={isQuoteLoading}
             variant="outline"
+            balance={buyTokenBalance}
+            isBalanceLoading={isBalanceLoading}
           />
           <SwapQuoteDetails
             quote={quote}
@@ -152,18 +200,23 @@ export default function SwapPage() {
                   sellToken.contract === buyToken.contract ||
                   (!quote && quoteError) ||
                   quoteError?.message === "No path found" ||
-                  !typedValue
+                  !typedValue ||
+                  hasInsufficientBalance
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
               >
                 {!buyToken || !sellToken
                   ? "Select a token"
-                  : isSwapLoading
-                    ? getSwapButtonText(currentStep)
-                    : !quote && quoteError?.message === "No path found"
-                      ? "Not enough liquidity"
-                      : "Swap"}
+                  : !typedValue
+                    ? "Enter an amount"
+                    : hasInsufficientBalance
+                      ? `Insufficient ${sellToken.code} balance`
+                      : isSwapLoading
+                        ? getSwapButtonText(currentStep)
+                        : !quote && quoteError?.message === "No path found"
+                          ? "Not enough liquidity"
+                          : "Swap"}
               </TheButton>
             )}
           </div>

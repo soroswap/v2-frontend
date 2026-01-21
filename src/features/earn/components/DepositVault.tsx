@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useVaultInfo, useVaultBalance } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { ArrowRight } from "lucide-react";
 import { TheButton, TokenIcon } from "@/shared/components";
-import { useTokensList } from "@/shared/hooks";
+import { useTokensList, useUserBalances } from "@/shared/hooks";
 import { TokenAmountInput } from "@/features/swap/TokenAmountInput";
 import { EarnVaultModal } from "./EarnVaultModal";
 import {
@@ -81,15 +81,57 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     userAddress: address,
   });
 
+  // Balance hook for fetching user token balances
+  const {
+    getAvailableAmount,
+    isLoading: isBalanceLoading,
+    revalidate: revalidateBalances,
+  } = useUserBalances(address);
+
   const { currentStep, executeDeposit, reset, modalData } = useEarnVault({
     onSuccess: () => {
       revalidate(); // Revalidate vault balance after successful deposit
+      revalidateBalances(); // Revalidate user balances after successful deposit
     },
     onError: (error) => {
       // Keep modal open to show error message to user
       console.log("Deposit error:", error);
     },
   });
+
+  // Get firstAsset safely for use in hooks
+  const firstAsset = vaultInfo?.assets?.[0];
+  const firstAssetAddress = firstAsset?.address;
+
+  // Get user's balance for the deposit token - must be before early returns
+  const userTokenBalance = useMemo(() => {
+    if (!firstAssetAddress) return undefined;
+    return getAvailableAmount(firstAssetAddress);
+  }, [firstAssetAddress, getAvailableAmount]);
+
+  // Check if user has insufficient balance - must be before early returns
+  const hasInsufficientBalance = useMemo(() => {
+    if (!userTokenBalance || !amount) return false;
+    return Number(amount) > Number(userTokenBalance);
+  }, [userTokenBalance, amount]);
+
+  // Handle max button click - must be before early returns
+  const handleMaxClick = useCallback(() => {
+    if (userTokenBalance) {
+      const maxValue = Number(userTokenBalance).toFixed(7).replace(/\.?0+$/, "");
+      setAmount(maxValue);
+    }
+  }, [userTokenBalance]);
+
+  // Format balance for display
+  const formatBalance = (bal: string): string => {
+    const num = Number(bal);
+    if (isNaN(num)) return "0";
+    return num.toLocaleString(undefined, {
+      maximumFractionDigits: 4,
+      minimumFractionDigits: 0,
+    });
+  };
 
   const handleDeposit = async () => {
     if (!address) return;
@@ -118,15 +160,13 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
     );
   }
 
-  if (!vaultInfo?.assets || vaultInfo.assets.length === 0) {
+  if (!firstAsset) {
     return (
       <div className="text-secondary flex min-h-[110px] items-center justify-center text-center">
         Vault assets not available
       </div>
     );
   }
-
-  const firstAsset = vaultInfo.assets[0];
 
   return (
     <section className="w-full space-y-6">
@@ -149,10 +189,26 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
               </span>
             </div>
           </div>
-          <span className="text-secondary h-4 text-xs">
-            {/* TODO: Add balance from the user APi */}
-            {/* You have - {firstAsset.symbol} */}
-          </span>
+          <div className="text-secondary flex h-4 items-center gap-2 text-xs">
+            {isBalanceLoading ? (
+              <div className="h-4 w-24 animate-pulse rounded bg-gray-300/20" />
+            ) : userTokenBalance !== undefined ? (
+              <>
+                <span>
+                  Balance: {formatBalance(userTokenBalance)} {firstAsset.symbol}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleMaxClick}
+                  className="text-brand hover:text-brand/80 font-medium"
+                >
+                  Max
+                </button>
+              </>
+            ) : (
+              <span>Balance: 0 {firstAsset.symbol}</span>
+            )}
+          </div>
         </div>
 
         {/* Amount */}
@@ -212,10 +268,19 @@ export const DepositVault = ({ vaultAddress }: { vaultAddress: string }) => {
         <div className="flex">
           <TheButton
             onClick={handleDeposit}
-            disabled={!address || !amount || parseFloat(amount) <= 0}
+            disabled={
+              !address ||
+              !amount ||
+              parseFloat(amount) <= 0 ||
+              hasInsufficientBalance
+            }
             className="w-full text-white lg:w-auto lg:px-8"
           >
-            {!address ? "Connect Wallet" : "Deposit"}
+            {!address
+              ? "Connect Wallet"
+              : hasInsufficientBalance
+                ? `Insufficient ${firstAsset.symbol}`
+                : "Deposit"}
           </TheButton>
         </div>
       </div>
