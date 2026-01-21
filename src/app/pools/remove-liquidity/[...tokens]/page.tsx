@@ -23,6 +23,7 @@ import {
 import { PoolModal } from "@/features/pools/components/PoolModal";
 import { usePoolsSettingsStore } from "@/contexts/store";
 import { usePools } from "@/features/pools/hooks/usePools";
+import { useUserBalances } from "@/shared/hooks";
 
 // TODO: When the token data is [ ] u can type wathever u want
 // TODO: Flickering
@@ -55,6 +56,9 @@ export default function RemoveLiquidityPage() {
   // Get pools data for revalidation
   const { revalidate: revalidatePools } = usePools();
 
+  // Get balance revalidation function
+  const { revalidate: revalidateBalances } = useUserBalances(userAddress);
+
   // Find the specific pool position for these tokens
   const poolPosition = userPositions?.find(
     (position) =>
@@ -74,9 +78,10 @@ export default function RemoveLiquidityPage() {
       onSuccess: (result: PoolResult) => {
         setRemoveLiquidityResult(result);
         setIsPoolModalOpen(true);
-        // Revalidate pools and user positions after successful remove liquidity
+        // Revalidate pools, user positions, and balances after successful remove liquidity
         revalidatePools();
         revalidateUserPositions();
+        revalidateBalances();
       },
       onError: (error: PoolError) => {
         console.error("Remove liquidity failed:", error);

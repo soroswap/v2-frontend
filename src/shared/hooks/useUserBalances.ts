@@ -145,7 +145,7 @@ export const useUserBalances = (
     balanceMap,
     isLoading,
     isError: Boolean(error),
-    revalidate: () => mutate(),
+    revalidate: () => mutate(undefined, { revalidate: true }),
     getBalance,
     getAvailableAmount,
   };
