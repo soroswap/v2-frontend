@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { ThemeSwitch } from "@/features/navbar";
 import { ConnectWallet } from "@/shared/components/buttons";
+import { AnnouncementDialog } from "@/shared/components/AnnouncementDialog";
+import { getActiveAnnouncement } from "@/shared/lib/constants/announcements";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/shared/lib/utils/cn";
@@ -20,12 +22,13 @@ const NAV_LINKS = [
 export const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const pathname = usePathname();
+  const activeAnnouncement = getActiveAnnouncement();
 
   return (
     <header className="bg-surface-page fixed top-0 left-0 z-50 h-25 w-full text-3xl">
       <nav className="flex h-full items-center justify-between px-4 md:px-12">
         {/* Logo */}
-        <div className="flex max-h-14 min-h-[30px] max-w-[162px] min-w-[88px] items-center gap-3">
+        <div className="flex max-h-14 min-h-7 max-w-40 min-w-22 items-center gap-3">
           <Link href="/">
             <>
               <Image
@@ -33,7 +36,7 @@ export const Navbar = () => {
                 alt="Soroswap"
                 width={162}
                 height={56}
-                className="h-10 min-h-[30px] w-auto min-w-[88px] object-contain dark:hidden"
+                className="h-10 min-h-7 w-auto min-w-22 object-contain dark:hidden"
                 priority
               />
               <Image
@@ -41,7 +44,7 @@ export const Navbar = () => {
                 alt="Soroswap"
                 width={162}
                 height={56}
-                className="hidden h-10 min-h-[30px] w-auto min-w-[88px] object-contain dark:block"
+                className="hidden h-10 min-h-7 w-auto min-w-22 object-contain dark:block"
                 priority
               />
             </>
@@ -148,6 +151,11 @@ export const Navbar = () => {
           <ConnectWallet className="hidden md:block" />
         </div>
       </nav>
+
+      {/* Announcement Dialog */}
+      {activeAnnouncement && (
+        <AnnouncementDialog announcement={activeAnnouncement} />
+      )}
     </header>
   );
 };
