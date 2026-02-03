@@ -20,7 +20,7 @@ export interface AnnouncementConfig {
 
 // === RAFFLE ANNOUNCEMENT CONFIGURATION ===
 // Set to false to disable the raffle announcement dialog
-export const RAFFLE_ANNOUNCEMENT_ENABLED = true;
+export const RAFFLE_ANNOUNCEMENT_ENABLED = false;
 
 export const RAFFLE_ANNOUNCEMENT: AnnouncementConfig = {
   id: "raffle-jan-2025",
