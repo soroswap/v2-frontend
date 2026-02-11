@@ -163,6 +163,9 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
           throw new Error(data.message || `Deposit failed: ${res.status}`);
         }
 
+        if (data?.isSmartWallet) {
+          throw new Error("Smart wallet transactions are not yet supported");
+        }
         const xdr: string | undefined = data?.xdr;
         if (!xdr) {
           throw new Error("Missing XDR from deposit response");
@@ -180,11 +183,7 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
         });
         const sendResult = await sendTransaction(signedXdr);
 
-        const txHash =
-          sendResult?.data?.txHash ||
-          sendResult?.data?.hash ||
-          sendResult?.txHash ||
-          sendResult?.hash;
+        const txHash = sendResult?.txHash;
 
         const result: EarnVaultResult = {
           txHash,
@@ -257,6 +256,9 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
           throw new Error(data.message || `Withdraw failed: ${res.status}`);
         }
 
+        if (data?.isSmartWallet) {
+          throw new Error("Smart wallet transactions are not yet supported");
+        }
         const xdr: string | undefined = data?.xdr;
         if (!xdr) {
           throw new Error("Missing XDR from withdraw response");
@@ -274,11 +276,7 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
         });
         const sendResult = await sendTransaction(signedXdr);
 
-        const txHash =
-          sendResult?.data?.txHash ||
-          sendResult?.data?.hash ||
-          sendResult?.txHash ||
-          sendResult?.hash;
+        const txHash = sendResult?.txHash;
 
         const result: EarnVaultResult = {
           txHash,
@@ -353,6 +351,9 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
           );
         }
 
+        if (data?.isSmartWallet) {
+          throw new Error("Smart wallet transactions are not yet supported");
+        }
         const xdr: string | undefined = data?.xdr;
         if (!xdr) {
           throw new Error("Missing XDR from withdraw shares response");
@@ -370,11 +371,7 @@ export function useEarnVault(options?: UseEarnVaultOptions) {
         });
         const sendResult = await sendTransaction(signedXdr);
 
-        const txHash =
-          sendResult?.data?.txHash ||
-          sendResult?.data?.hash ||
-          sendResult?.txHash ||
-          sendResult?.hash;
+        const txHash = sendResult?.txHash;
 
         const result: EarnVaultResult = {
           txHash,

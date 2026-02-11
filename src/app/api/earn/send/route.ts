@@ -3,10 +3,7 @@ import { ALLOWED_ORIGINS } from "@/shared/lib/server";
 import { defindexClient } from "@/shared/lib/server/defindexClient";
 import { network, DEFINDEX } from "@/shared/lib/environmentVars";
 import { SupportedNetworks } from "@defindex/sdk";
-import type {
-  SendTransactionResponse,
-  LaunchTubeResponse,
-} from "@defindex/sdk";
+import type { SendTransactionResponse } from "@defindex/sdk";
 
 export async function POST(request: NextRequest) {
   const origin =
@@ -35,13 +32,11 @@ export async function POST(request: NextRequest) {
   try {
     const xdr: string = await request.json();
 
-    const sendTransactionResponse:
-      | SendTransactionResponse
-      | LaunchTubeResponse = await defindexClient.sendTransaction(
-      xdr,
-      DEFINDEX.NETWORK as SupportedNetworks,
-      false,
-    );
+    const sendTransactionResponse: SendTransactionResponse =
+      await defindexClient.sendTransaction(
+        xdr,
+        DEFINDEX.NETWORK as SupportedNetworks,
+      );
 
     return NextResponse.json(sendTransactionResponse);
   } catch (error) {

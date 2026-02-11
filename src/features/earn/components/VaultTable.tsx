@@ -30,7 +30,7 @@ const TvlCell = ({ vault }: { vault: VaultTableData }) => {
   // const { price, isLoading } = useTokenPrice(vault.assets[0].address);
 
   // Validate tvl before converting to BigInt
-  if (!tvl || tvl === "0" || tvl === 0) {
+  if (!tvl || tvl === "0") {
     return (
       <div className="text-primary font-medium">{formatCurrency("0")}</div>
     );
