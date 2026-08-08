@@ -3,6 +3,7 @@ export * from "./components/SodaxQuoteDetails";
 export * from "./components/SodaxSwapModal";
 export * from "./constants/sodax";
 export * from "./hooks/useSodaTrustline";
+export * from "./hooks/useSodaUsdPrice";
 export * from "./hooks/useSodaxAvailability";
 export * from "./hooks/useSodaxQuote";
 export * from "./hooks/useSodaxSwap";
