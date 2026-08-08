@@ -157,8 +157,11 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
     [options, updateStep],
   );
 
+  // NOTE: /api/sodax/send, not /api/send — the Soroswap send API rejects
+  // Soroban transactions that touch non-Soroswap contracts, which every
+  // SODAX intent transaction does.
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/send", {
+    const response = await fetch("/api/sodax/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(signedXdr),
