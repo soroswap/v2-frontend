@@ -24,6 +24,8 @@ interface SwapPanelProps {
   showPercentageButtons?: boolean;
   /** Callback when percentage button is clicked */
   onPercentageClick?: (percentage: number) => void;
+  /** Disable typing in this panel (e.g. exact-input-only quotes) */
+  inputDisabled?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -43,6 +45,7 @@ export const SwapPanel = ({
   isBalanceLoading,
   showPercentageButtons = false,
   onPercentageClick,
+  inputDisabled = false,
 }: SwapPanelProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [animationState, setAnimationState] = useState<
@@ -134,6 +137,7 @@ export const SwapPanel = ({
           setAmount={setAmount}
           isLoading={isLoading}
           token={token}
+          disabled={inputDisabled}
         />
 
         <TokenSelector

@@ -1,3 +1,4 @@
+import { SODA_ASSET_INFO, useSodaxAvailability } from "@/features/sodax";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { useUserBalances } from "@/shared/hooks/useUserBalances";
@@ -27,6 +28,7 @@ export const TokenSelectorModal = ({
   const [searchValue, setSearchValue] = useState<string>("");
   const { tokensList } = useTokensList();
   const userTokenList = useUserAssetList();
+  const { isSodaxEnabled } = useSodaxAvailability();
   const { address } = useUserContext();
   const {
     getAvailableAmount,
@@ -88,11 +90,19 @@ export const TokenSelectorModal = ({
     setSearchValue(value);
   };
 
-  // Memoize combined token list to prevent dependency array changes
-  const allTokens = useMemo(
-    () => [...tokensList, ...userTokenList],
-    [tokensList, userTokenList],
-  );
+  // Memoize combined token list to prevent dependency array changes.
+  // SODA is appended when the SODAX solver is available (swaps to/from it
+  // route through SODAX instead of the AMM), unless a list already has it.
+  const allTokens = useMemo(() => {
+    const tokens = [...tokensList, ...userTokenList];
+    if (
+      isSodaxEnabled &&
+      !tokens.some((token) => token.contract === SODA_ASSET_INFO.contract)
+    ) {
+      tokens.push(SODA_ASSET_INFO);
+    }
+    return tokens;
+  }, [tokensList, userTokenList, isSodaxEnabled]);
 
   // Filter and sort tokens - tokens with balances first, then by balance amount
   const filteredAndSortedTokens = useMemo(() => {
