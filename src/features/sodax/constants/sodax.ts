@@ -40,7 +40,8 @@ export const SODA_COUNTERPART_CONTRACTS: readonly string[] = [
 
 /**
  * SODA as a Soroswap token-list entry, for injecting into the token selector.
- * No `icon`: TokenIcon renders its deterministic-color fallback.
+ * The icon is bundled in /public (same approach as /xlmlogo.png) so it never
+ * depends on an external image host.
  */
 export const SODA_ASSET_INFO: AssetInfo = {
   code: SODA_STELLAR.code,
@@ -49,5 +50,6 @@ export const SODA_ASSET_INFO: AssetInfo = {
   name: "SODAX",
   org: "SODAX",
   domain: "sodax.com",
+  icon: "/sodalogo.png",
   decimals: SODA_STELLAR.decimals,
 };
