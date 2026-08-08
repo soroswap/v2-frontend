@@ -5,6 +5,7 @@ import { AssetInfo } from "@soroswap/sdk";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SODA_STELLAR } from "../constants/sodax";
 import { applySlippageToQuote, isSodaxPair } from "../lib/pair";
+import { SodaxApiError } from "../types/sodax";
 import { useSodaTrustline } from "./useSodaTrustline";
 import { useSodaxAvailability } from "./useSodaxAvailability";
 import { useSodaxQuote } from "./useSodaxQuote";
@@ -83,6 +84,25 @@ export function useSodaxSwapIntegration({
     return formatUnits({ value: quote.quotedAmount, decimals: buyDecimals });
   }, [isSodaxActive, quote, buyDecimals]);
 
+  // Button-ready copy for a failed quote. The solver rejects dust-sized
+  // amounts with 422 "No path was found", which reads as a routing failure
+  // but almost always means "amount too small" on these pairs.
+  const quoteErrorMessage = useMemo(() => {
+    if (!quoteError) return null;
+    if (quoteError instanceof SodaxApiError) {
+      if (quoteError.status === 422) {
+        return "Amount too small — try a larger amount";
+      }
+      if (
+        quoteError.code === "NETWORK_ERROR" ||
+        quoteError.code === "TIMEOUT_ERROR"
+      ) {
+        return "Connection problem — retrying...";
+      }
+    }
+    return "Quote unavailable right now";
+  }, [quoteError]);
+
   const minOutputAmount = useMemo(() => {
     if (!quote) return null;
     return applySlippageToQuote(quote.quotedAmount, slippagePercent);
@@ -147,6 +167,7 @@ export function useSodaxSwapIntegration({
     inputAmount,
     sodaxQuote: quote,
     sodaxQuoteError: quoteError,
+    sodaxQuoteErrorMessage: quoteErrorMessage,
     isSodaxQuoteLoading: isLoading,
     derivedBuyAmount,
     minOutputAmount,

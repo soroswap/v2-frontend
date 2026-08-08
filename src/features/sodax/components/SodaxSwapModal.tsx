@@ -80,8 +80,9 @@ const PairSummary = ({
         code={buyToken?.code}
         size={32}
       />
+      {/* The solver fills at or above minOutputAmount; the quoted amount is an estimate. */}
       <p>
-        {buyAmount} {buyToken?.code}
+        ~{buyAmount} {buyToken?.code}
       </p>
     </div>
   </div>

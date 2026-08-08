@@ -17,8 +17,18 @@ export interface SodaTrustlineStatus {
   checking: boolean;
 }
 
+/**
+ * Same threshold the bridge uses: enough XLM to cover the +0.5 XLM trustline
+ * reserve plus fees with headroom.
+ */
+export const MIN_XLM_FOR_TRUSTLINE = 1.5;
+
 export interface UseSodaTrustlineReturn {
   trustlineStatus: SodaTrustlineStatus;
+  /** Native XLM balance of the account, "0" while unknown. */
+  xlmBalance: string;
+  /** True when the account lacks the XLM reserve to add a trustline. */
+  hasInsufficientReserve: boolean;
   hasCheckedOnce: boolean;
   checkTrustline: () => Promise<void>;
   createTrustline: () => Promise<void>;
@@ -39,6 +49,7 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
     balance: "0",
     checking: false,
   });
+  const [xlmBalance, setXlmBalance] = useState("0");
   const [hasCheckedOnce, setHasCheckedOnce] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [createTrustlineError, setCreateTrustlineError] = useState<
@@ -66,6 +77,11 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
           balance.asset_issuer === SODA_STELLAR.issuer,
       );
 
+      const nativeBalance = account.balances.find(
+        (balance) => balance.asset_type === "native",
+      );
+
+      setXlmBalance(nativeBalance?.balance ?? "0");
       setTrustlineStatus({
         exists: !!sodaBalance,
         balance: sodaBalance?.balance ?? "0",
@@ -76,6 +92,7 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
       if (!(error instanceof Error && error.message.includes("404"))) {
         console.error("Failed to check SODA trustline:", error);
       }
+      setXlmBalance("0");
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
     } finally {
       setHasCheckedOnce(true);
@@ -143,12 +160,20 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
       checkTrustline();
     } else {
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
+      setXlmBalance("0");
       setHasCheckedOnce(false);
     }
   }, [address, checkTrustline]);
 
+  const hasInsufficientReserve =
+    hasCheckedOnce &&
+    !trustlineStatus.exists &&
+    parseFloat(xlmBalance) < MIN_XLM_FOR_TRUSTLINE;
+
   return {
     trustlineStatus,
+    xlmBalance,
+    hasInsufficientReserve,
     hasCheckedOnce,
     checkTrustline,
     createTrustline,

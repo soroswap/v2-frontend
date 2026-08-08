@@ -1,9 +1,12 @@
 "use client";
 
 import { TheButton } from "@/shared/components/buttons";
-import { Info } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 import { SODA_STELLAR } from "../constants/sodax";
-import { UseSodaTrustlineReturn } from "../hooks/useSodaTrustline";
+import {
+  MIN_XLM_FOR_TRUSTLINE,
+  UseSodaTrustlineReturn,
+} from "../hooks/useSodaTrustline";
 
 interface SodaTrustlineSectionProps {
   trustline: UseSodaTrustlineReturn;
@@ -11,17 +14,41 @@ interface SodaTrustlineSectionProps {
 
 /**
  * Shown in the swap card when the user wants to buy SODA but has no
- * trustline yet. Follows the bridge's trustline-section pattern.
+ * trustline yet. Follows the bridge's trustline-section pattern, including
+ * its insufficient-XLM-reserve warning state.
  */
 export const SodaTrustlineSection = ({
   trustline,
 }: SodaTrustlineSectionProps) => {
-  const { createTrustline, isCreating, createTrustlineError } = trustline;
+  const {
+    createTrustline,
+    isCreating,
+    createTrustlineError,
+    hasInsufficientReserve,
+    xlmBalance,
+  } = trustline;
+
+  if (hasInsufficientReserve) {
+    return (
+      <section className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
+        <AlertTriangle className="size-5 shrink-0 text-orange-600 dark:text-orange-400" />
+        <div className="flex-1">
+          <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+            Not enough XLM for the SODA trustline
+          </p>
+          <p className="text-xs text-orange-700 dark:text-orange-300">
+            You need at least {MIN_XLM_FOR_TRUSTLINE} XLM to add a trustline.
+            Current balance: {parseFloat(xlmBalance).toFixed(2)} XLM
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-900/20">
-        <Info className="size-5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
+        <Info className="size-5 shrink-0 text-blue-600 dark:text-blue-400" />
         <div className="flex-1">
           <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
             One-time setup to receive SODA

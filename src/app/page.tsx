@@ -249,8 +249,8 @@ export default function SwapPage() {
                           ? "Add SODA trustline to continue"
                           : sodax.isSodaxSwapLoading
                             ? "Processing..."
-                            : sodax.sodaxQuoteError
-                              ? "Quote unavailable"
+                            : sodax.sodaxQuoteErrorMessage
+                              ? sodax.sodaxQuoteErrorMessage
                               : "Swap"
                         : isSwapLoading
                           ? getSwapButtonText(currentStep)
