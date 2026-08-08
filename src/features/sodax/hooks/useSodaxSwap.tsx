@@ -19,6 +19,7 @@ import {
   SodaxApiError,
   SodaxCreateIntentParams,
   SodaxSubmitStatus,
+  SodaxSubmitStatusResponse,
 } from "../types/sodax";
 
 export enum SodaxSwapStep {
@@ -180,38 +181,59 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
   const pollUntilFilled = useCallback(
     async (srcTxHash: string) => {
       const startedAt = Date.now();
+      // A transient poll failure (rate limit, network blip) must not fail a
+      // swap that is already relaying — only give up after several in a row.
+      const MAX_CONSECUTIVE_POLL_FAILURES = 5;
+      let consecutiveFailures = 0;
 
       while (Date.now() - startedAt < SODAX_STATUS_POLL_TIMEOUT_MS) {
         if (abortRef.current) {
           throw new Error("Swap tracking was cancelled");
         }
 
-        const { data } = await fetchSodaxSubmitStatus(
-          srcTxHash,
-          SODAX_STELLAR_CHAIN_KEY,
-        );
-
-        if (data.status === "solved" && data.result?.dstIntentTxHash) {
-          return data.result.dstIntentTxHash;
-        }
-
-        if (data.status === "failed" || data.intentCancelled) {
-          throw new Error(
-            data.userMessage ||
-              data.failureReason ||
-              "The solver could not complete this swap",
+        let data: SodaxSubmitStatusResponse["data"] | null = null;
+        try {
+          ({ data } = await fetchSodaxSubmitStatus(
+            srcTxHash,
+            SODAX_STELLAR_CHAIN_KEY,
+          ));
+          consecutiveFailures = 0;
+        } catch (cause) {
+          consecutiveFailures += 1;
+          console.warn(
+            `[SODAX] Status poll failed (${consecutiveFailures}/${MAX_CONSECUTIVE_POLL_FAILURES})`,
+            cause,
           );
+          if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+            throw new Error(
+              "Lost connection while tracking the swap. The swap itself usually still completes — check your balance before retrying.",
+            );
+          }
         }
 
-        if (data.abandonedAt) {
-          throw new Error(
-            data.userMessage ||
-              "The swap was abandoned by the relay. Your funds were not taken.",
-          );
-        }
+        if (data) {
+          if (data.status === "solved" && data.result?.dstIntentTxHash) {
+            return data.result.dstIntentTxHash;
+          }
 
-        if (FILL_PIPELINE.includes(data.status)) {
-          setFillStatus(data.status);
+          if (data.status === "failed" || data.intentCancelled) {
+            throw new Error(
+              data.userMessage ||
+                data.failureReason ||
+                "The solver could not complete this swap",
+            );
+          }
+
+          if (data.abandonedAt) {
+            throw new Error(
+              data.userMessage ||
+                "The swap was abandoned by the relay. Your funds were not taken.",
+            );
+          }
+
+          if (FILL_PIPELINE.includes(data.status)) {
+            setFillStatus(data.status);
+          }
         }
 
         await new Promise((resolve) =>
