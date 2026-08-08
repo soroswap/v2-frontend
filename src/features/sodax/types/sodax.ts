@@ -154,7 +154,8 @@ export type SodaxApiErrorCode =
   | "VALIDATION_ERROR"
   | "INTERNAL_ERROR"
   | "SODAX_ERROR_CORS"
-  | "SODAX_ERROR_PARAM";
+  | "SODAX_ERROR_PARAM"
+  | "SODAX_ERROR_SUBMIT";
 
 /** Typed error thrown by the client wrapper in lib/api.ts. */
 export class SodaxApiError extends Error {

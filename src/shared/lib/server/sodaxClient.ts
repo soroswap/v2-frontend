@@ -28,14 +28,44 @@ export function getSodaxClient(): SwapsApi {
 }
 
 /**
- * Same origin allow-list check the other API routes perform inline.
- * Returns a 403 response when the origin is not allowed, null otherwise.
+ * True when the Origin/Referer value's HOST matches the allow-list.
+ * Anchored (URL-parsed, exact host or dot-suffix match) rather than the
+ * substring check the older routes use inline — the SODAX routes include a
+ * direct-to-RPC broadcast endpoint, where `origin.includes(allowed)` would
+ * pass e.g. "https://evil.com/?x=app.soroswap.finance".
+ */
+function isAllowedOrigin(value: string): boolean {
+  let host: string;
+  try {
+    host = new URL(value).host;
+  } catch {
+    return false;
+  }
+
+  return ALLOWED_ORIGINS.some((allowed) => {
+    if (allowed.startsWith(".")) {
+      return host === allowed.slice(1) || host.endsWith(allowed);
+    }
+    if (allowed.includes("://")) {
+      try {
+        return new URL(allowed).host === host;
+      } catch {
+        return false;
+      }
+    }
+    return host === allowed;
+  });
+}
+
+/**
+ * Origin allow-list check for the SODAX routes. Returns a 403 response when
+ * the origin is not allowed, null otherwise.
  */
 export function sodaxOriginGuard(request: NextRequest): NextResponse | null {
   const origin =
     request.headers.get("origin") || request.headers.get("referer") || "";
 
-  if (!ALLOWED_ORIGINS.some((allowed) => origin.includes(allowed))) {
+  if (!isAllowedOrigin(origin)) {
     return NextResponse.json(
       { code: "SODAX_ERROR_CORS", message: "Forbidden" },
       { status: 403 },

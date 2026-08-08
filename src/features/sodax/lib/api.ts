@@ -23,6 +23,7 @@ const KNOWN_CODES: readonly SodaxApiErrorCode[] = [
   "INTERNAL_ERROR",
   "SODAX_ERROR_CORS",
   "SODAX_ERROR_PARAM",
+  "SODAX_ERROR_SUBMIT",
 ];
 
 function toApiError(status: number, body: unknown): SodaxApiError {

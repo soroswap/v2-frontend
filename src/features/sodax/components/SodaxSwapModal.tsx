@@ -151,9 +151,11 @@ export const SodaxSwapModal = ({
               buyAmount={buyAmount}
             />
             <div className="flex flex-col gap-2">
-              {result?.dstTxHash && (
+              {/* srcTxHash is the Stellar transaction; dstTxHash is a SODAX
+                  hub-side (0x…) hash that stellar.expert cannot resolve. */}
+              {result?.srcTxHash && (
                 <a
-                  href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${result.dstTxHash}`}
+                  href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${result.srcTxHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"

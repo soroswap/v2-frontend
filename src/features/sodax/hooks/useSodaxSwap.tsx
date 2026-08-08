@@ -101,6 +101,10 @@ function toUserMessage(error: unknown, fallback: string): {
         };
       case "HTTP_ERROR":
         return { message: error.message, retryable: false };
+      case "SODAX_ERROR_SUBMIT":
+        // Our own broadcast route's rejection — carries an actionable
+        // message ("may have expired — please retry the swap").
+        return { message: error.message, retryable: true };
       default:
         return {
           message: "Unexpected response from SODAX. Please try again later.",
@@ -190,10 +194,9 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
    * network/timeout failures keep their retryable classification.
    */
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const body = await post<{ data: { txHash: string; success: boolean } }>(
-      "/api/sodax/send",
-      signedXdr,
-    );
+    const body = await post<{
+      data: { txHash: string; success: boolean; confirmed?: boolean };
+    }>("/api/sodax/send", signedXdr);
     if (!body?.data?.txHash || body.data.success === false) {
       throw new Error("The transaction failed on the Stellar network");
     }
@@ -201,7 +204,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
   }, []);
 
   const pollUntilFilled = useCallback(
-    async (srcTxHash: string) => {
+    async (srcTxHash: string, broadcastConfirmed: boolean) => {
       const startedAt = Date.now();
       // A transient poll failure (rate limit, network blip) must not fail a
       // swap that is already relaying — only give up after several in a row.
@@ -264,8 +267,12 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
         );
       }
 
+      // Distinguish "solver slow" from "the broadcast was never confirmed
+      // on-chain" — the second will not complete on its own.
       throw new Error(
-        "Timed out waiting for the solver. The swap may still complete — check your balances before retrying.",
+        broadcastConfirmed
+          ? "Timed out waiting for the solver. The swap may still complete — check your balances before retrying."
+          : "Your transaction was not confirmed on the Stellar network. Check your balance before retrying.",
       );
     },
     [],
@@ -294,6 +301,8 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       // 1. Allowance (a Stellar-source check verifies the input trustline
       //    covers the amount). Uses a provisional deadline — the real one is
       //    fetched after any approval, so wallet-signing time can't burn it.
+      //    `prepStep` tracks which of the two stages actually failed.
+      let prepStep = SodaxSwapStep.PREPARING;
       updateStep(SodaxSwapStep.PREPARING);
       try {
         const provisional = await fetchSodaxDeadline();
@@ -307,6 +316,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
         // 2. Approve when needed (adds/raises the source trustline), then
         //    re-check instead of assuming the approval landed.
         if (!valid) {
+          prepStep = SodaxSwapStep.APPROVING;
           updateStep(SodaxSwapStep.APPROVING);
           const { tx } = await fetchSodaxApproveTx(allowanceParams);
           const signedApproval = await signTransaction(
@@ -323,11 +333,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
           }
         }
       } catch (cause) {
-        return failWith(
-          SodaxSwapStep.PREPARING,
-          cause,
-          "Failed to prepare the swap",
-        );
+        return failWith(prepStep, cause, "Failed to prepare the swap");
       }
 
       // 3. Fresh deadline + unsigned intent transaction (simulated
@@ -362,9 +368,11 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       // 5. Broadcast on Stellar.
       updateStep(SodaxSwapStep.SENDING_TRANSACTION);
       let srcTxHash: string;
+      let broadcastConfirmed = true;
       try {
         const sendResult = await sendTransaction(signedXdr);
         srcTxHash = sendResult.txHash;
+        broadcastConfirmed = sendResult.confirmed !== false;
       } catch (cause) {
         return failWith(
           SodaxSwapStep.SENDING_TRANSACTION,
@@ -395,7 +403,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       updateStep(SodaxSwapStep.WAITING_FOR_FILL);
       let dstTxHash: string;
       try {
-        dstTxHash = await pollUntilFilled(srcTxHash);
+        dstTxHash = await pollUntilFilled(srcTxHash, broadcastConfirmed);
       } catch (cause) {
         return failWith(
           SodaxSwapStep.WAITING_FOR_FILL,
