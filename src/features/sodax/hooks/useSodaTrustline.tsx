@@ -120,11 +120,12 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
         throw new Error(`Failed to send transaction: ${response.status}`);
       }
 
+      // SendTransactionResponse (@soroswap/sdk >= 0.4.0): { txHash, success, ... }
       const result = await response.json();
-      if (result.data?.status === "success" || result.data?.successful) {
+      if (result.data?.success) {
         await checkTrustline();
       } else {
-        throw new Error("Trustline transaction failed");
+        throw new Error("Trustline transaction failed on the network");
       }
     } catch (error) {
       setCreateTrustlineError(

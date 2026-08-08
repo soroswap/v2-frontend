@@ -164,13 +164,14 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       body: JSON.stringify(signedXdr),
     });
 
+    // SendTransactionResponse (@soroswap/sdk >= 0.4.0): { txHash, success, ... }
     const body = await response.json();
-    if (!response.ok || !body?.data?.txHash) {
+    if (!response.ok || !body?.data?.txHash || body?.data?.success === false) {
       throw new Error(
-        body?.message || "Failed to broadcast the transaction to Stellar",
+        body?.message || "The transaction failed on the Stellar network",
       );
     }
-    return body.data as { txHash: string; success?: boolean };
+    return body.data as { txHash: string; success: boolean };
   }, []);
 
   const pollUntilFilled = useCallback(
