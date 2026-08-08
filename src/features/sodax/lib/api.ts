@@ -12,7 +12,7 @@ import {
   SodaxSubmitTxRequest,
   SodaxSubmitTxResponse,
   SodaxToken,
-} from "../types/sodax";
+} from "@/features/sodax/types/sodax";
 
 const KNOWN_CODES: readonly SodaxApiErrorCode[] = [
   "NETWORK_ERROR",
@@ -68,7 +68,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-function post<T>(url: string, payload: unknown): Promise<T> {
+export function post<T>(url: string, payload: unknown): Promise<T> {
   return request<T>(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

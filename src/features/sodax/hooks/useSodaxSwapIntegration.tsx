@@ -1,15 +1,23 @@
 "use client";
 
+import {
+  SODA_STELLAR,
+  StellarClassicAsset,
+  USDC_STELLAR,
+  XLM_STELLAR_CONTRACT,
+} from "@/features/sodax/constants/sodax";
+import { useSodaTrustline } from "@/features/sodax/hooks/useSodaTrustline";
+import { useSodaxAvailability } from "@/features/sodax/hooks/useSodaxAvailability";
+import { useSodaxQuote } from "@/features/sodax/hooks/useSodaxQuote";
+import {
+  SodaxSwapResult,
+  useSodaxSwap,
+} from "@/features/sodax/hooks/useSodaxSwap";
+import { applySlippageToQuote, isSodaxPair } from "@/features/sodax/lib/pair";
+import { SodaxApiError } from "@/features/sodax/types/sodax";
 import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
 import { AssetInfo } from "@soroswap/sdk";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SODA_STELLAR } from "../constants/sodax";
-import { applySlippageToQuote, isSodaxPair } from "../lib/pair";
-import { SodaxApiError } from "../types/sodax";
-import { useSodaTrustline } from "./useSodaTrustline";
-import { useSodaxAvailability } from "./useSodaxAvailability";
-import { useSodaxQuote } from "./useSodaxQuote";
-import { SodaxSwapResult, useSodaxSwap } from "./useSodaxSwap";
 
 export interface UseSodaxSwapIntegrationParams {
   sellToken: AssetInfo | null;
@@ -30,6 +38,19 @@ function toBaseUnits(value: string, decimals: number): string | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Which classic asset the destination side needs a trustline for.
+ * XLM is native — no trustline. Anything else on our pairs is SODA or USDC.
+ */
+function destinationTrustlineAsset(
+  buyContract: string | undefined,
+): StellarClassicAsset | null {
+  if (!buyContract || buyContract === XLM_STELLAR_CONTRACT) return null;
+  if (buyContract === SODA_STELLAR.contract) return SODA_STELLAR;
+  if (buyContract === USDC_STELLAR.contract) return USDC_STELLAR;
+  return null;
 }
 
 /**
@@ -60,8 +81,15 @@ export function useSodaxSwapIntegration({
     return () => clearTimeout(timer);
   }, [typedValue]);
 
+  // The executed amount comes from the debounced value; never allow a swap
+  // while the two disagree, or a click inside the debounce window would
+  // sign the previous amount.
+  const isDebouncing = typedValue !== debouncedValue;
+
   const sellDecimals = sellToken?.decimals ?? 7;
   const buyDecimals = buyToken?.decimals ?? 7;
+
+  const swap = useSodaxSwap({ onSuccess });
 
   // SODAX only supports exact_input, so only the Sell side can drive.
   const inputAmount =
@@ -77,12 +105,20 @@ export function useSodaxSwapIntegration({
           amount: inputAmount,
         }
       : null,
+    // The intent commits to minOutputAmount before signing — refreshing the
+    // quote during execution would only burn solver pathfinding.
+    { paused: swap.isLoading },
   );
 
   const derivedBuyAmount = useMemo(() => {
     if (!isSodaxActive || !quote) return undefined;
     return formatUnits({ value: quote.quotedAmount, decimals: buyDecimals });
   }, [isSodaxActive, quote, buyDecimals]);
+
+  const minOutputAmount = useMemo(() => {
+    if (!quote) return null;
+    return applySlippageToQuote(quote.quotedAmount, slippagePercent);
+  }, [quote, slippagePercent]);
 
   // Button-ready copy for a failed quote. The solver rejects dust-sized
   // amounts with 422 "No path was found", which reads as a routing failure
@@ -103,26 +139,25 @@ export function useSodaxSwapIntegration({
     return "Quote unavailable right now";
   }, [quoteError]);
 
-  const minOutputAmount = useMemo(() => {
-    if (!quote) return null;
-    return applySlippageToQuote(quote.quotedAmount, slippagePercent);
-  }, [quote, slippagePercent]);
-
-  // Trustline gate: the solver cannot deliver SODA without a trustline, so
-  // buying SODA is blocked until one exists. Selling implies one already does.
-  const trustline = useSodaTrustline();
+  // Destination trustline gate: the solver cannot deliver a classic asset
+  // (SODA or USDC) without a trustline. Selling implies the source one exists.
+  const trustlineAsset = useMemo(
+    () =>
+      isSodaxActive && userAddress
+        ? destinationTrustlineAsset(buyToken?.contract)
+        : null,
+    [isSodaxActive, userAddress, buyToken?.contract],
+  );
+  const trustline = useSodaTrustline(trustlineAsset);
   const needsSodaTrustline =
-    isSodaxActive &&
-    buyToken?.contract === SODA_STELLAR.contract &&
-    !!userAddress &&
+    !!trustlineAsset &&
     trustline.hasCheckedOnce &&
     !trustline.trustlineStatus.exists;
-
-  const swap = useSodaxSwap({ onSuccess });
 
   const handleSodaxSwap = useCallback(async () => {
     if (
       !isSodaxActive ||
+      isDebouncing ||
       !inputAmount ||
       !minOutputAmount ||
       !sellToken?.contract ||
@@ -142,7 +177,8 @@ export function useSodaxSwapIntegration({
         userAddress,
       });
     } catch (error) {
-      // The machine already captured the error into its ERROR state.
+      // The machine already captured the error into its ERROR state
+      // (or the user cancelled, which is not an error).
       console.error("[SODAX] Swap failed:", error);
     } finally {
       // Whatever happened, the executed quote is stale now.
@@ -150,6 +186,7 @@ export function useSodaxSwapIntegration({
     }
   }, [
     isSodaxActive,
+    isDebouncing,
     inputAmount,
     minOutputAmount,
     sellToken,
@@ -165,6 +202,7 @@ export function useSodaxSwapIntegration({
     isSodaxActive,
     // quote
     inputAmount,
+    isDebouncing,
     sodaxQuote: quote,
     sodaxQuoteError: quoteError,
     sodaxQuoteErrorMessage: quoteErrorMessage,
@@ -173,6 +211,7 @@ export function useSodaxSwapIntegration({
     minOutputAmount,
     // trustline
     trustline,
+    trustlineAsset,
     needsSodaTrustline,
     // execution
     handleSodaxSwap,

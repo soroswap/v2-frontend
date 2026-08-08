@@ -1,9 +1,13 @@
 "use client";
 
+import {
+  SODA_STELLAR,
+  SODAX_STELLAR_CHAIN_KEY,
+  USDC_STELLAR,
+} from "@/features/sodax/constants/sodax";
+import { fetchSodaxQuote } from "@/features/sodax/lib/api";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import useSWR from "swr";
-import { SODA_STELLAR, USDC_STELLAR_CONTRACT } from "../constants/sodax";
-import { fetchSodaxQuote } from "../lib/api";
 
 /**
  * Amount used to probe the solver for a price. The solver rejects dust-sized
@@ -26,20 +30,22 @@ export function useSodaUsdPrice(contract: string | null) {
     async () => {
       const { quotedAmount } = await fetchSodaxQuote({
         tokenSrc: SODA_STELLAR.contract,
-        tokenSrcChainKey: "stellar",
-        tokenDst: USDC_STELLAR_CONTRACT,
-        tokenDstChainKey: "stellar",
+        tokenSrcChainKey: SODAX_STELLAR_CHAIN_KEY,
+        tokenDst: USDC_STELLAR.contract,
+        tokenDstChainKey: SODAX_STELLAR_CHAIN_KEY,
         amount: (PROBE_SODA * 10 ** SODA_STELLAR.decimals).toString(),
         quoteType: "exact_input",
       });
       return (
-        Number(formatUnits({ value: quotedAmount, decimals: 7 })) / PROBE_SODA
+        Number(
+          formatUnits({ value: quotedAmount, decimals: USDC_STELLAR.decimals }),
+        ) / PROBE_SODA
       );
     },
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
-      dedupingInterval: 180_000, // matches the price route's 3-minute cache
+      dedupingInterval: 180_000,
       refreshInterval: 300_000,
       errorRetryCount: 2,
     },

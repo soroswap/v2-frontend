@@ -1,6 +1,7 @@
 "use client";
 
 import { useUserContext } from "@/contexts/UserContext";
+import { StellarClassicAsset } from "@/features/sodax/constants/sodax";
 import { STELLAR } from "@/shared/lib/environmentVars";
 import {
   Asset,
@@ -9,7 +10,6 @@ import {
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
 import { useCallback, useEffect, useState } from "react";
-import { SODA_STELLAR } from "../constants/sodax";
 
 export interface SodaTrustlineStatus {
   exists: boolean;
@@ -37,11 +37,15 @@ export interface UseSodaTrustlineReturn {
 }
 
 /**
- * SODA trustline management, following the bridge's USDC trustline pattern.
- * A trustline is required before the SODAX solver can deliver SODA, so the
- * check gates swap execution (destination side), not just display.
+ * Trustline management for a destination classic asset (SODA or USDC),
+ * following the bridge's USDC trustline pattern. A trustline is required
+ * before the SODAX solver can deliver the asset, so the check gates swap
+ * execution. Pass `null` to disable entirely — no Horizon traffic happens
+ * until a SODA pair with a trustline-requiring destination is selected.
  */
-export function useSodaTrustline(): UseSodaTrustlineReturn {
+export function useSodaTrustline(
+  asset: StellarClassicAsset | null,
+): UseSodaTrustlineReturn {
   const { address, kit, signTransaction } = useUserContext();
 
   const [trustlineStatus, setTrustlineStatus] = useState<SodaTrustlineStatus>({
@@ -56,8 +60,11 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
     string | null
   >(null);
 
+  const assetCode = asset?.code ?? null;
+  const assetIssuer = asset?.issuer ?? null;
+
   const checkTrustline = useCallback(async () => {
-    if (!address) {
+    if (!address || !assetCode || !assetIssuer) {
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
       return;
     }
@@ -68,13 +75,13 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
       const server = new Horizon.Server(STELLAR.HORIZON_URL);
       const account = await server.accounts().accountId(address).call();
 
-      const sodaBalance = account.balances.find(
+      const assetBalance = account.balances.find(
         (balance) =>
           balance.asset_type !== "native" &&
           "asset_code" in balance &&
           "asset_issuer" in balance &&
-          balance.asset_code === SODA_STELLAR.code &&
-          balance.asset_issuer === SODA_STELLAR.issuer,
+          balance.asset_code === assetCode &&
+          balance.asset_issuer === assetIssuer,
       );
 
       const nativeBalance = account.balances.find(
@@ -83,25 +90,25 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
 
       setXlmBalance(nativeBalance?.balance ?? "0");
       setTrustlineStatus({
-        exists: !!sodaBalance,
-        balance: sodaBalance?.balance ?? "0",
+        exists: !!assetBalance,
+        balance: assetBalance?.balance ?? "0",
         checking: false,
       });
     } catch (error) {
       // A 404 means the account is unfunded — no trustline either way.
       if (!(error instanceof Error && error.message.includes("404"))) {
-        console.error("Failed to check SODA trustline:", error);
+        console.error(`Failed to check ${assetCode} trustline:`, error);
       }
       setXlmBalance("0");
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
     } finally {
       setHasCheckedOnce(true);
     }
-  }, [address]);
+  }, [address, assetCode, assetIssuer]);
 
   const createTrustline = useCallback(async () => {
-    if (!kit || !address) {
-      console.error("Wallet not connected");
+    if (!kit || !address || !assetCode || !assetIssuer) {
+      console.error("Wallet not connected or no asset selected");
       return;
     }
 
@@ -119,7 +126,7 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
       })
         .addOperation(
           Operation.changeTrust({
-            asset: new Asset(SODA_STELLAR.code, SODA_STELLAR.issuer),
+            asset: new Asset(assetCode, assetIssuer),
           }),
         )
         .setTimeout(300)
@@ -148,22 +155,22 @@ export function useSodaTrustline(): UseSodaTrustlineReturn {
       setCreateTrustlineError(
         error instanceof Error && error.message
           ? error.message
-          : "Failed to create SODA trustline",
+          : `Failed to create ${assetCode} trustline`,
       );
     } finally {
       setIsCreating(false);
     }
-  }, [kit, address, signTransaction, checkTrustline]);
+  }, [kit, address, assetCode, assetIssuer, signTransaction, checkTrustline]);
 
   useEffect(() => {
-    if (address) {
+    if (address && assetCode && assetIssuer) {
       checkTrustline();
     } else {
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
       setXlmBalance("0");
       setHasCheckedOnce(false);
     }
-  }, [address, checkTrustline]);
+  }, [address, assetCode, assetIssuer, checkTrustline]);
 
   const hasInsufficientReserve =
     hasCheckedOnce &&

@@ -1,7 +1,7 @@
 import {
   SODA_COUNTERPART_CONTRACTS,
   SODA_STELLAR,
-} from "../constants/sodax";
+} from "@/features/sodax/constants/sodax";
 
 /**
  * True when the pair should be quoted and executed through the SODAX solver

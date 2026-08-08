@@ -6,7 +6,7 @@ import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import { AssetInfo } from "@soroswap/sdk";
 import { ChevronDownIcon } from "lucide-react";
 import { useState } from "react";
-import { SodaxQuoteResponse } from "../types/sodax";
+import { SodaxQuoteResponse } from "@/features/sodax/types/sodax";
 
 interface SodaxQuoteDetailsProps {
   quote: SodaxQuoteResponse | undefined;
@@ -78,53 +78,53 @@ export const SodaxQuoteDetails = ({
           isOpen ? "max-h-96" : "max-h-0",
         )}
       >
-        <div className="space-y-3 border-t border-[#23243a] p-4">
+        <dl className="space-y-3 border-t border-[#23243a] p-4">
           {/* Expected Output */}
           <div className="flex items-center justify-between">
-            <p className="text-secondary text-sm">Expected output</p>
-            <div className="flex items-center gap-1">
-              <p className="text-primary text-sm">
+            <dt className="text-secondary text-sm">Expected output</dt>
+            <dd className="flex items-center gap-1">
+              <span className="text-primary text-sm">
                 {formatUnits({
                   value: quote.quotedAmount,
                   decimals: buyDecimals,
                 })}
-              </p>
+              </span>
               <TokenIcon
                 src={buyToken.icon}
                 name={buyToken.name}
                 code={buyToken.code}
                 size={20}
               />
-            </div>
+            </dd>
           </div>
 
           {/* Minimum received after slippage */}
           {minOutputAmount && (
             <div className="flex items-center justify-between">
-              <p className="text-secondary text-sm">Minimum received</p>
-              <div className="flex items-center gap-1">
-                <p className="text-primary text-sm">
+              <dt className="text-secondary text-sm">Minimum received</dt>
+              <dd className="flex items-center gap-1">
+                <span className="text-primary text-sm">
                   {formatUnits({
                     value: minOutputAmount,
                     decimals: buyDecimals,
                   })}
-                </p>
+                </span>
                 <TokenIcon
                   src={buyToken.icon}
                   name={buyToken.name}
                   code={buyToken.code}
                   size={20}
                 />
-              </div>
+              </dd>
             </div>
           )}
 
           {/* Platform */}
           <div className="flex items-center justify-between">
-            <p className="text-secondary text-sm">Platform</p>
-            <p className="text-primary text-sm">SODAX Solver</p>
+            <dt className="text-secondary text-sm">Platform</dt>
+            <dd className="text-primary text-sm">SODAX Solver</dd>
           </div>
-        </div>
+        </dl>
       </div>
     </div>
   );

@@ -14,12 +14,15 @@ export const TokenSelector = ({
   placeholder = "Select token",
   onSelect,
   onModalOpen,
+  includeSodaxTokens = false,
 }: {
   currentToken: AssetInfo | null;
   oppositeToken: AssetInfo | null;
   placeholder?: string;
   onSelect?: (token: AssetInfo | null) => void;
   onModalOpen?: () => void;
+  /** Offer SODA (solver-routed) — only where SODAX swaps can execute. */
+  includeSodaxTokens?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isOpenModalUserCustomAsset, setIsOpenModalUserCustomAsset] =
@@ -63,6 +66,7 @@ export const TokenSelector = ({
           currentToken={currentToken}
           oppositeToken={oppositeToken}
           onSelect={onSelect}
+          includeSodaxTokens={includeSodaxTokens}
           onOpenCustomAssetModal={(asset) => {
             setCustomAssetToAdd(asset);
             setIsOpen(false);

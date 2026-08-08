@@ -9,8 +9,8 @@ import {
   SodaxSwapError,
   SodaxSwapResult,
   SodaxSwapStep,
-} from "../hooks/useSodaxSwap";
-import { SodaxSubmitStatus } from "../types/sodax";
+} from "@/features/sodax/hooks/useSodaxSwap";
+import { SodaxSubmitStatus } from "@/features/sodax/types/sodax";
 
 interface SodaxSwapModalProps {
   step: SodaxSwapStep;

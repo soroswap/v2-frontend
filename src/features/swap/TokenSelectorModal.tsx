@@ -17,6 +17,7 @@ export const TokenSelectorModal = ({
   oppositeToken,
   onSelect,
   onOpenCustomAssetModal,
+  includeSodaxTokens = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -24,6 +25,8 @@ export const TokenSelectorModal = ({
   oppositeToken: AssetInfo | null;
   onSelect?: (token: AssetInfo | null) => void;
   onOpenCustomAssetModal?: (asset: AssetInfo) => void;
+  /** Offer SODA (solver-routed) — only where SODAX swaps can execute. */
+  includeSodaxTokens?: boolean;
 }) => {
   const [searchValue, setSearchValue] = useState<string>("");
   const { tokensList } = useTokensList();
@@ -66,13 +69,27 @@ export const TokenSelectorModal = ({
     }
   }, [isOpen]);
 
+  // Memoize combined token list to prevent dependency array changes.
+  // SODA is appended when the SODAX solver is available (swaps to/from it
+  // route through SODAX instead of the AMM), unless a list already has it.
+  const allTokens = useMemo(() => {
+    const tokens = [...tokensList, ...userTokenList];
+    if (
+      includeSodaxTokens &&
+      isSodaxEnabled &&
+      !tokens.some((token) => token.contract === SODA_ASSET_INFO.contract)
+    ) {
+      tokens.push(SODA_ASSET_INFO);
+    }
+    return tokens;
+  }, [tokensList, userTokenList, isSodaxEnabled, includeSodaxTokens]);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (
         searchValue &&
         isOpen &&
-        !tokensList.some((token) => token.contract === searchValue) &&
-        !userTokenList.some((token) => token.contract === searchValue)
+        !allTokens.some((token) => token.contract === searchValue)
       ) {
         findSearchedAsset(searchValue);
       } else {
@@ -81,7 +98,7 @@ export const TokenSelectorModal = ({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchValue, isOpen, tokensList, userTokenList, findSearchedAsset]);
+  }, [searchValue, isOpen, allTokens, findSearchedAsset]);
 
   const current = currentToken;
   const opposite = oppositeToken;
@@ -89,20 +106,6 @@ export const TokenSelectorModal = ({
   const handleSearch = (value: string) => {
     setSearchValue(value);
   };
-
-  // Memoize combined token list to prevent dependency array changes.
-  // SODA is appended when the SODAX solver is available (swaps to/from it
-  // route through SODAX instead of the AMM), unless a list already has it.
-  const allTokens = useMemo(() => {
-    const tokens = [...tokensList, ...userTokenList];
-    if (
-      isSodaxEnabled &&
-      !tokens.some((token) => token.contract === SODA_ASSET_INFO.contract)
-    ) {
-      tokens.push(SODA_ASSET_INFO);
-    }
-    return tokens;
-  }, [tokensList, userTokenList, isSodaxEnabled]);
 
   // Filter and sort tokens - tokens with balances first, then by balance amount
   const filteredAndSortedTokens = useMemo(() => {

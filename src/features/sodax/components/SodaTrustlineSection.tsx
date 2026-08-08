@@ -1,24 +1,27 @@
 "use client";
 
-import { TheButton } from "@/shared/components/buttons";
-import { AlertTriangle, Info } from "lucide-react";
-import { SODA_STELLAR } from "../constants/sodax";
+import { StellarClassicAsset } from "@/features/sodax/constants/sodax";
 import {
   MIN_XLM_FOR_TRUSTLINE,
   UseSodaTrustlineReturn,
-} from "../hooks/useSodaTrustline";
+} from "@/features/sodax/hooks/useSodaTrustline";
+import { TheButton } from "@/shared/components/buttons";
+import { AlertTriangle, Info } from "lucide-react";
 
 interface SodaTrustlineSectionProps {
   trustline: UseSodaTrustlineReturn;
+  /** The destination asset that needs the trustline (SODA or USDC). */
+  asset: StellarClassicAsset;
 }
 
 /**
- * Shown in the swap card when the user wants to buy SODA but has no
- * trustline yet. Follows the bridge's trustline-section pattern, including
- * its insufficient-XLM-reserve warning state.
+ * Shown in the swap card when the destination asset of a SODAX swap needs a
+ * trustline the user doesn't have. Follows the bridge's trustline-section
+ * pattern, including its insufficient-XLM-reserve warning state.
  */
 export const SodaTrustlineSection = ({
   trustline,
+  asset,
 }: SodaTrustlineSectionProps) => {
   const {
     createTrustline,
@@ -34,7 +37,7 @@ export const SodaTrustlineSection = ({
         <AlertTriangle className="size-5 shrink-0 text-orange-600 dark:text-orange-400" />
         <div className="flex-1">
           <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
-            Not enough XLM for the SODA trustline
+            Not enough XLM for the {asset.code} trustline
           </p>
           <p className="text-xs text-orange-700 dark:text-orange-300">
             You need at least {MIN_XLM_FOR_TRUSTLINE} XLM to add a trustline.
@@ -51,11 +54,11 @@ export const SodaTrustlineSection = ({
         <Info className="size-5 shrink-0 text-blue-600 dark:text-blue-400" />
         <div className="flex-1">
           <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-            One-time setup to receive SODA
+            One-time setup to receive {asset.code}
           </p>
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            Your Stellar account needs a {SODA_STELLAR.code} trustline before
-            the swap can deliver it.
+            Your Stellar account needs a {asset.code} trustline before the
+            swap can deliver it.
           </p>
         </div>
       </div>
@@ -65,7 +68,9 @@ export const SodaTrustlineSection = ({
         onClick={createTrustline}
         className="text-[#ededed]"
       >
-        {isCreating ? "Adding SODA Trustline..." : "Add SODA Trustline"}
+        {isCreating
+          ? `Adding ${asset.code} Trustline...`
+          : `Add ${asset.code} Trustline`}
       </TheButton>
 
       {createTrustlineError ? (

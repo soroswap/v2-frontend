@@ -1,20 +1,22 @@
 "use client";
 
 import useSWR from "swr";
-import { SODA_STELLAR } from "../constants/sodax";
-import { fetchSodaxStellarTokens } from "../lib/api";
+import { SODA_STELLAR } from "@/features/sodax/constants/sodax";
+import { fetchSodaxStellarTokens } from "@/features/sodax/lib/api";
+import { isProductionEnv } from "@/shared/lib/environmentVars";
 
 /**
  * Graceful-degradation gate for the whole SODAX feature.
  *
- * Confirms the backend is configured (SODAX_SWAPS_API_URL set) and that SODA
- * is actually listed by the live API. While loading or on any failure the
+ * Requires mainnet (the solver has no testnet and the asset constants are
+ * mainnet identities), a configured backend (SODAX_SWAPS_API_URL set), and
+ * SODA actually listed by the live API. While loading or on any failure the
  * feature reports disabled, so the app behaves exactly as it does today —
  * SODA never enters the token selector and no SODAX code path runs.
  */
 export function useSodaxAvailability() {
   const { data, error, isLoading } = useSWR(
-    "sodax-stellar-tokens",
+    isProductionEnv ? "sodax-stellar-tokens" : null,
     fetchSodaxStellarTokens,
     {
       revalidateOnFocus: false,
@@ -26,12 +28,12 @@ export function useSodaxAvailability() {
   );
 
   const isSodaxEnabled =
+    isProductionEnv &&
     !error &&
     !!data?.some((token) => token.address === SODA_STELLAR.contract);
 
   return {
     isSodaxEnabled,
-    sodaxTokens: data,
     isSodaxLoading: isLoading,
   };
 }

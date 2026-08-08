@@ -1,26 +1,27 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserContext } from "@/contexts";
 import {
   SODAX_STATUS_POLL_INTERVAL_MS,
   SODAX_STATUS_POLL_TIMEOUT_MS,
   SODAX_STELLAR_CHAIN_KEY,
-} from "../constants/sodax";
+} from "@/features/sodax/constants/sodax";
 import {
   checkSodaxAllowance,
   createSodaxIntent,
   fetchSodaxApproveTx,
   fetchSodaxDeadline,
   fetchSodaxSubmitStatus,
+  post,
   submitSodaxTx,
-} from "../lib/api";
+} from "@/features/sodax/lib/api";
 import {
   SodaxApiError,
   SodaxCreateIntentParams,
   SodaxSubmitStatus,
   SodaxSubmitStatusResponse,
-} from "../types/sodax";
+} from "@/features/sodax/types/sodax";
 
 export enum SodaxSwapStep {
   IDLE = "IDLE",
@@ -50,7 +51,7 @@ export interface SodaxSwapParams {
 export interface SodaxSwapResult {
   /** Intent transaction hash on Stellar (the transaction the user signed). */
   srcTxHash: string;
-  /** Solver fill transaction hash on the destination (Stellar for SODA pairs). */
+  /** Solver fill transaction hash; may be empty if not yet reported. */
   dstTxHash: string;
   inputToken: string;
   outputToken: string;
@@ -113,10 +114,18 @@ function toUserMessage(error: unknown, fallback: string): {
   };
 }
 
+/** Deliberate abort marker so user-initiated cancels never render as errors. */
+class SwapAborted extends Error {
+  constructor() {
+    super("Swap tracking was cancelled");
+    this.name = "SwapAborted";
+  }
+}
+
 /**
  * Executes a SODA swap through the SODAX solver:
- * deadline + allowance → (approve) → create intent → sign → broadcast via
- * /api/send → hand off to the relay → poll until the solver fills.
+ * allowance → (approve + re-check) → deadline → create intent → sign →
+ * broadcast via /api/sodax/send → hand off to the relay → poll until filled.
  *
  * Mirrors useSwap's step/result/error shape so the modal layer can treat
  * both providers uniformly.
@@ -132,16 +141,32 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const abortRef = useRef(false);
 
-  const updateStep = useCallback(
-    (step: SodaxSwapStep) => {
-      setCurrentStep(step);
-      options?.onStepChange?.(step);
-    },
-    [options],
-  );
+  // Callbacks live in a ref so a fresh options literal from the caller does
+  // not rebuild every callback (and everything downstream) on each render.
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
+
+  // Stop polling when the component unmounts (route change, error boundary).
+  useEffect(() => {
+    return () => {
+      abortRef.current = true;
+    };
+  }, []);
+
+  const updateStep = useCallback((step: SodaxSwapStep) => {
+    setCurrentStep(step);
+    optionsRef.current?.onStepChange?.(step);
+  }, []);
 
   const failWith = useCallback(
     (step: SodaxSwapStep, cause: unknown, fallback: string): never => {
+      // User-initiated cancel (modal close / unmount): the machine was
+      // already reset — do not resurrect it into an ERROR state.
+      if (cause instanceof SwapAborted || abortRef.current) {
+        setIsLoading(false);
+        throw cause instanceof Error ? cause : new Error(String(cause));
+      }
+
       const { message, retryable } = toUserMessage(cause, fallback);
       const swapError: SodaxSwapError = {
         step,
@@ -152,30 +177,27 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       setError(swapError);
       updateStep(SodaxSwapStep.ERROR);
       setIsLoading(false);
-      options?.onError?.(swapError);
+      optionsRef.current?.onError?.(swapError);
       throw cause instanceof Error ? cause : new Error(message);
     },
-    [options, updateStep],
+    [updateStep],
   );
 
-  // NOTE: /api/sodax/send, not /api/send — the Soroswap send API rejects
-  // Soroban transactions that touch non-Soroswap contracts, which every
-  // SODAX intent transaction does.
+  /**
+   * Broadcast through /api/sodax/send (NOT /api/send — the Soroswap send API
+   * rejects Soroban transactions that touch non-Soroswap contracts, which
+   * every SODAX intent transaction does). Uses the feature's typed client so
+   * network/timeout failures keep their retryable classification.
+   */
   const sendTransaction = useCallback(async (signedXdr: string) => {
-    const response = await fetch("/api/sodax/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(signedXdr),
-    });
-
-    // SendTransactionResponse (@soroswap/sdk >= 0.4.0): { txHash, success, ... }
-    const body = await response.json();
-    if (!response.ok || !body?.data?.txHash || body?.data?.success === false) {
-      throw new Error(
-        body?.message || "The transaction failed on the Stellar network",
-      );
+    const body = await post<{ data: { txHash: string; success: boolean } }>(
+      "/api/sodax/send",
+      signedXdr,
+    );
+    if (!body?.data?.txHash || body.data.success === false) {
+      throw new Error("The transaction failed on the Stellar network");
     }
-    return body.data as { txHash: string; success: boolean };
+    return body.data;
   }, []);
 
   const pollUntilFilled = useCallback(
@@ -188,7 +210,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
 
       while (Date.now() - startedAt < SODAX_STATUS_POLL_TIMEOUT_MS) {
         if (abortRef.current) {
-          throw new Error("Swap tracking was cancelled");
+          throw new SwapAborted();
         }
 
         let data: SodaxSubmitStatusResponse["data"] | null = null;
@@ -212,8 +234,9 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
         }
 
         if (data) {
-          if (data.status === "solved" && data.result?.dstIntentTxHash) {
-            return data.result.dstIntentTxHash;
+          if (data.status === "solved") {
+            // result/dstIntentTxHash may lag the status flip; success stands.
+            return data.result?.dstIntentTxHash ?? "";
           }
 
           if (data.status === "failed" || data.intentCancelled) {
@@ -256,46 +279,65 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       setFillStatus(null);
       abortRef.current = false;
 
-      // 1. Deadline + allowance (a Stellar-source allowance check verifies
-      //    the input trustline covers the amount).
+      const baseParams: Omit<SodaxCreateIntentParams, "deadline"> = {
+        srcChainKey: SODAX_STELLAR_CHAIN_KEY,
+        dstChainKey: SODAX_STELLAR_CHAIN_KEY,
+        inputToken: params.inputToken,
+        outputToken: params.outputToken,
+        inputAmount: params.inputAmount,
+        minOutputAmount: params.minOutputAmount,
+        allowPartialFill: false,
+        srcAddress: params.userAddress,
+        dstAddress: params.userAddress,
+      };
+
+      // 1. Allowance (a Stellar-source check verifies the input trustline
+      //    covers the amount). Uses a provisional deadline — the real one is
+      //    fetched after any approval, so wallet-signing time can't burn it.
       updateStep(SodaxSwapStep.PREPARING);
-      let intentParams: SodaxCreateIntentParams;
       try {
-        const { deadline } = await fetchSodaxDeadline();
-        intentParams = {
-          srcChainKey: SODAX_STELLAR_CHAIN_KEY,
-          dstChainKey: SODAX_STELLAR_CHAIN_KEY,
-          inputToken: params.inputToken,
-          outputToken: params.outputToken,
-          inputAmount: params.inputAmount,
-          minOutputAmount: params.minOutputAmount,
-          deadline,
-          allowPartialFill: false,
-          srcAddress: params.userAddress,
-          dstAddress: params.userAddress,
+        const provisional = await fetchSodaxDeadline();
+        const allowanceParams: SodaxCreateIntentParams = {
+          ...baseParams,
+          deadline: provisional.deadline,
         };
 
-        const { valid } = await checkSodaxAllowance(intentParams);
+        const { valid } = await checkSodaxAllowance(allowanceParams);
 
-        // 2. Approve when needed (adds/raises the source trustline).
+        // 2. Approve when needed (adds/raises the source trustline), then
+        //    re-check instead of assuming the approval landed.
         if (!valid) {
           updateStep(SodaxSwapStep.APPROVING);
-          const { tx } = await fetchSodaxApproveTx(intentParams);
+          const { tx } = await fetchSodaxApproveTx(allowanceParams);
           const signedApproval = await signTransaction(
             tx.data,
             params.userAddress,
           );
           await sendTransaction(signedApproval);
+
+          const recheck = await checkSodaxAllowance(allowanceParams);
+          if (!recheck.valid) {
+            throw new Error(
+              "The trustline update has not settled yet. Please try again in a moment.",
+            );
+          }
         }
       } catch (cause) {
-        return failWith(currentStep, cause, "Failed to prepare the swap");
+        return failWith(
+          SodaxSwapStep.PREPARING,
+          cause,
+          "Failed to prepare the swap",
+        );
       }
 
-      // 3. Build the unsigned intent transaction (simulated server-side).
+      // 3. Fresh deadline + unsigned intent transaction (simulated
+      //    server-side). Fetched here so the 300s window starts as close to
+      //    the user's signature as possible.
       updateStep(SodaxSwapStep.CREATING_INTENT);
       let intentTx: Awaited<ReturnType<typeof createSodaxIntent>>;
       try {
-        intentTx = await createSodaxIntent(intentParams);
+        const { deadline } = await fetchSodaxDeadline();
+        intentTx = await createSodaxIntent({ ...baseParams, deadline });
       } catch (cause) {
         return failWith(
           SodaxSwapStep.CREATING_INTENT,
@@ -374,18 +416,10 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       setResult(swapResult);
       setIsLoading(false);
       updateStep(SodaxSwapStep.SUCCESS);
-      options?.onSuccess?.(swapResult);
+      optionsRef.current?.onSuccess?.(swapResult);
       return swapResult;
     },
-    [
-      currentStep,
-      failWith,
-      options,
-      pollUntilFilled,
-      sendTransaction,
-      signTransaction,
-      updateStep,
-    ],
+    [failWith, pollUntilFilled, sendTransaction, signTransaction, updateStep],
   );
 
   const reset = useCallback(() => {
@@ -405,8 +439,5 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
     result,
     isLoading,
     reset,
-    isIdle: currentStep === SodaxSwapStep.IDLE,
-    isSuccess: currentStep === SodaxSwapStep.SUCCESS,
-    isError: currentStep === SodaxSwapStep.ERROR,
   };
 }

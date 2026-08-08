@@ -18,6 +18,7 @@ import {
 } from "@/shared/components/buttons";
 import { useUserBalances } from "@/shared/hooks";
 import { cn } from "@/shared/lib/utils/cn";
+import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import dynamic from "next/dynamic";
 import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -172,6 +173,7 @@ export default function SwapPage() {
               isBalanceLoading={isBalanceLoading}
               showPercentageButtons={true}
               onPercentageClick={handlePercentageClick}
+              includeSodaxTokens={true}
             />
 
             <RotateArrowButton
@@ -198,6 +200,7 @@ export default function SwapPage() {
             balance={buyTokenBalance}
             isBalanceLoading={isBalanceLoading}
             inputDisabled={sodax.isSodaxActive}
+            includeSodaxTokens={true}
           />
           {sodax.isSodaxActive ? (
             <SodaxQuoteDetails
@@ -214,8 +217,11 @@ export default function SwapPage() {
               buyToken={buyToken}
             />
           )}
-          {sodax.needsSodaTrustline && (
-            <SodaTrustlineSection trustline={sodax.trustline} />
+          {sodax.needsSodaTrustline && sodax.trustlineAsset && (
+            <SodaTrustlineSection
+              trustline={sodax.trustline}
+              asset={sodax.trustlineAsset}
+            />
           )}
           <div className="flex flex-col gap-2">
             {!userAddress ? (
@@ -230,6 +236,8 @@ export default function SwapPage() {
                   hasInsufficientBalance ||
                   (sodax.isSodaxActive
                     ? !sodax.sodaxQuote ||
+                      !!sodax.sodaxQuoteError ||
+                      sodax.isDebouncing ||
                       sodax.needsSodaTrustline ||
                       sodax.isSodaxSwapLoading
                     : (!quote && quoteError) ||
@@ -281,7 +289,14 @@ export default function SwapPage() {
           result={sodax.sodaxResult}
           sellToken={sellToken}
           buyToken={buyToken}
-          sellAmount={typedValue}
+          sellAmount={
+            sodax.inputAmount
+              ? formatUnits({
+                  value: sodax.inputAmount,
+                  decimals: sellToken?.decimals ?? 7,
+                })
+              : typedValue
+          }
           buyAmount={derivedBuyAmount}
           onClose={sodax.resetSodaxSwap}
         />

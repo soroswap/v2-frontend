@@ -1,7 +1,9 @@
 import { SwapsApi, SwapsApiError } from "@sodax/swaps-api";
 import { NextRequest, NextResponse } from "next/server";
 import { SODAX } from "@/shared/lib/environmentVars";
+import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
 import { ALLOWED_ORIGINS } from "./constants";
+import { getErrorMessage, getErrorStatusCode } from "./errorUtils";
 
 /**
  * Lazily constructed singleton for the SODAX Swaps API v2.
@@ -49,9 +51,7 @@ export function sodaxOriginGuard(request: NextRequest): NextResponse | null {
  * Re-stringify them for the wire; the browser-side wrapper types them as strings.
  */
 export function sodaxJson<T>(data: T, init?: { status?: number }): NextResponse {
-  const body = JSON.stringify(data, (_key, value) =>
-    typeof value === "bigint" ? value.toString() : value,
-  );
+  const body = JSON.stringify(data, bigIntReplacer);
   return new NextResponse(body, {
     status: init?.status ?? 200,
     headers: { "Content-Type": "application/json" },
@@ -89,6 +89,8 @@ export function sodaxErrorResponse(error: unknown): NextResponse {
     );
   }
 
-  const message = error instanceof Error ? error.message : "Unknown error";
-  return sodaxJson({ code: "INTERNAL_ERROR", message }, { status: 500 });
+  return sodaxJson(
+    { code: "INTERNAL_ERROR", message: getErrorMessage(error) },
+    { status: getErrorStatusCode(error) ?? 500 },
+  );
 }
