@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import { TokenIcon } from "@/shared/components/TokenIcon";
 import { CopyAndPasteButton, TheButton } from "@/shared/components";
 import { formatCurrency } from "@/shared/lib/utils/formatCurrency";
@@ -9,6 +9,7 @@ import { useVaultBalance, useVaultInfo } from "@/features/earn/hooks";
 import { useUserContext } from "@/contexts/UserContext";
 import { useTokensList } from "@/shared/hooks";
 import { formatUnits } from "@/shared/lib/utils";
+import { Tooltip } from "react-tooltip";
 
 const VaultCardDetailsLoading = () => {
   return (
@@ -93,7 +94,7 @@ export const VaultCardDetails = ({
 
   if (!vaultInfo)
     return (
-      <div className="bg-surface border-surface-alt text-secondary flex h-full min-h-[322px] flex-col items-center justify-center gap-4 rounded-2xl border p-8">
+      <div className="bg-surface border-surface-alt text-secondary flex h-full min-h-80 flex-col items-center justify-center gap-4 rounded-2xl border p-8">
         Vault not found
       </div>
     );
@@ -126,9 +127,22 @@ export const VaultCardDetails = ({
       <div className="grid grid-cols-3 gap-6 md:grid-cols-3 lg:grid-cols-4">
         {/* Est APY */}
         <div className="flex flex-col gap-4">
-          <p className="text-secondary flex h-full text-sm font-medium">
-            EST APY
-          </p>
+          <div className="flex">
+            <p className="text-secondary flex h-full text-sm font-medium">
+              EST APY
+            </p>
+            <Info
+              size={14}
+              className="text-secondary mx-2"
+              data-tooltip-id="assets-tooltip"
+              aria-label="Asset information"
+            />
+            <Tooltip id="assets-tooltip">
+              <div className="flex max-w-200 flex-col gap-2 text-sm text-white">
+                <p>Estimated Anual Percentage Yield after vault fees.</p>
+              </div>
+            </Tooltip>
+          </div>
           <div className="flex h-full items-center">
             <p className="text-primary text-lg font-semibold">
               {vaultInfo.apy ? `${vaultInfo.apy.toFixed(2)}`: "0"} %
@@ -193,6 +207,13 @@ export const VaultCardDetails = ({
           </div>
         </div>
       </div>
+
+      <aside className="bg-surface-subtle flex items-start gap-3 rounded-lg border border-brand/30 p-4">
+        <Info size={16} className="text-brand mt-0.5 shrink-0" aria-hidden="true" />
+        <p className="text-secondary text-sm">
+          This vault operates autonomously. Deposit here to start earning {vaultInfo.assets[0].symbol}.
+        </p>
+      </aside>
 
       {/* Vault contract address */}
       <div className="sm:bg-surface-subtle flex items-center justify-between rounded-lg p-0 sm:p-4">
