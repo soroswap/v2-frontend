@@ -12,52 +12,47 @@ import { useTheme } from "next-themes";
 import { type ReactNode, useEffect, useState } from "react";
 import { BridgeLoader } from "../components/BridgeLoader";
 
-export const wagmiConfig = createRozoWagmiConfig(
-  getDefaultConfig({
-    appName: "Soroswap",
-    appIcon: "https://app.soroswap.finance/SoroswapPurpleBlack.svg",
-    appUrl: "https://app.soroswap.finance/",
-  }),
-);
-
-const queryClient = new QueryClient();
-
 export function RozoProvider({ children }: { children: ReactNode }) {
   const { kit } = useUserContext();
   const { resolvedTheme } = useTheme();
 
-  // Avoid rendering provider while mounting to prevent setState during render in nested components
-  const [mounted, setMounted] = useState(false);
+  // Defer config construction to client render — module-scope createConfig
+  // runs during SSR and some wallet connectors touch window/localStorage.
+  const [config] = useState(() =>
+    createRozoWagmiConfig(
+      getDefaultConfig({
+        appName: "Soroswap",
+        appIcon: "https://app.soroswap.finance/SoroswapPurpleBlack.svg",
+        appUrl: "https://app.soroswap.finance/",
+        ssr: true,
+      }),
+    ),
+  );
+  const [queryClient] = useState(() => new QueryClient());
+
+  // Defer rendering RozoPayProvider until after the current render cycle to
+  // avoid setState calls during render in nested components.
   const [ready, setReady] = useState(false);
-  const [stableMode, setStableMode] = useState<"dark" | "light">("light");
 
   useEffect(() => {
-    setMounted(true);
-    // Delay rendering RozoPayProvider until after the current render cycle
-    // This prevents setState calls during render in nested components
     const timer = setTimeout(() => {
       setReady(true);
     }, 0);
     return () => clearTimeout(timer);
   }, []);
 
-  // Update mode only after mount to avoid triggering re-renders during initial render
-  useEffect(() => {
-    if (mounted && resolvedTheme) {
-      setStableMode(resolvedTheme === "dark" ? "dark" : "light");
-    }
-  }, [mounted, resolvedTheme]);
+  const mode = resolvedTheme === "dark" ? "dark" : "light";
 
-  // Wait until mounted, ready, and kit available
-  if (!mounted || !ready || !kit) return <BridgeLoader />;
+  // Wait until ready and kit available
+  if (!ready || !kit) return <BridgeLoader />;
 
   return (
-    <RozoWagmiProvider config={wagmiConfig}>
+    <RozoWagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RozoPayProvider
           stellarKit={kit}
           stellarWalletPersistence={false}
-          mode={stableMode}
+          mode={mode}
           debugMode
         >
           {children}

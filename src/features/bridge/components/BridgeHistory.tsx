@@ -34,11 +34,16 @@ export const BridgeHistory = ({
 }: BridgeHistoryProps) => {
   const [history, setHistory] = useState<BridgeHistoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentWalletAddress, setCurrentWalletAddress] = useState<
+  // Which wallet the loaded `history` belongs to. Deriving the displayed list
+  // from this avoids resetting state in an effect when the wallet changes.
+  const [historyWalletAddress, setHistoryWalletAddress] = useState<
     string | null
   >(null);
 
-  const loadHistory = useCallback(() => {
+  const displayHistory =
+    historyWalletAddress === walletAddress ? history : [];
+
+  const loadHistory = useCallback(async () => {
     try {
       // First, clean up any existing duplicates
       removeDuplicatePayments(walletAddress);
@@ -51,36 +56,39 @@ export const BridgeHistory = ({
           new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime(),
       );
 
+      // Defer state updates to an async callback so they don't run synchronously
+      // inside the calling effect (which depends on the walletAddress prop).
+      await Promise.resolve();
+      setIsLoading(true);
       setHistory(sortedHistory);
+      setHistoryWalletAddress(walletAddress);
     } catch (error) {
       throw error;
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 
   // Load history on mount and when wallet address changes
   useEffect(() => {
-    // Clear history when wallet changes
-    if (currentWalletAddress && currentWalletAddress !== walletAddress) {
-      setHistory([]);
-    }
-
-    setCurrentWalletAddress(walletAddress);
-    setIsLoading(true);
-    loadHistory();
-  }, [walletAddress, loadHistory, currentWalletAddress]);
+    loadHistory().catch((error) => {
+      console.error("Failed to load bridge history:", error);
+    });
+  }, [walletAddress, loadHistory]);
 
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === SOROSWAP_BRIDGE_HISTORY_STORAGE_KEY) {
-        loadHistory();
+        loadHistory().catch((error) => {
+          console.error("Failed to load bridge history:", error);
+        });
       }
     };
 
     const handleCustomEvent = () => {
-      loadHistory();
+      loadHistory().catch((error) => {
+        console.error("Failed to load bridge history:", error);
+      });
     };
 
     window.addEventListener("storage", handleStorageChange);
@@ -90,7 +98,7 @@ export const BridgeHistory = ({
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("bridge-payment-completed", handleCustomEvent);
     };
-  }, []);
+  }, [loadHistory]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -120,7 +128,7 @@ export const BridgeHistory = ({
     );
   }
 
-  if (history.length === 0) {
+  if (displayHistory.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 py-6">
         <Clock className="text-secondary h-8 w-8" />
@@ -146,7 +154,7 @@ export const BridgeHistory = ({
       </div>
 
       <div className="max-h-[300px] space-y-2 overflow-y-auto">
-        {history.map((item) => {
+        {displayHistory.map((item) => {
           const isWithdraw = "type" in item && item.type === "withdraw";
           const Icon = isWithdraw ? ArrowDownLeft : ArrowUpRight;
           const chainName = item.toChain;
