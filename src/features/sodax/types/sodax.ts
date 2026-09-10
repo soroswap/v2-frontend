@@ -143,6 +143,16 @@ export interface SodaxDeadlineResponse {
 }
 
 /**
+ * Response of GET /api/sodax/price?contract=<C...>. The server probes the
+ * solver with a fixed 100 USDC -> asset quote and caches the result for
+ * 120s; usdPrice is null when the probe itself returns no usable quote.
+ */
+export interface SodaxUsdPriceResponse {
+  contract: string;
+  usdPrice: number | null;
+}
+
+/**
  * Error codes surfaced by /api/sodax/* routes: the five SwapsApiError codes
  * (preserved verbatim by the server) plus our own route-level codes.
  */

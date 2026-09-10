@@ -12,6 +12,7 @@ import {
   SodaxSubmitTxRequest,
   SodaxSubmitTxResponse,
   SodaxToken,
+  SodaxUsdPriceResponse,
 } from "@/features/sodax/types/sodax";
 
 const KNOWN_CODES: readonly SodaxApiErrorCode[] = [
@@ -150,6 +151,13 @@ export function submitSodaxTx(
   body: SodaxSubmitTxRequest,
 ): Promise<SodaxSubmitTxResponse> {
   return post<SodaxSubmitTxResponse>("/api/sodax/submit", body);
+}
+
+export function fetchSodaxUsdPrice(
+  contract: string,
+): Promise<SodaxUsdPriceResponse> {
+  const params = new URLSearchParams({ contract });
+  return request<SodaxUsdPriceResponse>(`/api/sodax/price?${params}`);
 }
 
 export function fetchSodaxSubmitStatus(
