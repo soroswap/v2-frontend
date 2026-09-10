@@ -5,7 +5,7 @@ import { cn } from "@/shared/lib/utils/cn";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import { AssetInfo } from "@soroswap/sdk";
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { SodaxQuoteResponse } from "@/features/sodax/types/sodax";
 
 interface SodaxQuoteDetailsProps {
@@ -32,6 +32,7 @@ export const SodaxQuoteDetails = ({
   className,
 }: SodaxQuoteDetailsProps) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const detailsId = useId();
 
   if (!quote || !inputAmount || !sellToken || !buyToken) {
     return null;
@@ -56,6 +57,9 @@ export const SodaxQuoteDetails = ({
       )}
     >
       <button
+        type="button"
+        aria-expanded={isOpen}
+        aria-controls={detailsId}
         onClick={() => setIsOpen(!isOpen)}
         className="hover:bg-brand/5 flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors"
       >
@@ -73,6 +77,7 @@ export const SodaxQuoteDetails = ({
       </button>
 
       <div
+        id={detailsId}
         className={cn(
           "overflow-hidden transition-all duration-300 ease-in-out",
           isOpen ? "max-h-96" : "max-h-0",
