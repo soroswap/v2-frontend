@@ -262,7 +262,7 @@ export function useSwapController({
   const handleTokenSelect = useCallback(
     (field: IndependentField) => (token: AssetInfo | null) => {
       const oppositeToken = field === "sell" ? buyToken : sellToken;
-      
+
       // If selecting a token that's already on the opposite side, switch them
       if (token && oppositeToken && token.contract === oppositeToken.contract) {
         dispatchSwap({ type: "SWITCH_TOKENS" });
@@ -298,7 +298,13 @@ export function useSwapController({
     } catch (err) {
       console.error(err);
     }
-  }, [executeSwap, quote, userAddress, sodax]);
+  }, [
+    executeSwap,
+    quote,
+    userAddress,
+    sodax.isSodaxActive,
+    sodax.handleSodaxSwap,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Effects: initialise default values once token list is fetched.
