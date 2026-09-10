@@ -25,18 +25,20 @@ interface SodaxSwapModalProps {
   onClose: () => void;
 }
 
-const STEP_TITLES: Record<Exclude<SodaxSwapStep, SodaxSwapStep.IDLE>, string> =
-  {
-    [SodaxSwapStep.PREPARING]: "Preparing Swap",
-    [SodaxSwapStep.APPROVING]: "Updating Trustline",
-    [SodaxSwapStep.CREATING_INTENT]: "Building Transaction",
-    [SodaxSwapStep.WAITING_SIGNATURE]: "Waiting for Signature",
-    [SodaxSwapStep.SENDING_TRANSACTION]: "Sending Transaction",
-    [SodaxSwapStep.SUBMITTING_TO_SOLVER]: "Submitting Order",
-    [SodaxSwapStep.WAITING_FOR_FILL]: "Finding Best Price",
-    [SodaxSwapStep.SUCCESS]: "Swap Completed",
-    [SodaxSwapStep.ERROR]: "Swap Failed",
-  };
+const STEP_TITLES: Record<
+  Exclude<SodaxSwapStep, SodaxSwapStep.IDLE>,
+  string
+> = {
+  [SodaxSwapStep.PREPARING]: "Preparing Swap",
+  [SodaxSwapStep.APPROVING]: "Updating Trustline",
+  [SodaxSwapStep.CREATING_INTENT]: "Building Transaction",
+  [SodaxSwapStep.WAITING_SIGNATURE]: "Waiting for Signature",
+  [SodaxSwapStep.SENDING_TRANSACTION]: "Sending Transaction",
+  [SodaxSwapStep.SUBMITTING_TO_SOLVER]: "Submitting Order",
+  [SodaxSwapStep.WAITING_FOR_FILL]: "Finding Best Price",
+  [SodaxSwapStep.SUCCESS]: "Swap Completed",
+  [SodaxSwapStep.ERROR]: "Swap Failed",
+};
 
 const FILL_STATUS_MESSAGES: Record<SodaxSubmitStatus, string> = {
   pending: "Waiting for the relay to pick up your order...",
@@ -174,9 +176,7 @@ export const SodaxSwapModal = ({
         );
       case SodaxSwapStep.ERROR:
         return (
-          <p>
-            {error?.message || "Something went wrong. Please try again."}
-          </p>
+          <p>{error?.message || "Something went wrong. Please try again."}</p>
         );
       default:
         return null;
@@ -185,7 +185,7 @@ export const SodaxSwapModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-surface-page border-brand flex min-h-72 w-full max-w-md min-w-96 flex-col rounded-2xl border p-6 shadow-xl">
+      <div className="bg-surface-page border-brand mx-4 flex min-h-72 w-full max-w-md flex-col rounded-2xl border p-6 shadow-xl sm:min-w-96">
         <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
           {isLoading && (
             <div className="flex justify-center">
