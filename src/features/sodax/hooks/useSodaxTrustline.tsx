@@ -17,16 +17,21 @@ export interface SodaxTrustlineStatus {
   checking: boolean;
 }
 
-/**
- * Same threshold the bridge uses: enough XLM to cover the +0.5 XLM trustline
- * reserve plus fees with headroom.
- */
-export const MIN_XLM_FOR_TRUSTLINE = 1.5;
+/** Stellar's per-trustline base reserve, in XLM (`changeTrust` locks this). */
+export const TRUSTLINE_RESERVE_XLM = 0.5;
+/** Headroom above the reserve so the transaction fee doesn't push the account under it. */
+export const FEE_HEADROOM_XLM = 0.1;
 
 export interface UseSodaxTrustlineReturn {
   trustlineStatus: SodaxTrustlineStatus;
   /** Native XLM balance of the account, "0" while unknown. */
   xlmBalance: string;
+  /**
+   * `xlmBalance` minus the account's base reserve (1 XLM) and its existing
+   * subentry reserves (0.5 XLM each — trustlines, offers, ...), i.e. what a
+   * new `changeTrust` operation actually has to work with. "0" while unknown.
+   */
+  spendableXlm: string;
   /** True when the account lacks the XLM reserve to add a trustline. */
   hasInsufficientReserve: boolean;
   hasCheckedOnce: boolean;
@@ -62,6 +67,7 @@ export function useSodaxTrustline(
     checking: false,
   });
   const [xlmBalance, setXlmBalance] = useState("0");
+  const [spendableXlm, setSpendableXlm] = useState("0");
   const [hasCheckedOnce, setHasCheckedOnce] = useState(false);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -107,7 +113,15 @@ export function useSodaxTrustline(
         (balance) => balance.asset_type === "native",
       );
 
+      // Stellar's reserve formula: 1 XLM base reserve plus 0.5 XLM per
+      // existing subentry (trustlines, offers, ...) is locked and cannot be
+      // spent on a new operation, including the changeTrust below.
+      const totalXlm = parseFloat(nativeBalance?.balance ?? "0");
+      const reservedXlm = 1 + 0.5 * account.subentry_count;
+      const spendable = totalXlm - reservedXlm;
+
       setXlmBalance(nativeBalance?.balance ?? "0");
+      setSpendableXlm(spendable.toString());
       setTrustlineStatus({
         exists: !!assetBalance,
         balance: assetBalance?.balance ?? "0",
@@ -131,6 +145,7 @@ export function useSodaxTrustline(
         return; // hasCheckedOnce stays false -> isTrustlineCheckPending
       }
       setXlmBalance("0");
+      setSpendableXlm("0");
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
       setHasCheckedOnce(true);
     }
@@ -198,6 +213,7 @@ export function useSodaxTrustline(
     // be read as current while the fresh check below is in flight.
     setTrustlineStatus({ exists: false, balance: "0", checking: false });
     setXlmBalance("0");
+    setSpendableXlm("0");
     setHasCheckedOnce(false);
     setCheckError(null);
 
@@ -209,11 +225,12 @@ export function useSodaxTrustline(
   const hasInsufficientReserve =
     hasCheckedOnce &&
     !trustlineStatus.exists &&
-    parseFloat(xlmBalance) < MIN_XLM_FOR_TRUSTLINE;
+    parseFloat(spendableXlm) < TRUSTLINE_RESERVE_XLM + FEE_HEADROOM_XLM;
 
   return {
     trustlineStatus,
     xlmBalance,
+    spendableXlm,
     hasInsufficientReserve,
     hasCheckedOnce,
     checkError,

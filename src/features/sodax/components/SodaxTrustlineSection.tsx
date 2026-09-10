@@ -2,7 +2,8 @@
 
 import { StellarClassicAsset } from "@/features/sodax/constants/sodax";
 import {
-  MIN_XLM_FOR_TRUSTLINE,
+  FEE_HEADROOM_XLM,
+  TRUSTLINE_RESERVE_XLM,
   UseSodaxTrustlineReturn,
 } from "@/features/sodax/hooks/useSodaxTrustline";
 import { TheButton } from "@/shared/components/buttons";
@@ -28,7 +29,7 @@ export const SodaxTrustlineSection = ({
     isCreating,
     createTrustlineError,
     hasInsufficientReserve,
-    xlmBalance,
+    spendableXlm,
     checkError,
     checkTrustline,
   } = trustline;
@@ -63,8 +64,9 @@ export const SodaxTrustlineSection = ({
             Not enough XLM for the {asset.code} trustline
           </p>
           <p className="text-xs text-orange-700 dark:text-orange-300">
-            You need at least {MIN_XLM_FOR_TRUSTLINE} XLM to add a trustline.
-            Current balance: {parseFloat(xlmBalance).toFixed(2)} XLM
+            You need about {(TRUSTLINE_RESERVE_XLM + FEE_HEADROOM_XLM).toFixed(1)}{" "}
+            XLM above your account&apos;s reserve to add a trustline. Spendable
+            now: {parseFloat(spendableXlm).toFixed(2)} XLM
           </p>
         </div>
       </section>
