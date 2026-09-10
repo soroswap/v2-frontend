@@ -132,14 +132,24 @@ export function useSodaxSwapIntegration({
     return applySlippageToQuote(quote.quotedAmount, slippagePercent);
   }, [quote, slippagePercent]);
 
+  // True for the known sell-direction gap: selling a registry asset other
+  // than SODA has no route on the solver yet, regardless of amount — "try a
+  // larger amount" is actively wrong advice for this case.
+  const isNonSodaSellGap = useMemo(() => {
+    const sellAsset = getSodaxAsset(sellToken?.contract);
+    return !!sellAsset && sellAsset.code !== "SODA";
+  }, [sellToken?.contract]);
+
   // Button-ready copy for a failed quote. The solver returns 422 "No path
-  // was found" both for dust-sized amounts and for the sell-direction gap on
-  // the new registry assets (see sodaxQuoteErrorHint below for the latter).
+  // was found" both for dust-sized amounts and for the sell-direction gap
+  // above (see sodaxQuoteErrorHint below for the explanatory hint).
   const quoteErrorMessage = useMemo(() => {
     if (!quoteError) return null;
     if (quoteError instanceof SodaxApiError) {
       if (quoteError.status === 422) {
-        return "No route found — try a larger amount";
+        return isNonSodaSellGap
+          ? "No route for this direction yet"
+          : "No route found — try a larger amount";
       }
       if (
         quoteError.code === "NETWORK_ERROR" ||
@@ -149,19 +159,18 @@ export function useSodaxSwapIntegration({
       }
     }
     return "Quote unavailable right now";
-  }, [quoteError]);
+  }, [quoteError, isNonSodaSellGap]);
 
   // Extra context for the 422 case above when it's specifically the known
-  // sell-direction gap: selling a registry asset other than SODA has no
-  // route on the solver yet, which a bare "no route" message doesn't explain.
+  // sell-direction gap, which a bare "no route" message doesn't explain.
   const sodaxQuoteErrorHint = useMemo(() => {
     if (!(quoteError instanceof SodaxApiError) || quoteError.status !== 422) {
       return null;
     }
+    if (!isNonSodaSellGap) return null;
     const sellAsset = getSodaxAsset(sellToken?.contract);
-    if (!sellAsset || sellAsset.code === "SODA") return null;
-    return `The SODAX solver couldn't find a route to sell ${sellAsset.code} right now — this direction may not be available yet.`;
-  }, [quoteError, sellToken?.contract]);
+    return `The SODAX solver couldn't find a route to sell ${sellAsset?.code} right now — this direction may not be available yet.`;
+  }, [quoteError, isNonSodaSellGap, sellToken?.contract]);
 
   // Destination trustline gate: the solver cannot deliver a classic asset
   // (a SODAX asset or USDC) without a trustline. Selling implies the source
