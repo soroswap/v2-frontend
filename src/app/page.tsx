@@ -259,6 +259,7 @@ export default function SwapPage() {
                       !!sodax.sodaxQuoteError ||
                       sodax.isDebouncing ||
                       sodax.needsSodaTrustline ||
+                      sodax.isTrustlineCheckPending ||
                       sodax.isSodaxSwapLoading
                     : (!quote && quoteError) ||
                       quoteError?.message === "No path found")

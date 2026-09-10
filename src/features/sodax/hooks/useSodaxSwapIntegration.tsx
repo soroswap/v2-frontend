@@ -153,6 +153,10 @@ export function useSodaxSwapIntegration({
     !!trustlineAsset &&
     trustline.hasCheckedOnce &&
     !trustline.trustlineStatus.exists;
+  // A destination trustline check is required but has not resolved yet —
+  // needsSodaTrustline stays false during that window (hasCheckedOnce is
+  // false), so it alone cannot gate the swap; block separately.
+  const isTrustlineCheckPending = !!trustlineAsset && !trustline.hasCheckedOnce;
 
   const handleSodaxSwap = useCallback(async () => {
     if (
@@ -163,7 +167,8 @@ export function useSodaxSwapIntegration({
       !sellToken?.contract ||
       !buyToken?.contract ||
       !userAddress ||
-      needsSodaTrustline
+      needsSodaTrustline ||
+      isTrustlineCheckPending
     ) {
       return;
     }
@@ -193,6 +198,7 @@ export function useSodaxSwapIntegration({
     buyToken,
     userAddress,
     needsSodaTrustline,
+    isTrustlineCheckPending,
     swap,
     mutate,
   ]);
@@ -213,6 +219,7 @@ export function useSodaxSwapIntegration({
     trustline,
     trustlineAsset,
     needsSodaTrustline,
+    isTrustlineCheckPending,
     // execution
     handleSodaxSwap,
     sodaxStep: swap.currentStep,

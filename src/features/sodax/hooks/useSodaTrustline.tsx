@@ -9,7 +9,7 @@ import {
   Operation,
   TransactionBuilder,
 } from "@stellar/stellar-sdk";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface SodaTrustlineStatus {
   exists: boolean;
@@ -63,7 +63,14 @@ export function useSodaTrustline(
   const assetCode = asset?.code ?? null;
   const assetIssuer = asset?.issuer ?? null;
 
+  // Guards against a freshness bug: without it, a slow response for a
+  // previous asset/account can land after a newer check has started and
+  // overwrite trustlineStatus/hasCheckedOnce with stale data.
+  const requestIdRef = useRef(0);
+
   const checkTrustline = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
+
     if (!address || !assetCode || !assetIssuer) {
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
       return;
@@ -74,6 +81,8 @@ export function useSodaTrustline(
     try {
       const server = new Horizon.Server(STELLAR.HORIZON_URL);
       const account = await server.accounts().accountId(address).call();
+
+      if (requestId !== requestIdRef.current) return; // superseded
 
       const assetBalance = account.balances.find(
         (balance) =>
@@ -95,6 +104,8 @@ export function useSodaTrustline(
         checking: false,
       });
     } catch (error) {
+      if (requestId !== requestIdRef.current) return; // superseded
+
       // A 404 means the account is unfunded — no trustline either way.
       if (!(error instanceof Error && error.message.includes("404"))) {
         console.error(`Failed to check ${assetCode} trustline:`, error);
@@ -102,7 +113,9 @@ export function useSodaTrustline(
       setXlmBalance("0");
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
     } finally {
-      setHasCheckedOnce(true);
+      if (requestId === requestIdRef.current) {
+        setHasCheckedOnce(true);
+      }
     }
   }, [address, assetCode, assetIssuer]);
 
@@ -163,12 +176,15 @@ export function useSodaTrustline(
   }, [kit, address, assetCode, assetIssuer, signTransaction, checkTrustline]);
 
   useEffect(() => {
+    // The asset or account changed: any previous trustlineStatus/
+    // hasCheckedOnce is for a different (asset, account) pair and must not
+    // be read as current while the fresh check below is in flight.
+    setTrustlineStatus({ exists: false, balance: "0", checking: false });
+    setXlmBalance("0");
+    setHasCheckedOnce(false);
+
     if (address && assetCode && assetIssuer) {
       checkTrustline();
-    } else {
-      setTrustlineStatus({ exists: false, balance: "0", checking: false });
-      setXlmBalance("0");
-      setHasCheckedOnce(false);
     }
   }, [address, assetCode, assetIssuer, checkTrustline]);
 
