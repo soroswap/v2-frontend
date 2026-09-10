@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { SODAX_STELLAR_CHAIN_KEY } from "@/features/sodax/constants/sodax";
 import {
   getSodaxClient,
   sodaxErrorResponse,
@@ -14,6 +15,10 @@ import {
 const CACHE_TTL_MS = 60 * 60 * 1000;
 const tokensCache = new Map<string, { data: unknown; expiresAt: number }>();
 
+/** Only chain this app ever requests tokens for — reject anything else
+ * before it reaches the upstream SODAX API or grows the cache. */
+const SUPPORTED_CHAINS = new Set([SODAX_STELLAR_CHAIN_KEY]);
+
 /*
  * GET /api/sodax/tokens?chain=stellar — SODAX-supported swap tokens.
  * Without "chain", returns the full chainKey → tokens map.
@@ -24,6 +29,12 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const chain = searchParams.get("chain");
+  if (chain && !SUPPORTED_CHAINS.has(chain)) {
+    return sodaxJson(
+      { code: "SODAX_ERROR_PARAM", message: 'Unsupported "chain" value' },
+      { status: 400 },
+    );
+  }
   const cacheKey = chain ?? "__all__";
 
   const cached = tokensCache.get(cacheKey);
