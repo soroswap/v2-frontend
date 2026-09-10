@@ -24,6 +24,7 @@ const KNOWN_CODES: readonly SodaxApiErrorCode[] = [
   "SODAX_ERROR_CORS",
   "SODAX_ERROR_PARAM",
   "SODAX_ERROR_SUBMIT",
+  "SODAX_ERROR_BROADCAST_UNKNOWN",
 ];
 
 function toApiError(status: number, body: unknown): SodaxApiError {
@@ -42,9 +43,24 @@ function toApiError(status: number, body: unknown): SodaxApiError {
 /** No SODAX request should hang the caller forever behind a dead upstream. */
 const DEFAULT_TIMEOUT_MS = 20_000;
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
+export interface SodaxRequestOptions {
+  /**
+   * Per-call ceiling in ms. Only the broadcast route needs more than the
+   * default, because it waits for on-chain confirmation before answering.
+   */
+  timeoutMs?: number;
+}
+
+async function request<T>(
+  url: string,
+  init?: RequestInit,
+  options?: SodaxRequestOptions,
+): Promise<T> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+  const timeoutId = setTimeout(
+    () => controller.abort(),
+    options?.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+  );
 
   let response: Response;
   try {
@@ -82,12 +98,20 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export function post<T>(url: string, payload: unknown): Promise<T> {
-  return request<T>(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+export function post<T>(
+  url: string,
+  payload: unknown,
+  options?: SodaxRequestOptions,
+): Promise<T> {
+  return request<T>(
+    url,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    },
+    options,
+  );
 }
 
 export function fetchSodaxStellarTokens(): Promise<SodaxToken[]> {

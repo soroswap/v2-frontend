@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useUserContext } from "@/contexts";
 import {
+  SODAX_BROADCAST_TIMEOUT_MS,
   SODAX_STATUS_POLL_INTERVAL_MS,
   SODAX_STATUS_POLL_TIMEOUT_MS,
   SODAX_STELLAR_CHAIN_KEY,
@@ -22,6 +23,8 @@ import {
   SodaxSubmitStatus,
   SodaxSubmitStatusResponse,
 } from "@/features/sodax/types/sodax";
+import { STELLAR } from "@/shared/lib/environmentVars";
+import { TransactionBuilder } from "@stellar/stellar-sdk";
 
 export enum SodaxSwapStep {
   IDLE = "IDLE",
@@ -63,8 +66,18 @@ export interface SodaxSwapError {
   step: SodaxSwapStep;
   /** Message safe to show the user. */
   message: string;
-  /** True when retrying the same swap may succeed (network/timeout class). */
+  /**
+   * True when retrying the same swap may succeed (network/timeout class).
+   * Always false once the intent transaction may have reached the network:
+   * a retry would sign a second intent against funds already committed.
+   */
   retryable: boolean;
+  /**
+   * Stellar hash of the intent transaction, set whenever the failure happened
+   * after the signed transaction was handed to the network so the user can
+   * check it before doing anything else.
+   */
+  srcTxHash?: string;
   details?: unknown;
 }
 
@@ -97,6 +110,14 @@ function toUserMessage(
           message: "Connection problem while talking to SODAX. Please retry.",
           retryable: true,
         };
+      case "SODAX_ERROR_BROADCAST_UNKNOWN":
+        // Only reachable on the trustline leg: the intent leg handles this
+        // code itself and carries on with the local hash.
+        return {
+          message:
+            "Could not confirm whether the trustline update went through. Please try again in a moment.",
+          retryable: true,
+        };
       case "TIMEOUT_ERROR":
         return {
           message: "SODAX took too long to respond. Please retry.",
@@ -115,6 +136,9 @@ function toUserMessage(
         };
     }
   }
+  if (error instanceof BroadcastRejected) {
+    return { message: error.message, retryable: true };
+  }
   return {
     message: error instanceof Error && error.message ? error.message : fallback,
     retryable: false,
@@ -130,7 +154,69 @@ class SwapAborted extends Error {
 }
 
 /**
- * Executes a SODA swap through the SODAX solver:
+ * The transaction was included in a ledger and failed there. No funds moved
+ * (only the fee), so signing a fresh intent is the right next step.
+ */
+class BroadcastRejected extends Error {
+  constructor() {
+    super(
+      "The transaction failed on the Stellar network. No funds were taken — please retry the swap.",
+    );
+    this.name = "BroadcastRejected";
+  }
+}
+
+/**
+ * Once a signed intent has been handed to /api/sodax/send, only two answers
+ * prove the network did NOT take it: the route's explicit rejection (400,
+ * expired/invalid) and "try again later" (503). Everything else — a timeout,
+ * a dropped connection, a 5xx, the route's own unknown-state answer — means
+ * the funds may already be committed.
+ */
+function isDefinitiveRejection(cause: unknown): boolean {
+  return (
+    cause instanceof SodaxApiError &&
+    cause.code === "SODAX_ERROR_SUBMIT" &&
+    (cause.status === 400 || cause.status === 503)
+  );
+}
+
+/** Retry-worthy failures of the relay handoff: transport or upstream 5xx. */
+function isTransientSubmitFailure(cause: unknown): boolean {
+  return (
+    cause instanceof SodaxApiError &&
+    (cause.code === "NETWORK_ERROR" ||
+      cause.code === "TIMEOUT_ERROR" ||
+      cause.status >= 500)
+  );
+}
+
+/**
+ * Stellar transaction hash of a signed envelope, computed locally so the
+ * client knows which transaction to track even when the broadcast call
+ * fails half-way. Null only if the XDR cannot be parsed, which the wallet
+ * would already have refused to sign.
+ */
+function hashOfSignedXdr(signedXdr: string): string | null {
+  try {
+    return TransactionBuilder.fromXDR(signedXdr, STELLAR.NETWORK_PASSPHRASE)
+      .hash()
+      .toString("hex");
+  } catch {
+    return null;
+  }
+}
+
+const SUBMIT_ATTEMPTS = 3;
+const SUBMIT_RETRY_BASE_MS = 1_000;
+
+const BROADCAST_STATE_UNKNOWN_MESSAGE =
+  "Your swap transaction may already have reached the Stellar network. Check your balance and the transaction below before doing anything else — signing again would create a second swap.";
+const HANDOFF_FAILED_MESSAGE =
+  "Your swap transaction is on the Stellar network, but it could not be handed to the SODAX solver. Do not retry yet — check the transaction below, and if the funds left your account contact support with its hash.";
+
+/**
+ * Executes a SODAX swap (any registry pair) through the SODAX solver:
  * allowance → (approve + re-check) → deadline → create intent → sign →
  * broadcast via /api/sodax/send → hand off to the relay → poll until filled.
  *
@@ -170,7 +256,15 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
   }, []);
 
   const failWith = useCallback(
-    (step: SodaxSwapStep, cause: unknown, fallback: string): never => {
+    (
+      step: SodaxSwapStep,
+      cause: unknown,
+      fallback: string,
+      // Post-broadcast steps override the generic classification: whatever
+      // the transport said, a retry is never safe once funds may be committed.
+      override?: Pick<SodaxSwapError, "srcTxHash"> &
+        Partial<Pick<SodaxSwapError, "message" | "retryable">>,
+    ): never => {
       // User-initiated cancel (modal close / unmount): the machine was
       // already reset — do not resurrect it into an ERROR state.
       if (cause instanceof SwapAborted || abortRef.current) {
@@ -178,18 +272,19 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
         throw cause instanceof Error ? cause : new Error(String(cause));
       }
 
-      const { message, retryable } = toUserMessage(cause, fallback);
+      const classified = toUserMessage(cause, fallback);
       const swapError: SodaxSwapError = {
         step,
-        message,
-        retryable,
+        message: override?.message ?? classified.message,
+        retryable: override?.retryable ?? classified.retryable,
+        srcTxHash: override?.srcTxHash,
         details: cause,
       };
       setError(swapError);
       updateStep(SodaxSwapStep.ERROR);
       setIsLoading(false);
       optionsRef.current?.onError?.(swapError);
-      throw cause instanceof Error ? cause : new Error(message);
+      throw cause instanceof Error ? cause : new Error(swapError.message);
     },
     [updateStep],
   );
@@ -203,9 +298,16 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
   const sendTransaction = useCallback(async (signedXdr: string) => {
     const body = await post<{
       data: { txHash: string; success: boolean; confirmed?: boolean };
-    }>("/api/sodax/send", signedXdr);
-    if (!body?.data?.txHash || body.data.success === false) {
-      throw new Error("The transaction failed on the Stellar network");
+    }>("/api/sodax/send", signedXdr, {
+      timeoutMs: SODAX_BROADCAST_TIMEOUT_MS,
+    });
+    if (!body?.data?.txHash) {
+      throw new Error(
+        "The broadcast response did not include a transaction hash",
+      );
+    }
+    if (body.data.success === false) {
+      throw new BroadcastRejected();
     }
     return body.data;
   }, []);
@@ -372,38 +474,77 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
         );
       }
 
-      // 5. Broadcast on Stellar.
+      // 5. Broadcast on Stellar. The hash is known before the call, so an
+      //    ambiguous failure (timeout, dropped connection, 5xx) does not have
+      //    to end the swap: the relay verifies inclusion on-chain itself, and
+      //    the fill poll below reports honestly if the tx never landed.
+      //    Only the route's explicit rejections prove nothing was sent.
       updateStep(SodaxSwapStep.SENDING_TRANSACTION);
-      let srcTxHash: string;
+      const localTxHash = hashOfSignedXdr(signedXdr);
+      let srcTxHash = localTxHash ?? "";
       let broadcastConfirmed = true;
       try {
         const sendResult = await sendTransaction(signedXdr);
         srcTxHash = sendResult.txHash;
         broadcastConfirmed = sendResult.confirmed !== false;
       } catch (cause) {
-        return failWith(
-          SodaxSwapStep.SENDING_TRANSACTION,
+        if (
+          isDefinitiveRejection(cause) ||
+          cause instanceof BroadcastRejected
+        ) {
+          return failWith(
+            SodaxSwapStep.SENDING_TRANSACTION,
+            cause,
+            "Failed to broadcast the transaction",
+          );
+        }
+        if (!srcTxHash) {
+          return failWith(
+            SodaxSwapStep.SENDING_TRANSACTION,
+            cause,
+            "Failed to broadcast the transaction",
+            { message: BROADCAST_STATE_UNKNOWN_MESSAGE, retryable: false },
+          );
+        }
+        console.warn(
+          "[SODAX] Broadcast state unknown — continuing with the local tx hash",
           cause,
-          "Failed to broadcast the transaction",
         );
+        broadcastConfirmed = false;
       }
 
       // 6. Hand off to the relay ("duplicate" means it already knows the tx).
+      //    Funds may be committed from here on, so transport hiccups are
+      //    retried here and never turned into a "try again" for the user.
       updateStep(SodaxSwapStep.SUBMITTING_TO_SOLVER);
-      try {
-        await submitSodaxTx({
-          txHash: srcTxHash,
-          srcChainKey: SODAX_STELLAR_CHAIN_KEY,
-          walletAddress: params.userAddress,
-          intent: intentTx.intent,
-          relayData: intentTx.relayData.payload,
-        });
-      } catch (cause) {
-        return failWith(
-          SodaxSwapStep.SUBMITTING_TO_SOLVER,
-          cause,
-          "Failed to hand the swap to the solver",
-        );
+      for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
+        try {
+          await submitSodaxTx({
+            txHash: srcTxHash,
+            srcChainKey: SODAX_STELLAR_CHAIN_KEY,
+            walletAddress: params.userAddress,
+            intent: intentTx.intent,
+            relayData: intentTx.relayData.payload,
+          });
+          break;
+        } catch (cause) {
+          if (attempt < SUBMIT_ATTEMPTS && isTransientSubmitFailure(cause)) {
+            console.warn(
+              `[SODAX] Relay handoff failed (attempt ${attempt}/${SUBMIT_ATTEMPTS})`,
+              cause,
+            );
+            await new Promise((resolve) =>
+              setTimeout(resolve, SUBMIT_RETRY_BASE_MS * attempt),
+            );
+            continue;
+          }
+          return failWith(
+            SodaxSwapStep.SUBMITTING_TO_SOLVER,
+            cause,
+            "Failed to hand the swap to the solver",
+            { message: HANDOFF_FAILED_MESSAGE, retryable: false, srcTxHash },
+          );
+        }
       }
 
       // 7. Poll until the solver fills.
@@ -416,6 +557,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
           SodaxSwapStep.WAITING_FOR_FILL,
           cause,
           "The swap was not filled",
+          { retryable: false, srcTxHash },
         );
       }
 

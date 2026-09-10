@@ -52,6 +52,28 @@ const FILL_STATUS_MESSAGES: Record<SodaxSubmitStatus, string> = {
 };
 
 /** Sell → Buy summary block, mirroring SwapModal's token rows. */
+/**
+ * Explorer link + copy button for the Stellar intent transaction. srcTxHash is
+ * the Stellar transaction; the solver's dstTxHash is a SODAX hub-side (0x…)
+ * hash that stellar.expert cannot resolve, so it is never linked here.
+ */
+const TxLinks = ({ txHash }: { txHash: string }) => (
+  <div className="flex flex-col gap-2">
+    <a
+      href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${txHash}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
+    >
+      View on Stellar.Expert
+    </a>
+    <div className="flex items-center justify-center gap-2">
+      <p>Copy transaction hash</p>
+      <CopyAndPasteButton textToCopy={txHash} />
+    </div>
+  </div>
+);
+
 const PairSummary = ({
   sellToken,
   buyToken,
@@ -176,31 +198,18 @@ export const SodaxSwapModal = ({
               sellAmount={sellAmount}
               buyAmount={buyAmount}
             />
-            <div className="flex flex-col gap-2">
-              {/* srcTxHash is the Stellar transaction; dstTxHash is a SODAX
-                  hub-side (0x…) hash that stellar.expert cannot resolve. */}
-              {result?.srcTxHash && (
-                <a
-                  href={`https://stellar.expert/explorer/${network == "mainnet" ? "public" : "testnet"}/tx/${result.srcTxHash}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand hover:text-brand/80 inline-block transition-colors duration-200"
-                >
-                  View on Stellar.Expert
-                </a>
-              )}
-              {result?.srcTxHash && (
-                <div className="flex items-center justify-center gap-2">
-                  <p>Copy transaction hash</p>
-                  <CopyAndPasteButton textToCopy={result.srcTxHash} />
-                </div>
-              )}
-            </div>
+            {result?.srcTxHash && <TxLinks txHash={result.srcTxHash} />}
           </div>
         );
       case SodaxSwapStep.ERROR:
         return (
-          <p>{error?.message || "Something went wrong. Please try again."}</p>
+          <div className="flex flex-col gap-4">
+            <p>{error?.message || "Something went wrong. Please try again."}</p>
+            {/* Present whenever the failure happened after the intent
+                transaction was handed to the network: the user must check
+                it before considering another swap. */}
+            {error?.srcTxHash && <TxLinks txHash={error.srcTxHash} />}
+          </div>
         );
       default:
         return null;
@@ -246,7 +255,9 @@ export const SodaxSwapModal = ({
               onClick={onClose}
               className="bg-brand hover:bg-brand/80 w-full cursor-pointer rounded-2xl px-4 py-3 font-medium text-white transition-colors"
             >
-              {step === SodaxSwapStep.SUCCESS ? "Close" : "Try Again"}
+              {step === SodaxSwapStep.SUCCESS || error?.retryable === false
+                ? "Close"
+                : "Try Again"}
             </button>
           )}
 

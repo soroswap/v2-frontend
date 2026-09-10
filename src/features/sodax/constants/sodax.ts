@@ -25,6 +25,16 @@ export const SODAX_STATUS_POLL_INTERVAL_MS = 3_000;
 export const SODAX_STATUS_POLL_TIMEOUT_MS = 5 * 60_000;
 
 /**
+ * Client-side ceiling for POST /api/sodax/send. It must exceed that route's
+ * own budget (RPC submit plus a 30s confirmation window, inside a 60s
+ * maxDuration): a shorter ceiling makes the browser give up on a transaction
+ * that has already been broadcast, and the route's "accepted but not yet
+ * confirmed" answer could never arrive. Every other SODAX request keeps the
+ * default 20s in lib/api.ts.
+ */
+export const SODAX_BROADCAST_TIMEOUT_MS = 45_000;
+
+/**
  * SODA on Stellar, looked up once from the registry so this stays a single
  * source of truth. Throws at module load — not first use — so a broken
  * table fails the build loudly instead of failing some unrelated request

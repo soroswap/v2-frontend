@@ -155,7 +155,13 @@ export type SodaxApiErrorCode =
   | "INTERNAL_ERROR"
   | "SODAX_ERROR_CORS"
   | "SODAX_ERROR_PARAM"
-  | "SODAX_ERROR_SUBMIT";
+  | "SODAX_ERROR_SUBMIT"
+  /**
+   * /api/sodax/send could not tell whether the network received the
+   * transaction (RPC failure mid-submit). `context.txHash` carries the hash
+   * so the caller can keep tracking it instead of signing again.
+   */
+  | "SODAX_ERROR_BROADCAST_UNKNOWN";
 
 /** Typed error thrown by the client wrapper in lib/api.ts. */
 export class SodaxApiError extends Error {
