@@ -2,7 +2,7 @@
 
 > **Living document.** Read this before modifying the module. Update it in the same change whenever the module's behavior, endpoints, files, or dependencies change.
 
-**Source:** `src/features/swap/` · **Last verified:** 2026-09-04
+**Source:** `src/features/swap/` · **Last verified:** 2026-09-10
 
 ## Purpose
 
@@ -21,18 +21,23 @@ Owns the token swap experience: token selection, amount entry, quote fetching, a
 | `SwapModal.tsx`, `SwapQuoteDetails.tsx`, `PricePanel.tsx`, `SwapSettingsModal.tsx` | Progress modal, quote breakdown, and slippage/protocol settings. |
 | `types/swap.ts` | `SwapSettings` shape shared with the pools settings store. |
 
+`src/features/sodax/` is attached at `useSwapController` (below) but is its own module with its own doc — see sodax.md — and is not otherwise duplicated here.
+
 ## Public surface
 
 Barrel `src/features/swap/index.ts:1-6` re-exports `SwapPanel`, `TokenSelector`, `SwapQuoteDetails`, `SwapModal`, `SwapSettingsModal`. Hooks are imported by path, not through the barrel.
 
 ## Key methods
 
-- **`useSwapController({ userAddress, onSuccess, onError, onStepChange })`** (`hooks/useSwapController.tsx:102`) is the single entry point for the swap page. It owns a `useReducer` form state (`:56`) with `TYPE_INPUT`, `SET_TOKEN`, and `SWITCH_TOKENS` actions.
-- **quote request assembly** (`hooks/useSwapController.tsx:134-167`) builds the `QuoteRequest` and commits it through a 400 ms debounce timer so each keystroke does not create a new SWR key. `protocols`, `slippageBps`, and `maxHops` come from the persisted swap settings store; `parts` is hardcoded to 10 and `assetList` is hardcoded to `[SupportedAssetLists.SOROSWAP]` (`:150-154`).
-- **`handleTokenSelect`** (`hooks/useSwapController.tsx:225`) dispatches `SWITCH_TOKENS` when the user picks the token already on the other side, rather than putting the same token on both sides.
+- **`useSwapController({ userAddress, onSuccess, onError, onStepChange })`** (`hooks/useSwapController.tsx:103`) is the single entry point for the swap page. It owns a `useReducer` form state (`:118`) with `TYPE_INPUT`, `SET_TOKEN`, and `SWITCH_TOKENS` actions, and returns a `sodax` object (`useSodaxSwapIntegration(...)`, `:128-135`) alongside the Soroswap `quote`/`handleSwap` — see sodax.md for everything inside it. `handleSwap` (`:289-307`) branches to `sodax.handleSodaxSwap()` when `sodax.isSodaxActive`, otherwise calls `executeSwap(quote, userAddress)`; `isQuoteLoading` in the returned object is `sodax.isSodaxQuoteLoading` in the same case (`:332-334`).
+- **quote request assembly** (`hooks/useSwapController.tsx:156-202`) builds the `QuoteRequest` and commits it through a 400 ms debounce timer so each keystroke does not create a new SWR key. `protocols`, `slippageBps`, and `maxHops` come from the persisted swap settings store; `parts` is hardcoded to 10 and `assetList` is hardcoded to `[SupportedAssetLists.SOROSWAP]` (`:172-183`). The effect's first branch skips all of this — `setQuoteRequest(null); return;` — whenever `sodax.isSodaxActive`, since a SODAX pair is quoted by `useSodaxSwapIntegration`, not this effect (`:156-161`).
+- **`handleTokenSelect`** (`hooks/useSwapController.tsx:262`) dispatches `SWITCH_TOKENS` when the user picks the token already on the other side, rather than putting the same token on both sides.
 - **`useSwap.buildXdr(quote, userAddress, retryCount)`** (`hooks/useSwap.ts:109`) posts to `/api/quote/build`. On `errorCode === 13` or `TokenError.InsufficientTrustlineBalance` it switches to `CREATE_TRUSTLINE`, signs and submits the trustline XDR the API returned, then calls itself again with `retryCount + 1`, bailing out above 2 (`:129-171`).
 - **`useSwap.executeSwap(quote, userAddress)`** (`hooks/useSwap.ts:216`) runs build, sign, send in order and prefers the real `amountIn`/`amountOut` off the transaction result when `txData.result.type === "swap"`, falling back to the quote amounts (`:248-255`).
 - **`useTokenPrices(addresses)`** (`hooks/useTokenPrice.ts:83`) filters out non-Stellar addresses with `isStellarAddress` before building the SWR key, then maps results back into the caller's original array order so index alignment is preserved (`:102-105`).
+- **`includeSodaxTokens`** is a prop threaded from `SwapPanel` (`SwapPanel.tsx:30,51`) through `TokenSelector` (`TokenSelector.tsx:17,25,71`) into `TokenSelectorModal`, which appends every live SODAX registry asset not already in the list, in registry order, when it's set (`TokenSelectorModal.tsx:1,34,75-85`). It defaults to `false` everywhere; `src/app/page.tsx:196,223` is the only caller that sets it `true`, on both the Sell and Buy `SwapPanel`s.
+- **`inputDisabled`** on `SwapPanel` (`SwapPanel.tsx:27-28,50,143`) passes straight through to `TokenAmountInput`'s `disabled` prop. `src/app/page.tsx:222` is its only caller, setting it on the **Buy** panel exactly when `sodax.isSodaxActive` — SODAX only quotes `exact_input`, so the Buy amount can't be typed while a SODAX pair is selected.
+- **`PricePanel`** (`PricePanel.tsx:7`) falls back from `useTokenPrice` (Soroswap) to `useSodaxUsdPrice` (`:16,25-27`) — `price = soroswapPrice ?? sodaxPrice` — because the Soroswap price API has no prices for SODAX registry assets. `useSodaxUsdPrice` is inert (`null`, not loading) for any other token, so the fallback is a no-op outside SODAX pairs.
 
 ## Dependencies
 
@@ -41,17 +46,21 @@ Barrel `src/features/swap/index.ts:1-6` re-exports `SwapPanel`, `TokenSelector`,
 - `useUserContext` for `signTransaction` (`hooks/useSwap.ts:83`).
 - `useSwapSettingsStore` for slippage, protocols, and max hops.
 - `useTokensList` from the shared module for the token picker and the default sell token.
-- Consumed by `src/app/page.tsx` (the swap page) and by the pools add-liquidity page, which reuses `SwapPanel`.
+- `src/features/sodax` (`useSodaxSwapIntegration`, `useSodaxAvailability`, `toSodaxAssetInfo`) — the SODAX solver integration attached at `useSwapController` and threaded into `TokenSelectorModal`/`PricePanel`. See sodax.md.
+- Consumed by `src/app/page.tsx` (the swap page) and by the pools add-liquidity page, which reuses `SwapPanel` (without SODAX wired up — see Gotchas).
 
 ## Gotchas & invariants
 
 - **Slippage units are ambiguous.** `slippageBps(value)` is `Number(value) * 100` (`src/shared/lib/utils/slippageBps.ts:2`) and the default `customSlippage` is the string `"1"` (`src/shared/lib/constants/swap.ts:6`), giving 100 bps = 1%. A TODO on that same line flags the mismatch with the UI wording. Do not "fix" one side without the other.
 - Both `useTokenPrice` and `useTokenPrices` use `dedupingInterval: 3000000`, which is 50 minutes, not the 10 minutes used by `useBatchTokenPrices` (`hooks/useTokenPrice.ts:69`, `:95` vs `hooks/useBatchTokenPrices.ts:60`). Two different cache horizons hit the same `/api/price` route.
 - `useBatchTokenPrices` swallows every error and returns an empty map (`hooks/useBatchTokenPrices.ts:39-43`), so downstream TVL silently reads as zero rather than erroring.
-- The quote request pins `assetList` to the Soroswap list, so a user-added custom asset will not route. There is an explicit TODO at `hooks/useSwapController.tsx:153`.
-- `useSwapController` auto-selects `tokensList[0]` as the sell token once the list loads and nothing is selected (`:263-267`). The token list route puts XLM first, so this is effectively "default to XLM".
+- The quote request pins `assetList` to the Soroswap list, so a user-added custom asset will not route. There is an explicit TODO at `hooks/useSwapController.tsx:181`.
+- `useSwapController` auto-selects `tokensList[0]` as the sell token once the list loads and nothing is selected (`:312-316`). The token list route puts XLM first, so this is effectively "default to XLM".
 - Quote and swap payloads are serialized with `bigIntReplacer` because `QuoteRequest` amounts are `bigint` and `JSON.stringify` throws on them (`hooks/useQuote.ts:14`).
 - Several `useCallback` dependency arrays here are deliberately incomplete; the file disables `react-hooks/exhaustive-deps` at the top (`hooks/useSwapController.tsx:1`, `hooks/useSwap.ts:2`).
+- **A selected SODAX pair forces the Sell field to drive.** If a SODAX pair becomes active while the Buy field was independent, an effect immediately dispatches `TYPE_INPUT` back to `"sell"` with an empty value (`hooks/useSwapController.tsx:139-143`) — SODAX only quotes `exact_input`. This can visibly clear whatever the user had typed into Buy.
+- **`includeSodaxTokens` and `inputDisabled` default to `false`/`false`,** so the pools add-liquidity page, which reuses `SwapPanel` (`src/app/pools/add-liquidity/[...tokens]/page.tsx:194,217`), does not offer SODAX registry assets and never disables the Buy input — only `src/app/page.tsx` opts in. Do not assume every `SwapPanel` consumer has SODAX wired up.
+- `useSwapController`'s `derivedBuyAmount` reads `sodax.derivedBuyAmount` when `sodax.isSodaxActive` (`:217-227`) instead of deriving from the Soroswap `quote`, since the quote-request effect above never builds one for a SODAX pair — the two amount sources are mutually exclusive, never merged.
 
 ## Testing
 
