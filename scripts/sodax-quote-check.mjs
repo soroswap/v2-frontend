@@ -82,6 +82,29 @@ const CASES = [
     amount: toBaseUnits(100, 7),
     dstDecimals: 7,
   },
+  {
+    label: "100 USDC (stellar) -> NVDA (stellar)",
+    tokenSrc: STELLAR.USDC,
+    tokenSrcChainKey: "stellar",
+    tokenDst: "CCQFCT4FHJURUQ4RQA4NHYW5GQRHCBDXF33ADXZRTDTDVGKOJO3ZPEMY",
+    tokenDstChainKey: "stellar",
+    amount: toBaseUnits(100, 7),
+    dstDecimals: 7,
+  },
+  {
+    label: "700 USDC (stellar) -> SPY (stellar)",
+    tokenSrc: STELLAR.USDC,
+    tokenSrcChainKey: "stellar",
+    tokenDst: "CD3ZMWOS4PZS2RQITEHBOTS27DTDP4QKOK7IEO5IB64GQKHRJYTVL3SW",
+    tokenDstChainKey: "stellar",
+    amount: toBaseUnits(700, 7),
+    dstDecimals: 7,
+  },
+  // Sell-direction cases (registry asset -> USDC/XLM) are deliberately
+  // absent: selling any registry asset other than SODA currently returns
+  // 422 "No path was found" at every size (a solver-side gap under
+  // investigation). Add them back once the solver accepts these assets as
+  // a source.
 ];
 
 console.log(`SODAX Swaps API v2 wire check against ${baseUrl}\n`);
