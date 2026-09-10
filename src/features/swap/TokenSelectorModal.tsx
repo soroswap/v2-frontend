@@ -31,7 +31,11 @@ export const TokenSelectorModal = ({
   const [searchValue, setSearchValue] = useState<string>("");
   const { tokensList } = useTokensList();
   const userTokenList = useUserAssetList();
-  const { availableAssets } = useSodaxAvailability();
+  // Never fetch /api/sodax/tokens from a picker that won't offer SODAX
+  // assets anyway (e.g. pools add-liquidity, which never sets this).
+  const { availableAssets } = useSodaxAvailability({
+    enabled: includeSodaxTokens,
+  });
   const { address } = useUserContext();
   const { getAvailableAmount, isLoading: isBalanceLoading } =
     useUserBalances(address);

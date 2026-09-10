@@ -9,6 +9,14 @@ import {
 import { fetchSodaxStellarTokens } from "@/features/sodax/lib/api";
 import { isProductionEnv } from "@/shared/lib/environmentVars";
 
+export interface UseSodaxAvailabilityOptions {
+  /**
+   * Disable the live-list fetch entirely, for a consumer that never offers
+   * SODAX assets (e.g. the pools add-liquidity token picker). Default true.
+   */
+  enabled?: boolean;
+}
+
 /**
  * Graceful-degradation gate for the whole SODAX feature.
  *
@@ -18,9 +26,10 @@ import { isProductionEnv } from "@/shared/lib/environmentVars";
  * reports disabled, so the app behaves exactly as it does today — no SODAX
  * asset enters the token selector and no SODAX code path runs.
  */
-export function useSodaxAvailability() {
+export function useSodaxAvailability(options?: UseSodaxAvailabilityOptions) {
+  const enabled = options?.enabled ?? true;
   const { data, error, isLoading } = useSWR(
-    isProductionEnv ? "sodax-stellar-tokens" : null,
+    isProductionEnv && enabled ? "sodax-stellar-tokens" : null,
     fetchSodaxStellarTokens,
     {
       revalidateOnFocus: false,
