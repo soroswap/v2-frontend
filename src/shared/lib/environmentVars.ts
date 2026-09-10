@@ -93,6 +93,8 @@ export const envVars = {
   SODAX: {
     // Server-only. Validated lazily in sodaxClient so client bundles never touch it.
     SWAPS_API_URL: process.env.SODAX_SWAPS_API_URL || "",
+    // Server-only, optional today; reserved for when the SODAX API requires a key.
+    API_KEY: process.env.SODAX_API_KEY ?? "",
   },
 };
 

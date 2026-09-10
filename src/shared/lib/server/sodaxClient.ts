@@ -22,6 +22,9 @@ export function getSodaxClient(): SwapsApi {
     client = new SwapsApi({
       baseUrl: SODAX.SWAPS_API_URL,
       timeout: 15_000,
+      // Optional today — the SODAX API doesn't require a key yet, but pass
+      // it through once configured rather than needing a second change here.
+      ...(SODAX.API_KEY ? { headers: { "x-api-key": SODAX.API_KEY } } : {}),
     });
   }
   return client;
@@ -80,7 +83,10 @@ export function sodaxOriginGuard(request: NextRequest): NextResponse | null {
  * (e.g. Stellar tx `value`), which `NextResponse.json` cannot serialize.
  * Re-stringify them for the wire; the browser-side wrapper types them as strings.
  */
-export function sodaxJson<T>(data: T, init?: { status?: number }): NextResponse {
+export function sodaxJson<T>(
+  data: T,
+  init?: { status?: number },
+): NextResponse {
   const body = JSON.stringify(data, bigIntReplacer);
   return new NextResponse(body, {
     status: init?.status ?? 200,
