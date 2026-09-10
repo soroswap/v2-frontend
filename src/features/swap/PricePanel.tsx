@@ -18,15 +18,28 @@ export const PricePanel = ({
   );
   // The Soroswap price API has no SODA price (returns null); the SODAX
   // solver quote fills that gap. Inert for every other token.
+  // isError isn't branched on directly below — price staying null once
+  // fetching has settled already covers the "fallback failed" case, but
+  // the hook exposes it so a settled-with-no-price state is distinguishable
+  // from "no price API covers this token" for any future caller.
   const { price: sodaPrice, isLoading: isLoadingSodaPrice } = useSodaUsdPrice(
     token?.contract ?? null,
   );
   const price = soroswapPrice ?? sodaPrice;
 
+  // Still actively fetching — show the skeleton. Once settled, price===null
+  // means no price could be resolved (including the SODA fallback having
+  // exhausted its retries), which is not a loading state and must not show
+  // the skeleton forever.
+  const isFetching = isLoading || isLoadingPrice || isLoadingSodaPrice;
+  const isPriceUnavailable = !isFetching && price === null;
+
   return (
     <div className="mt-1 h-5 min-w-20 overflow-hidden text-sm text-[#A0A3C4]">
-      {isLoading || isLoadingPrice || isLoadingSodaPrice || price === null ? (
+      {isFetching ? (
         <div className="skeleton h-full w-20" />
+      ) : isPriceUnavailable ? (
+        <span className="flex h-full items-center">—</span>
       ) : (
         <span className="flex h-full items-center">
           {amount == "."

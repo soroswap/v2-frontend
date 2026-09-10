@@ -25,7 +25,7 @@ const PROBE_SODA = 100;
 export function useSodaUsdPrice(contract: string | null) {
   const isSoda = contract === SODA_STELLAR.contract;
 
-  const { data, isLoading } = useSWR(
+  const { data, error, isLoading } = useSWR(
     isSoda ? "soda-usd-price" : null,
     async () => {
       const { quotedAmount } = await fetchSodaxQuote({
@@ -57,5 +57,8 @@ export function useSodaUsdPrice(contract: string | null) {
   return {
     price: isSoda ? (data ?? null) : null,
     isLoading: isSoda && isLoading,
+    // True once the retries above are exhausted and no price could be
+    // resolved, so a caller can tell "still trying" apart from "gave up".
+    isError: isSoda && !!error,
   };
 }
