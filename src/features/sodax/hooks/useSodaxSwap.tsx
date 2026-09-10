@@ -83,7 +83,10 @@ const FILL_PIPELINE: readonly SodaxSubmitStatus[] = [
   "posted_execution",
 ];
 
-function toUserMessage(error: unknown, fallback: string): {
+function toUserMessage(
+  error: unknown,
+  fallback: string,
+): {
   message: string;
   retryable: boolean;
 } {
@@ -147,8 +150,12 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
 
   // Callbacks live in a ref so a fresh options literal from the caller does
   // not rebuild every callback (and everything downstream) on each render.
+  // The assignment happens in an effect, not during render, because React
+  // can replay or discard a render and a ref write must stay out of it.
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  });
 
   // Stop polling when the component unmounts (route change, error boundary).
   useEffect(() => {
