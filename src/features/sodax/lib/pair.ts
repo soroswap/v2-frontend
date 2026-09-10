@@ -2,6 +2,7 @@ import {
   SODA_COUNTERPART_CONTRACTS,
   SODA_STELLAR,
 } from "@/features/sodax/constants/sodax";
+import { DEFAULT_SWAP_SETTINGS } from "@/shared/lib/constants/swap";
 
 /**
  * True when the pair should be quoted and executed through the SODAX solver
@@ -31,7 +32,15 @@ export function applySlippageToQuote(
   slippagePercent: string | number,
 ): string {
   const scale = BigInt(10000);
-  const bps = BigInt(Math.round(Number(slippagePercent) * 100));
+  const parsed = Number(slippagePercent);
+  // Number("") and any non-numeric input parse to NaN, which would make
+  // Math.round(...) NaN and BigInt(NaN) throw. Fall back to the app's
+  // default slippage rather than letting a bad settings value crash the
+  // swap flow.
+  const safePercent = Number.isFinite(parsed)
+    ? parsed
+    : Number(DEFAULT_SWAP_SETTINGS.customSlippage);
+  const bps = BigInt(Math.round(safePercent * 100));
   const clamped = bps < BigInt(0) ? BigInt(0) : bps > scale ? scale : bps;
   return ((BigInt(quotedAmount) * (scale - clamped)) / scale).toString();
 }
