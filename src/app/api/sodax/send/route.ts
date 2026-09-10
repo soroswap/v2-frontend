@@ -96,6 +96,18 @@ export async function POST(request: NextRequest) {
         { status: 400 },
       );
     }
+
+    if (sent.status === "TRY_AGAIN_LATER") {
+      console.error("[API SODAX SEND ERROR] TRY_AGAIN_LATER", sent.hash);
+      return sodaxJson(
+        {
+          code: "SODAX_ERROR_SUBMIT",
+          message:
+            "The Stellar network is congested and did not accept the transaction. Please retry the swap.",
+        },
+        { status: 503 },
+      );
+    }
   } catch (error: unknown) {
     console.error("[API SODAX SEND ERROR]", error);
     const message =
