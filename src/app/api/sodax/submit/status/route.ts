@@ -5,6 +5,10 @@ import {
   sodaxJson,
   sodaxOriginGuard,
 } from "@/shared/lib/server";
+import {
+  parseSodaxQuery,
+  sodaxSubmitStatusQuerySchema,
+} from "@/shared/lib/server/sodaxSchemas";
 
 /*
  * GET /api/sodax/submit/status?txHash=...&srcChainKey=... — poll a submitted swap.
@@ -15,24 +19,17 @@ export async function GET(request: NextRequest) {
   if (forbidden) return forbidden;
 
   const { searchParams } = new URL(request.url);
-  const txHash = searchParams.get("txHash");
-  const srcChainKey = searchParams.get("srcChainKey");
-
-  if (!txHash || !srcChainKey) {
-    return sodaxJson(
-      {
-        code: "SODAX_ERROR_PARAM",
-        message: 'Missing "txHash" or "srcChainKey" query parameter',
-      },
-      { status: 400 },
-    );
-  }
+  const parsed = parseSodaxQuery(
+    {
+      txHash: searchParams.get("txHash"),
+      srcChainKey: searchParams.get("srcChainKey"),
+    },
+    sodaxSubmitStatusQuerySchema,
+  );
+  if (parsed.error) return parsed.error;
 
   try {
-    const result = await getSodaxClient().getSubmitTxStatus({
-      txHash,
-      srcChainKey,
-    });
+    const result = await getSodaxClient().getSubmitTxStatus(parsed.data);
 
     return sodaxJson(result);
   } catch (error: unknown) {

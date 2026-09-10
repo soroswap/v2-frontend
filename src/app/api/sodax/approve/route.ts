@@ -5,6 +5,10 @@ import {
   sodaxJson,
   sodaxOriginGuard,
 } from "@/shared/lib/server";
+import {
+  parseSodaxBody,
+  sodaxCreateIntentParamsSchema,
+} from "@/shared/lib/server/sodaxSchemas";
 
 /*
  * POST /api/sodax/approve — build an unsigned approval transaction.
@@ -14,9 +18,11 @@ export async function POST(request: NextRequest) {
   const forbidden = sodaxOriginGuard(request);
   if (forbidden) return forbidden;
 
+  const parsed = await parseSodaxBody(request, sodaxCreateIntentParamsSchema);
+  if (parsed.error) return parsed.error;
+
   try {
-    const body = await request.json();
-    const result = await getSodaxClient().approve(body);
+    const result = await getSodaxClient().approve(parsed.data);
 
     return sodaxJson(result);
   } catch (error: unknown) {
