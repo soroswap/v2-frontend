@@ -6,6 +6,7 @@ Living docs, one per module. **Read the relevant doc before modifying a module; 
 |---|---|---|
 | [api.md](api.md) | `src/app/api/`, `src/shared/lib/server/`, `src/shared/lib/environmentVars.ts` | Server-side BFF: the only place the Soroswap API and the DeFindex API are called, and the only place their API keys live. |
 | [swap.md](swap.md) | `src/features/swap/` | Token swap UI, quote polling, and the build/sign/send transaction flow. |
+| [sodax.md](sodax.md) | `src/features/sodax/`, `src/app/api/sodax/` | Swaps for a curated set of Stellar assets (SODA, tokenized stocks, ETFs, crypto) routed through the SODAX solver instead of the Soroswap AMM. |
 | [pools.md](pools.md) | `src/features/pools/` | Liquidity pool listing, TVL, user positions, add/remove liquidity. |
 | [earn.md](earn.md) | `src/features/earn/` | DeFindex vault listing, deposit, withdraw, and withdraw-by-shares. |
 | [bridge.md](bridge.md) | `src/features/bridge/` | Cross-chain USDC bridge on top of the Rozo intent-pay SDK, plus Stellar trustline setup. |
