@@ -5,7 +5,7 @@ import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButt
 import { network } from "@/shared/lib/environmentVars";
 import { AssetInfo } from "@soroswap/sdk";
 import { CheckIcon, XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   SodaxSwapError,
   SodaxSwapResult,
@@ -112,22 +112,22 @@ export const SodaxSwapModal = ({
   // modal locally — it cannot cancel a swap once signed — and un-hides
   // itself once the swap reaches a terminal step (so the outcome is never
   // missed) or once a new run starts.
+  //
+  // Adjusted during render — React's documented pattern for deriving state
+  // from a changed prop by mirroring it in state and comparing — rather
+  // than in an effect, so it applies before the first paint of the new
+  // step instead of one render later.
   const [dismissed, setDismissed] = useState(false);
-  const previousStepRef = useRef(step);
+  const [previousStep, setPreviousStep] = useState(step);
 
-  useEffect(() => {
-    const previousStep = previousStepRef.current;
-    previousStepRef.current = step;
-
+  if (step !== previousStep) {
+    setPreviousStep(step);
     if (step === SodaxSwapStep.SUCCESS || step === SodaxSwapStep.ERROR) {
       setDismissed(false);
-      return;
-    }
-
-    if (previousStep === SodaxSwapStep.IDLE && step !== SodaxSwapStep.IDLE) {
+    } else if (previousStep === SodaxSwapStep.IDLE) {
       setDismissed(false);
     }
-  }, [step]);
+  }
 
   if (step === SodaxSwapStep.IDLE || dismissed) return null;
 
