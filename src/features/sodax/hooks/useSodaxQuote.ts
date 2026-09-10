@@ -19,6 +19,17 @@ export interface UseSodaxQuoteOptions {
   paused?: boolean;
 }
 
+/** BigInt() throws on a non-integer-literal string ("1.5", "abc", ...); the
+ * amount here is defensive (the current caller already passes validated
+ * base units), so parse failures should disable the request, not throw. */
+function toPositiveBigInt(value: string): bigint | null {
+  try {
+    return BigInt(value || "0");
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Solver quote for a SODA pair. Pass null to disable (wrong pair, empty
  * amount, feature off). Mirrors useQuote's SWR configuration, with a shorter
@@ -29,7 +40,7 @@ export function useSodaxQuote(
   options?: UseSodaxQuoteOptions,
 ) {
   const quoteRequest: SodaxQuoteRequest | null =
-    params && BigInt(params.amount || "0") > BigInt(0)
+    params && (toPositiveBigInt(params.amount) ?? BigInt(0)) > BigInt(0)
       ? {
           tokenSrc: params.tokenSrc,
           tokenSrcChainKey: SODAX_STELLAR_CHAIN_KEY,
