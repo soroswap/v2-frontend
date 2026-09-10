@@ -31,18 +31,33 @@ export function getSodaxClient(): SwapsApi {
 }
 
 /**
- * True when the Origin/Referer value's HOST matches the allow-list.
- * Anchored (URL-parsed, exact host or dot-suffix match) rather than the
- * substring check the older routes use inline — the SODAX routes include a
+ * True when the Origin/Referer value's HOST matches the allow-list, OR
+ * matches the request's own host (`requestHost`).
+ *
+ * The same-origin check exists because the allow-list can never enumerate
+ * every legitimate deployment: a Vercel preview host is
+ * `<project>-git-<branch>-<team>.vercel.app` (or `<project>-<hash>-<team>.vercel.app`),
+ * a fresh string per branch/PR, and is never equal to (nor a suffix match
+ * for) any fixed allow-list entry. Comparing the parsed Origin/Referer host
+ * against the host the request itself arrived on is correct on production,
+ * on every preview deployment, and on any future domain, without widening
+ * the list — and it is exactly the rule a browser's own same-origin policy
+ * already enforces, so it grants nothing a same-origin `fetch` couldn't do
+ * anyway. Anchored (URL-parsed, exact host match) rather than the substring
+ * check the older routes use inline — the SODAX routes include a
  * direct-to-RPC broadcast endpoint, where `origin.includes(allowed)` would
  * pass e.g. "https://evil.com/?x=app.soroswap.finance".
  */
-function isAllowedOrigin(value: string): boolean {
+function isAllowedOrigin(value: string, requestHost: string | null): boolean {
   let host: string;
   try {
     host = new URL(value).host;
   } catch {
     return false;
+  }
+
+  if (requestHost && host === requestHost) {
+    return true;
   }
 
   return ALLOWED_ORIGINS.some((allowed) => {
@@ -63,12 +78,20 @@ function isAllowedOrigin(value: string): boolean {
 /**
  * Origin allow-list check for the SODAX routes. Returns a 403 response when
  * the origin is not allowed, null otherwise.
+ *
+ * Fail-closed: a missing or unparseable Origin/Referer never falls back to
+ * "allowed" — `isAllowedOrigin` returns false and this returns 403. The
+ * request's own host is read from `x-forwarded-host` first (the header
+ * Vercel's edge sets to the original client-facing host, since `host` on
+ * the origin request can be an internal one) and falls back to `host`.
  */
 export function sodaxOriginGuard(request: NextRequest): NextResponse | null {
   const origin =
     request.headers.get("origin") || request.headers.get("referer") || "";
+  const requestHost =
+    request.headers.get("x-forwarded-host") || request.headers.get("host");
 
-  if (!isAllowedOrigin(origin)) {
+  if (!isAllowedOrigin(origin, requestHost)) {
     return NextResponse.json(
       { code: "SODAX_ERROR_CORS", message: "Forbidden" },
       { status: 403 },
