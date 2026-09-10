@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { SODAX } from "@/shared/lib/environmentVars";
 import { bigIntReplacer } from "@/shared/lib/utils/bigIntReplacer";
 import { ALLOWED_ORIGINS } from "./constants";
-import { getErrorMessage, getErrorStatusCode } from "./errorUtils";
+import { getErrorStatusCode } from "./errorUtils";
 
 /**
  * Lazily constructed singleton for the SODAX Swaps API v2.
@@ -126,30 +126,68 @@ const HTTP_STATUS_BY_CODE: Record<SwapsApiError["code"], number> = {
 };
 
 /**
+ * Wire message for an `HTTP_ERROR`. The SDK's own `error.message` is
+ * `` `${endpoint} responded with ${status}` `` — an internal detail (leaks
+ * SDK method names like "checkAllowance", "createIntent") that tells the
+ * user nothing actionable, so it never reaches the browser. Prefer the
+ * upstream backend's own human-readable text when it sent one (e.g. "No
+ * path was found between ..."), otherwise fall back to a generic string by
+ * status class.
+ */
+function httpErrorMessage(error: SwapsApiError, status: number): string {
+  const body = error.context.body;
+  if (
+    typeof body === "object" &&
+    body !== null &&
+    "message" in body &&
+    typeof (body as { message: unknown }).message === "string"
+  ) {
+    return (body as { message: string }).message;
+  }
+
+  return status >= 500
+    ? "SODAX is temporarily unavailable"
+    : "SODAX rejected the request";
+}
+
+/**
  * Map any failure from a SODAX handler to a JSON error response.
  * `SwapsApiError.code` is preserved verbatim so the client can map each of the
- * five failure modes to a distinct user-facing state.
+ * five failure modes to a distinct user-facing state. The response carries
+ * only `{ code, message }` — never `context` (upstream endpoint/path, the
+ * raw upstream body, and for VALIDATION_ERROR a potentially large valibot
+ * issues payload; nothing in the client reads it, and it is internal
+ * detail). The full error, context included, is always logged server-side.
  */
 export function sodaxErrorResponse(error: unknown): NextResponse {
   if (error instanceof SwapsApiError) {
+    console.error(
+      "[SODAX UPSTREAM ERROR]",
+      error.code,
+      error.message,
+      error.context,
+    );
+
     const upstreamStatus = error.context.status;
     const status =
       error.code === "HTTP_ERROR" && upstreamStatus && upstreamStatus >= 400
         ? upstreamStatus
         : HTTP_STATUS_BY_CODE[error.code];
 
-    return sodaxJson(
-      {
-        code: error.code,
-        message: error.message,
-        context: error.context,
-      },
-      { status },
-    );
+    const message =
+      error.code === "HTTP_ERROR"
+        ? httpErrorMessage(error, status)
+        : error.message;
+
+    return sodaxJson({ code: error.code, message }, { status });
   }
 
+  console.error("[SODAX INTERNAL ERROR]", error);
   return sodaxJson(
-    { code: "INTERNAL_ERROR", message: getErrorMessage(error) },
+    {
+      code: "INTERNAL_ERROR",
+      message: "Unexpected error while talking to SODAX",
+    },
     { status: getErrorStatusCode(error) ?? 500 },
   );
 }
