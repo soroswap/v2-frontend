@@ -122,14 +122,14 @@ export function useSodaxSwapIntegration({
     return applySlippageToQuote(quote.quotedAmount, slippagePercent);
   }, [quote, slippagePercent]);
 
-  // Button-ready copy for a failed quote. The solver rejects dust-sized
-  // amounts with 422 "No path was found", which reads as a routing failure
-  // but almost always means "amount too small" on these pairs.
+  // Button-ready copy for a failed quote. The solver returns 422 "No path
+  // was found" both for dust-sized amounts and for the sell-direction gap on
+  // the new registry assets (see sodaxQuoteErrorHint below for the latter).
   const quoteErrorMessage = useMemo(() => {
     if (!quoteError) return null;
     if (quoteError instanceof SodaxApiError) {
       if (quoteError.status === 422) {
-        return "Amount too small — try a larger amount";
+        return "No route found — try a larger amount";
       }
       if (
         quoteError.code === "NETWORK_ERROR" ||
@@ -140,6 +140,18 @@ export function useSodaxSwapIntegration({
     }
     return "Quote unavailable right now";
   }, [quoteError]);
+
+  // Extra context for the 422 case above when it's specifically the known
+  // sell-direction gap: selling a registry asset other than SODA has no
+  // route on the solver yet, which a bare "no route" message doesn't explain.
+  const sodaxQuoteErrorHint = useMemo(() => {
+    if (!(quoteError instanceof SodaxApiError) || quoteError.status !== 422) {
+      return null;
+    }
+    const sellAsset = getSodaxAsset(sellToken?.contract);
+    if (!sellAsset || sellAsset.code === "SODA") return null;
+    return `The SODAX solver couldn't find a route to sell ${sellAsset.code} right now — this direction may not be available yet.`;
+  }, [quoteError, sellToken?.contract]);
 
   // Destination trustline gate: the solver cannot deliver a classic asset
   // (a SODAX asset or USDC) without a trustline. Selling implies the source
@@ -215,6 +227,7 @@ export function useSodaxSwapIntegration({
     sodaxQuote: quote,
     sodaxQuoteError: quoteError,
     sodaxQuoteErrorMessage: quoteErrorMessage,
+    sodaxQuoteErrorHint,
     isSodaxQuoteLoading: isLoading,
     derivedBuyAmount,
     minOutputAmount,

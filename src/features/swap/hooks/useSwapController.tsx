@@ -122,7 +122,7 @@ export function useSwapController({
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ---------------------------------------------------------------------------
-  // SODAX solver integration — SODA pairs quote and execute through SODAX
+  // SODAX solver integration — SODAX pairs quote and execute through SODAX
   // instead of the AMM. Inert (isSodaxActive=false) for every other pair.
   // ---------------------------------------------------------------------------
   const sodax = useSodaxSwapIntegration({
@@ -134,7 +134,7 @@ export function useSwapController({
     slippagePercent: swapSettings.customSlippage,
   });
 
-  // SODAX only quotes exact input: if a SODA pair is selected while the Buy
+  // SODAX only quotes exact input: if a SODAX pair is selected while the Buy
   // field is driving, hand control back to the Sell field.
   useEffect(() => {
     if (sodax.isSodaxActive && independentField === "buy") {
@@ -155,7 +155,7 @@ export function useSwapController({
   // Build the quote request payload every time the user changes relevant data.
   useEffect(() => {
     if (sodax.isSodaxActive) {
-      // SODA pairs are quoted by the SODAX integration, not the AMM.
+      // SODAX pairs are quoted by the SODAX integration, not the AMM.
       setQuoteRequest(null);
       return;
     }
@@ -284,7 +284,7 @@ export function useSwapController({
 
   /**
    * Executes the swap transaction via the Soroswap SDK API, or through the
-   * SODAX solver when a SODA pair is selected.
+   * SODAX solver when a SODAX pair is selected.
    */
   const handleSwap = useCallback(async () => {
     if (sodax.isSodaxActive) {
@@ -336,7 +336,7 @@ export function useSwapController({
     derivedSellAmount,
     derivedBuyAmount,
 
-    // SODAX solver integration (SODA pairs)
+    // SODAX solver integration (SODAX pairs)
     sodax,
 
     // swap info

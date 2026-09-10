@@ -237,6 +237,11 @@ export default function SwapPage() {
               buyToken={buyToken}
             />
           )}
+          {sodax.isSodaxActive && sodax.sodaxQuoteErrorHint && (
+            <p role="status" className="text-secondary text-xs">
+              {sodax.sodaxQuoteErrorHint}
+            </p>
+          )}
           {sodax.needsTrustline && sodax.trustlineAsset && (
             <SodaxTrustlineSection
               trustline={sodax.trustline}
