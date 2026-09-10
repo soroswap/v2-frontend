@@ -68,9 +68,6 @@ importers:
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
-      valibot:
-        specifier: 1.4.1
-        version: 1.4.1(typescript@5.9.3)
       zod:
         specifier: ^3.25.76
         version: 3.25.76
