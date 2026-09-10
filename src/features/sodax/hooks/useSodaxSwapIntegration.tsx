@@ -19,6 +19,16 @@ import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
 import { AssetInfo } from "@soroswap/sdk";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+/** Snapshot of what was actually submitted, for the completion screen. */
+export interface SodaxRunSummary {
+  sellToken: AssetInfo | null;
+  buyToken: AssetInfo | null;
+  /** Human-readable sell amount, e.g. "10". */
+  sellAmount: string;
+  /** Human-readable buy amount at quote time, e.g. "0.4474451". */
+  buyAmount: string | undefined;
+}
+
 export interface UseSodaxSwapIntegrationParams {
   sellToken: AssetInfo | null;
   buyToken: AssetInfo | null;
@@ -173,6 +183,13 @@ export function useSodaxSwapIntegration({
   // false), so it alone cannot gate the swap; block separately.
   const isTrustlineCheckPending = !!trustlineAsset && !trustline.hasCheckedOnce;
 
+  // What was actually submitted, snapshotted at the start of the run so the
+  // completion screen can't drift onto whatever the form shows later — the
+  // user is free to change tokens/amount or Dismiss and keep editing while
+  // WAITING_FOR_FILL runs in the background.
+  const [sodaxRunSummary, setSodaxRunSummary] =
+    useState<SodaxRunSummary | null>(null);
+
   const handleSodaxSwap = useCallback(async () => {
     if (
       !isSodaxActive ||
@@ -187,6 +204,13 @@ export function useSodaxSwapIntegration({
     ) {
       return;
     }
+
+    setSodaxRunSummary({
+      sellToken,
+      buyToken,
+      sellAmount: formatUnits({ value: inputAmount, decimals: sellDecimals }),
+      buyAmount: derivedBuyAmount,
+    });
 
     try {
       await swap.executeSodaxSwap({
@@ -214,9 +238,18 @@ export function useSodaxSwapIntegration({
     userAddress,
     needsTrustline,
     isTrustlineCheckPending,
+    sellDecimals,
+    derivedBuyAmount,
     swap,
     mutate,
   ]);
+
+  // Dismiss/Close/Try Again all funnel through this — the snapshot belongs to
+  // one run and must not leak into the next.
+  const resetSodaxSwap = useCallback(() => {
+    swap.reset();
+    setSodaxRunSummary(null);
+  }, [swap]);
 
   return {
     isSodaxEnabled,
@@ -242,7 +275,8 @@ export function useSodaxSwapIntegration({
     sodaxFillStatus: swap.fillStatus,
     sodaxError: swap.error,
     sodaxResult: swap.result,
+    sodaxRunSummary,
     isSodaxSwapLoading: swap.isLoading,
-    resetSodaxSwap: swap.reset,
+    resetSodaxSwap,
   } as const;
 }

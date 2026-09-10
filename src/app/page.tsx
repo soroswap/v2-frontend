@@ -316,17 +316,22 @@ export default function SwapPage() {
           fillStatus={sodax.sodaxFillStatus}
           error={sodax.sodaxError}
           result={sodax.sodaxResult}
-          sellToken={sellToken}
-          buyToken={buyToken}
+          // Once a run has started, its snapshot is authoritative — the form
+          // behind the modal may have moved on (new tokens/amount) while the
+          // swap was still WAITING_FOR_FILL. Only fall back to live values
+          // before any run has been submitted.
+          sellToken={sodax.sodaxRunSummary?.sellToken ?? sellToken}
+          buyToken={sodax.sodaxRunSummary?.buyToken ?? buyToken}
           sellAmount={
-            sodax.inputAmount
+            sodax.sodaxRunSummary?.sellAmount ??
+            (sodax.inputAmount
               ? formatUnits({
                   value: sodax.inputAmount,
                   decimals: sellToken?.decimals ?? 7,
                 })
-              : typedValue
+              : typedValue)
           }
-          buyAmount={derivedBuyAmount}
+          buyAmount={sodax.sodaxRunSummary?.buyAmount ?? derivedBuyAmount}
           onClose={sodax.resetSodaxSwap}
         />
         {isSettingsModalOpen && (
