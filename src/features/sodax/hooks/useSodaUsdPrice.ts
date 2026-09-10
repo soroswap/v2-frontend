@@ -33,7 +33,10 @@ export function useSodaUsdPrice(contract: string | null) {
         tokenSrcChainKey: SODAX_STELLAR_CHAIN_KEY,
         tokenDst: USDC_STELLAR.contract,
         tokenDstChainKey: SODAX_STELLAR_CHAIN_KEY,
-        amount: (PROBE_SODA * 10 ** SODA_STELLAR.decimals).toString(),
+        amount: (
+          BigInt(PROBE_SODA) *
+          BigInt(10) ** BigInt(SODA_STELLAR.decimals)
+        ).toString(),
         quoteType: "exact_input",
       });
       return (
