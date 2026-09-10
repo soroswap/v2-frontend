@@ -1,5 +1,5 @@
 import { STELLAR } from "@/shared/lib/environmentVars";
-import { sodaxJson, sodaxOriginGuard } from "@/shared/lib/server";
+import { sodaxJson, sodaxOriginGuard } from "@/shared/lib/server/sodaxClient";
 import { rpc, TransactionBuilder } from "@stellar/stellar-sdk";
 import { NextRequest } from "next/server";
 

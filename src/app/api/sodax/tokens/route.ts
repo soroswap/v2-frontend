@@ -5,7 +5,7 @@ import {
   sodaxErrorResponse,
   sodaxJson,
   sodaxOriginGuard,
-} from "@/shared/lib/server";
+} from "@/shared/lib/server/sodaxClient";
 
 /**
  * Server-side in-memory cache, following the /api/price pattern. Token

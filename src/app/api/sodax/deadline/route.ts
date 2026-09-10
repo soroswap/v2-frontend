@@ -4,7 +4,7 @@ import {
   sodaxErrorResponse,
   sodaxJson,
   sodaxOriginGuard,
-} from "@/shared/lib/server";
+} from "@/shared/lib/server/sodaxClient";
 
 /** Upper bound on how far out an intent deadline can be pushed (24h). */
 const MAX_OFFSET_SECONDS = 24 * 60 * 60;

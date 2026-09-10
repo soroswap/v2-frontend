@@ -9,7 +9,7 @@ import {
   sodaxErrorResponse,
   sodaxJson,
   sodaxOriginGuard,
-} from "@/shared/lib/server";
+} from "@/shared/lib/server/sodaxClient";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 
 /**
