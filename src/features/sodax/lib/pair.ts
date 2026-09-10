@@ -35,13 +35,16 @@ export function applySlippageToQuote(
 ): string {
   const scale = BigInt(10000);
   const parsed = Number(slippagePercent);
-  // Number("") and any non-numeric input parse to NaN, which would make
-  // Math.round(...) NaN and BigInt(NaN) throw. Fall back to the app's
-  // default slippage rather than letting a bad settings value crash the
-  // swap flow.
-  const safePercent = Number.isFinite(parsed)
-    ? parsed
-    : Number(DEFAULT_SWAP_SETTINGS.customSlippage);
+  // Number("abc") is NaN, which would make Math.round(...) NaN and
+  // BigInt(NaN) throw — but Number("") is 0, not NaN, and slips past a
+  // finite-only check. 0% slippage sets minOutputAmount === quotedAmount
+  // exactly, removing all protection against a worse fill. Reject anything
+  // that isn't a finite, strictly-positive percentage and fall back to the
+  // app's default slippage instead.
+  const safePercent =
+    Number.isFinite(parsed) && parsed > 0
+      ? parsed
+      : Number(DEFAULT_SWAP_SETTINGS.customSlippage);
   const bps = BigInt(Math.round(safePercent * 100));
   const clamped = bps < BigInt(0) ? BigInt(0) : bps > scale ? scale : bps;
   return ((BigInt(quotedAmount) * (scale - clamped)) / scale).toString();
