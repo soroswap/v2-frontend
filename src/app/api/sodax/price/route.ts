@@ -11,6 +11,7 @@ import {
   sodaxOriginGuard,
 } from "@/shared/lib/server/sodaxClient";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
+import { SwapsApiError } from "@sodax/swaps-api";
 
 /**
  * USDC probed per quote, in whole USDC. The solver rejects dust-sized
@@ -39,7 +40,9 @@ const priceCache = new Map<
 /*
  * GET /api/sodax/price?contract=<C...> — USD price for a SODAX registry
  * asset, derived from the solver by quoting 100 USDC -> asset on Stellar.
- * `usdPrice` is null when the solver returns a zero-amount quote (no route).
+ * `usdPrice` is null when the solver has no route for the probe (a 422 "No
+ * path" or a zero-amount quote); that answer is cached like a price, so the
+ * assets most likely to fail do not turn into a live quote per visitor.
  */
 export async function GET(request: NextRequest) {
   const forbidden = sodaxOriginGuard(request);
@@ -90,6 +93,15 @@ export async function GET(request: NextRequest) {
 
     return sodaxJson(data);
   } catch (error: unknown) {
+    if (
+      error instanceof SwapsApiError &&
+      error.code === "HTTP_ERROR" &&
+      error.context.status === 422
+    ) {
+      const data = { contract, usdPrice: null };
+      priceCache.set(contract, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+      return sodaxJson(data);
+    }
     console.error("[API SODAX PRICE ERROR]", error);
     return sodaxErrorResponse(error);
   }

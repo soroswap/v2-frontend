@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import { getSodaxAsset } from "@/features/sodax/constants/sodax";
 import { fetchSodaxUsdPrice } from "@/features/sodax/lib/api";
+import { isProductionEnv } from "@/shared/lib/environmentVars";
 
 /**
  * USD price for a SODAX registry asset, which Soroswap's price API does not
@@ -13,7 +14,9 @@ import { fetchSodaxUsdPrice } from "@/features/sodax/lib/api";
  * (null, not loading) for any contract that isn't a registry asset.
  */
 export function useSodaxUsdPrice(contract: string | null) {
-  const asset = getSodaxAsset(contract);
+  // Registry identities are mainnet-only, and the feature is inert off
+  // mainnet — a pasted registry contract on testnet must not probe SODAX.
+  const asset = isProductionEnv ? getSodaxAsset(contract) : undefined;
 
   const { data, error, isLoading } = useSWR(
     asset ? ["sodax-usd-price", contract] : null,

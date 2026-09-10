@@ -167,15 +167,20 @@ class BroadcastRejected extends Error {
 }
 
 /**
- * Once a signed intent has been handed to /api/sodax/send, only two answers
- * prove the network did NOT take it: the route's explicit rejection (400,
- * expired/invalid) and "try again later" (503). Everything else — a timeout,
- * a dropped connection, a 5xx, the route's own unknown-state answer — means
- * the funds may already be committed.
+ * Once a signed intent has been handed to /api/sodax/send, only the route's
+ * own pre-submit answers prove the network did NOT take it: a request the
+ * route refused before submitting (SODAX_ERROR_PARAM, SODAX_ERROR_CORS), the
+ * network's explicit rejection (400 SODAX_ERROR_SUBMIT, expired/invalid) and
+ * "try again later" (503). Everything else — a timeout, a dropped
+ * connection, a 5xx, the route's own unknown-state answer — means the funds
+ * may already be committed.
  */
 function isDefinitiveRejection(cause: unknown): boolean {
+  if (!(cause instanceof SodaxApiError)) return false;
+  if (cause.code === "SODAX_ERROR_PARAM" || cause.code === "SODAX_ERROR_CORS") {
+    return true;
+  }
   return (
-    cause instanceof SodaxApiError &&
     cause.code === "SODAX_ERROR_SUBMIT" &&
     (cause.status === 400 || cause.status === 503)
   );
@@ -333,15 +338,23 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
           ));
           consecutiveFailures = 0;
         } catch (cause) {
-          consecutiveFailures += 1;
-          console.warn(
-            `[SODAX] Status poll failed (${consecutiveFailures}/${MAX_CONSECUTIVE_POLL_FAILURES})`,
-            cause,
-          );
-          if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
-            throw new Error(
-              "Lost connection while tracking the swap. The swap itself usually still completes — check your balance before retrying.",
+          if (cause instanceof SodaxApiError && cause.status === 404) {
+            // The relay has no record of the hash yet (an unconfirmed
+            // broadcast it has not seen land). That is not a connection
+            // problem: keep waiting, and let the timeout below report
+            // honestly if the transaction never shows up.
+            consecutiveFailures = 0;
+          } else {
+            consecutiveFailures += 1;
+            console.warn(
+              `[SODAX] Status poll failed (${consecutiveFailures}/${MAX_CONSECUTIVE_POLL_FAILURES})`,
+              cause,
             );
+            if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+              throw new Error(
+                "Lost connection while tracking the swap. The swap itself usually still completes — check your balance before retrying.",
+              );
+            }
           }
         }
 

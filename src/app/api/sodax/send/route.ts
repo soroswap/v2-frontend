@@ -14,8 +14,31 @@ const CONFIRM_POLL_MS = 2_500;
  * the transaction. Look for it by hash for a few seconds before answering.
  */
 const UNKNOWN_STATE_PROBE_MS = 6_000;
-/** Per-RPC-call ceiling so a hung node cannot pin the function to maxDuration. */
+/**
+ * Per-RPC-call ceiling so a hung node cannot pin the function to maxDuration.
+ * Enforced with `withTimeout` below: `rpc.Server` accepts a `timeout` option
+ * in its types but ignores it at runtime.
+ */
 const RPC_TIMEOUT_MS = 15_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new Error(`Soroban RPC call timed out after ${ms}ms`)),
+      ms,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 
 /**
  * Operation types a SODAX swap legitimately needs: the intent invocation
@@ -41,7 +64,12 @@ async function probeTransaction(
   const deadline = Date.now() + budgetMs;
   while (Date.now() < deadline) {
     try {
-      const result = await server.getTransaction(hash);
+      // Never let one call outlive the budget it is serving.
+      const callBudget = Math.max(
+        1_000,
+        Math.min(RPC_TIMEOUT_MS, deadline - Date.now()),
+      );
+      const result = await withTimeout(server.getTransaction(hash), callBudget);
       if (result.status === rpc.Api.GetTransactionStatus.SUCCESS) {
         return "SUCCESS";
       }
@@ -132,12 +160,15 @@ export async function POST(request: NextRequest) {
   // The hash is a pure function of the signed envelope, so it is known before
   // submission — that is what lets an ambiguous RPC failure be resolved.
   const hash = transaction.hash().toString("hex");
-  const server = new rpc.Server(STELLAR.RPC_URL, { timeout: RPC_TIMEOUT_MS });
+  const server = new rpc.Server(STELLAR.RPC_URL);
 
   // 2. Submit.
   let sent: Awaited<ReturnType<rpc.Server["sendTransaction"]>>;
   try {
-    sent = await server.sendTransaction(transaction);
+    sent = await withTimeout(
+      server.sendTransaction(transaction),
+      RPC_TIMEOUT_MS,
+    );
   } catch (error: unknown) {
     console.error("[API SODAX SEND ERROR] sendTransaction failed", error, hash);
     // The request may have reached stellar-core before the failure surfaced

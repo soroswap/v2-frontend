@@ -56,6 +56,18 @@ export interface UseSodaxTrustlineReturn {
  * happens until a SODAX pair with a trustline-requiring destination is
  * selected.
  */
+/**
+ * Horizon's SDK throws `NotFoundError` with the message "Not Found" for an
+ * account that does not exist yet (unfunded wallet) — the string never
+ * contains "404", so classify on the error's identity and response status.
+ */
+function isHorizonNotFound(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if (error.name === "NotFoundError") return true;
+  const status = (error as { response?: { status?: number } }).response?.status;
+  return status === 404;
+}
+
 export function useSodaxTrustline(
   asset: StellarClassicAsset | null,
 ): UseSodaxTrustlineReturn {
@@ -117,7 +129,15 @@ export function useSodaxTrustline(
       // existing subentry (trustlines, offers, ...) is locked and cannot be
       // spent on a new operation, including the changeTrust below.
       const totalXlm = parseFloat(nativeBalance?.balance ?? "0");
-      const reservedXlm = 1 + 0.5 * account.subentry_count;
+      // Stellar's minimum balance: (2 + subentries + sponsoring - sponsored)
+      // base reserves of 0.5 XLM. Counting sponsorship keeps a sponsored
+      // account from being told it lacks XLM it never had to lock.
+      const reservedXlm =
+        (2 +
+          account.subentry_count +
+          account.num_sponsoring -
+          account.num_sponsored) *
+        0.5;
       const spendable = totalXlm - reservedXlm;
 
       setXlmBalance(nativeBalance?.balance ?? "0");
@@ -137,7 +157,7 @@ export function useSodaxTrustline(
       // nothing about the account, so it must not be read as "no trustline,
       // 0 XLM": leave trustlineStatus/xlmBalance/hasCheckedOnce untouched
       // and surface a retryable error instead.
-      const notFound = error instanceof Error && error.message.includes("404");
+      const notFound = isHorizonNotFound(error);
       if (!notFound) {
         console.error(`Failed to check ${assetCode} trustline:`, error);
         setTrustlineStatus((prev) => ({ ...prev, checking: false }));

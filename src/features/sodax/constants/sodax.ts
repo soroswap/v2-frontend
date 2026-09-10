@@ -26,13 +26,13 @@ export const SODAX_STATUS_POLL_TIMEOUT_MS = 5 * 60_000;
 
 /**
  * Client-side ceiling for POST /api/sodax/send. It must exceed that route's
- * own budget (RPC submit plus a 30s confirmation window, inside a 60s
- * maxDuration): a shorter ceiling makes the browser give up on a transaction
- * that has already been broadcast, and the route's "accepted but not yet
- * confirmed" answer could never arrive. Every other SODAX request keeps the
- * default 20s in lib/api.ts.
+ * worst case (a 15s RPC submit, then a 30s confirmation window with one poll
+ * interval of overshoot, inside a 60s maxDuration): a shorter ceiling makes
+ * the browser give up on a transaction that has already been broadcast, and
+ * the route's "accepted but not yet confirmed" answer could never arrive.
+ * Every other SODAX request keeps the default 20s in lib/api.ts.
  */
-export const SODAX_BROADCAST_TIMEOUT_MS = 45_000;
+export const SODAX_BROADCAST_TIMEOUT_MS = 55_000;
 
 /**
  * SODA must always be present in the registry — several routing/display
