@@ -29,7 +29,30 @@ export const SodaxTrustlineSection = ({
     createTrustlineError,
     hasInsufficientReserve,
     xlmBalance,
+    checkError,
+    checkTrustline,
   } = trustline;
+
+  if (checkError) {
+    return (
+      <section className="flex flex-col gap-2">
+        <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20">
+          <AlertTriangle className="size-5 shrink-0 text-orange-600 dark:text-orange-400" />
+          <div className="flex-1">
+            <p
+              role="alert"
+              className="text-sm font-medium text-orange-800 dark:text-orange-200"
+            >
+              {checkError}
+            </p>
+          </div>
+        </div>
+        <TheButton onClick={checkTrustline} className="text-[#ededed]">
+          Retry check
+        </TheButton>
+      </section>
+    );
+  }
 
   if (hasInsufficientReserve) {
     return (

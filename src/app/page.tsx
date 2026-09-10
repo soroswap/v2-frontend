@@ -242,12 +242,13 @@ export default function SwapPage() {
               {sodax.sodaxQuoteErrorHint}
             </p>
           )}
-          {sodax.needsTrustline && sodax.trustlineAsset && (
-            <SodaxTrustlineSection
-              trustline={sodax.trustline}
-              asset={sodax.trustlineAsset}
-            />
-          )}
+          {sodax.trustlineAsset &&
+            (sodax.needsTrustline || sodax.trustline.checkError) && (
+              <SodaxTrustlineSection
+                trustline={sodax.trustline}
+                asset={sodax.trustlineAsset}
+              />
+            )}
           <div className="flex flex-col gap-2">
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
@@ -281,11 +282,13 @@ export default function SwapPage() {
                       : sodax.isSodaxActive
                         ? sodax.needsTrustline && sodax.trustlineAsset
                           ? `Add ${sodax.trustlineAsset.code} trustline to continue`
-                          : sodax.isSodaxSwapLoading
-                            ? "Processing..."
-                            : sodax.sodaxQuoteErrorMessage
-                              ? sodax.sodaxQuoteErrorMessage
-                              : "Swap"
+                          : sodax.isTrustlineCheckPending
+                            ? "Checking trustline..."
+                            : sodax.isSodaxSwapLoading
+                              ? "Processing..."
+                              : sodax.sodaxQuoteErrorMessage
+                                ? sodax.sodaxQuoteErrorMessage
+                                : "Swap"
                         : isSwapLoading
                           ? getSwapButtonText(currentStep)
                           : !quote && quoteError?.message === "No path found"

@@ -30,6 +30,13 @@ export interface UseSodaxTrustlineReturn {
   /** True when the account lacks the XLM reserve to add a trustline. */
   hasInsufficientReserve: boolean;
   hasCheckedOnce: boolean;
+  /**
+   * Set when the last check failed for a reason other than "account not
+   * found" (Horizon rate-limit, network blip, ...). Distinct from "no
+   * trustline": the account state is unknown, not confirmed zero. Cleared
+   * whenever a new check starts or one succeeds.
+   */
+  checkError: string | null;
   checkTrustline: () => Promise<void>;
   createTrustline: () => Promise<void>;
   isCreating: boolean;
@@ -56,6 +63,7 @@ export function useSodaxTrustline(
   });
   const [xlmBalance, setXlmBalance] = useState("0");
   const [hasCheckedOnce, setHasCheckedOnce] = useState(false);
+  const [checkError, setCheckError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [createTrustlineError, setCreateTrustlineError] = useState<
     string | null
@@ -78,6 +86,7 @@ export function useSodaxTrustline(
     }
 
     setTrustlineStatus((prev) => ({ ...prev, checking: true }));
+    setCheckError(null);
 
     try {
       const server = new Horizon.Server(STELLAR.HORIZON_URL);
@@ -104,19 +113,26 @@ export function useSodaxTrustline(
         balance: assetBalance?.balance ?? "0",
         checking: false,
       });
+      setCheckError(null);
+      setHasCheckedOnce(true);
     } catch (error) {
       if (requestId !== requestIdRef.current) return; // superseded
 
-      // A 404 means the account is unfunded — no trustline either way.
-      if (!(error instanceof Error && error.message.includes("404"))) {
+      // A 404 means the account is unfunded — no trustline either way. Any
+      // other failure (Horizon rate-limit, network blip, ...) tells us
+      // nothing about the account, so it must not be read as "no trustline,
+      // 0 XLM": leave trustlineStatus/xlmBalance/hasCheckedOnce untouched
+      // and surface a retryable error instead.
+      const notFound = error instanceof Error && error.message.includes("404");
+      if (!notFound) {
         console.error(`Failed to check ${assetCode} trustline:`, error);
+        setTrustlineStatus((prev) => ({ ...prev, checking: false }));
+        setCheckError("Couldn't read your account from Horizon. Please retry.");
+        return; // hasCheckedOnce stays false -> isTrustlineCheckPending
       }
       setXlmBalance("0");
       setTrustlineStatus({ exists: false, balance: "0", checking: false });
-    } finally {
-      if (requestId === requestIdRef.current) {
-        setHasCheckedOnce(true);
-      }
+      setHasCheckedOnce(true);
     }
   }, [address, assetCode, assetIssuer]);
 
@@ -183,6 +199,7 @@ export function useSodaxTrustline(
     setTrustlineStatus({ exists: false, balance: "0", checking: false });
     setXlmBalance("0");
     setHasCheckedOnce(false);
+    setCheckError(null);
 
     if (address && assetCode && assetIssuer) {
       checkTrustline();
@@ -199,6 +216,7 @@ export function useSodaxTrustline(
     xlmBalance,
     hasInsufficientReserve,
     hasCheckedOnce,
+    checkError,
     checkTrustline,
     createTrustline,
     isCreating,
