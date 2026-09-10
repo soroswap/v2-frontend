@@ -39,16 +39,29 @@ function toApiError(status: number, body: unknown): SodaxApiError {
   return new SodaxApiError("INTERNAL_ERROR", "SODAX request failed", status);
 }
 
+/** No SODAX request should hang the caller forever behind a dead upstream. */
+const DEFAULT_TIMEOUT_MS = 20_000;
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
+
   let response: Response;
   try {
-    response = await fetch(url, init);
+    response = await fetch(url, {
+      ...init,
+      signal: init?.signal ?? controller.signal,
+    });
   } catch (cause) {
+    const timedOut =
+      cause instanceof DOMException && cause.name === "AbortError";
     throw new SodaxApiError(
-      "NETWORK_ERROR",
+      timedOut ? "TIMEOUT_ERROR" : "NETWORK_ERROR",
       cause instanceof Error ? cause.message : "Network request failed",
       0,
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   let body: unknown;
