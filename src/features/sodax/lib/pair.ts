@@ -1,26 +1,28 @@
 import {
-  SODA_COUNTERPART_CONTRACTS,
-  SODA_STELLAR,
+  SODAX_COUNTERPART_CONTRACTS,
+  isSodaxAsset,
 } from "@/features/sodax/constants/sodax";
 import { DEFAULT_SWAP_SETTINGS } from "@/shared/lib/constants/swap";
 
 /**
  * True when the pair should be quoted and executed through the SODAX solver
- * instead of the Soroswap AMM: exactly one side is SODA and the other is an
- * enabled counterpart (XLM or USDC).
+ * instead of the Soroswap AMM: both sides are SODAX registry assets, or one
+ * side is a registry asset and the other is an enabled counterpart (XLM or
+ * USDC).
  */
 export function isSodaxPair(
   contractA: string | undefined,
   contractB: string | undefined,
 ): boolean {
-  if (!contractA || !contractB) return false;
+  if (!contractA || !contractB || contractA === contractB) return false;
 
-  const aIsSoda = contractA === SODA_STELLAR.contract;
-  const bIsSoda = contractB === SODA_STELLAR.contract;
-  if (aIsSoda === bIsSoda) return false;
+  const aIsSodax = isSodaxAsset(contractA);
+  const bIsSodax = isSodaxAsset(contractB);
+  if (!aIsSodax && !bIsSodax) return false;
+  if (aIsSodax && bIsSodax) return true;
 
-  const counterpart = aIsSoda ? contractB : contractA;
-  return SODA_COUNTERPART_CONTRACTS.includes(counterpart);
+  const counterpart = aIsSodax ? contractB : contractA;
+  return SODAX_COUNTERPART_CONTRACTS.includes(counterpart);
 }
 
 /**
