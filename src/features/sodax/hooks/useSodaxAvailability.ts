@@ -42,9 +42,14 @@ export function useSodaxAvailability(options?: UseSodaxAvailabilityOptions) {
 
   const isSodaxEnabled = isProductionEnv && !error && !!data && data.length > 0;
 
-  // Registry assets currently listed live, in registry order, so a delisted
-  // asset disappears from the selector automatically instead of failing to
-  // quote after the user has already picked it.
+  // Registry assets currently listed live, in registry order. This filters
+  // what enters the token SELECTOR only — a delisted asset stops being
+  // offered to a new pick. Routing (isSodaxPair, lib/pair.ts) is keyed off
+  // the static registry table regardless of this live list: a registry
+  // contract already selected (directly entered, or picked before it was
+  // delisted) still routes through SODAX by design, and can then fail to
+  // quote instead of falling back to the AMM — this list does not protect
+  // against that case, only against offering it in the first place.
   const availableAssets = useMemo<readonly SodaxStellarAsset[]>(() => {
     if (!isSodaxEnabled || !data) return [];
     const liveContracts = new Set(data.map((token) => token.address));

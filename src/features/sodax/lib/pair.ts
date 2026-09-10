@@ -9,6 +9,13 @@ import { DEFAULT_SWAP_SETTINGS } from "@/shared/lib/constants/swap";
  * instead of the Soroswap AMM: both sides are SODAX registry assets, or one
  * side is a registry asset and the other is an enabled counterpart (XLM or
  * USDC).
+ *
+ * Uses the static registry table (isSodaxAsset, constants/sodax.ts)
+ * regardless of the live token list useSodaxAvailability fetches — that
+ * list only filters what the token SELECTOR offers. A registry contract the
+ * user has already selected (directly entered, or picked before being
+ * delisted) still routes through SODAX by design, live-list membership
+ * notwithstanding.
  */
 export function isSodaxPair(
   contractA: string | undefined,

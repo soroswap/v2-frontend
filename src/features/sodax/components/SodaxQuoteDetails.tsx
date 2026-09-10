@@ -20,7 +20,8 @@ interface SodaxQuoteDetailsProps {
 }
 
 /**
- * Quote breakdown for SODA pairs routed through the SODAX solver.
+ * Quote breakdown for any SODAX-routed pair (SODA and the other registry
+ * assets alike).
  * Mirrors SwapQuoteDetails' collapsed-rate / expandable-details layout.
  */
 export const SodaxQuoteDetails = ({

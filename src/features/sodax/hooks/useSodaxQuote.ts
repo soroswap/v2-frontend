@@ -31,7 +31,7 @@ function toPositiveBigInt(value: string): bigint | null {
 }
 
 /**
- * Solver quote for a SODA pair. Pass null to disable (wrong pair, empty
+ * Solver quote for a SODAX pair. Pass null to disable (wrong pair, empty
  * amount, feature off). Mirrors useQuote's SWR configuration, with a shorter
  * refresh so a displayed price can't go stale while the user hesitates.
  */

@@ -35,18 +35,17 @@ export const SODAX_STATUS_POLL_TIMEOUT_MS = 5 * 60_000;
 export const SODAX_BROADCAST_TIMEOUT_MS = 45_000;
 
 /**
- * SODA on Stellar, looked up once from the registry so this stays a single
- * source of truth. Throws at module load — not first use — so a broken
- * table fails the build loudly instead of failing some unrelated request
- * later at runtime.
+ * SODA must always be present in the registry — several routing/display
+ * assumptions (e.g. the sell-direction gap notes in useSodaxSwapIntegration)
+ * are stated in terms of "SODA vs every other registry asset". Checked at
+ * module load — not first use — so a broken table fails the build loudly
+ * instead of failing some unrelated request later at runtime.
  */
-const sodaEntry = SODAX_STELLAR_ASSETS.find((asset) => asset.code === "SODA");
-if (!sodaEntry) {
+if (!SODAX_STELLAR_ASSETS.some((asset) => asset.code === "SODA")) {
   throw new Error(
     "SODAX_STELLAR_ASSETS is missing the SODA entry — check constants/assets.ts",
   );
 }
-export const SODA_STELLAR: SodaxStellarAsset = sodaEntry;
 
 /**
  * Circle USDC on Stellar (same identity the bridge feature uses).
@@ -109,7 +108,3 @@ export function toSodaxAssetInfo(asset: SodaxStellarAsset): AssetInfo {
     decimals: asset.decimals,
   };
 }
-
-/** Every registry asset as an `AssetInfo`, in registry order. */
-export const SODAX_ASSET_INFOS: readonly AssetInfo[] =
-  SODAX_STELLAR_ASSETS.map(toSodaxAssetInfo);
