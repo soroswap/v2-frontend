@@ -26,7 +26,7 @@ interface SwapPanelProps {
   onPercentageClick?: (percentage: number) => void;
   /** Disable typing in this panel (e.g. exact-input-only quotes) */
   inputDisabled?: boolean;
-  /** Offer SODA (solver-routed) in the token selector — swap page only */
+  /** Offer the SODAX-routed assets in the token selector — swap page only */
   includeSodaxTokens?: boolean;
 }
 

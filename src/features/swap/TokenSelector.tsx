@@ -21,13 +21,15 @@ export const TokenSelector = ({
   placeholder?: string;
   onSelect?: (token: AssetInfo | null) => void;
   onModalOpen?: () => void;
-  /** Offer SODA (solver-routed) — only where SODAX swaps can execute. */
+  /** Offer the SODAX-routed assets — only where SODAX swaps can execute. */
   includeSodaxTokens?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isOpenModalUserCustomAsset, setIsOpenModalUserCustomAsset] =
     useState<boolean>(false);
-  const [customAssetToAdd, setCustomAssetToAdd] = useState<AssetInfo | null>(null);
+  const [customAssetToAdd, setCustomAssetToAdd] = useState<AssetInfo | null>(
+    null,
+  );
 
   return (
     <>

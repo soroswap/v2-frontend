@@ -1,4 +1,4 @@
-import { SODA_ASSET_INFO, useSodaxAvailability } from "@/features/sodax";
+import { toSodaxAssetInfo, useSodaxAvailability } from "@/features/sodax";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { useUserBalances } from "@/shared/hooks/useUserBalances";
@@ -25,18 +25,16 @@ export const TokenSelectorModal = ({
   oppositeToken: AssetInfo | null;
   onSelect?: (token: AssetInfo | null) => void;
   onOpenCustomAssetModal?: (asset: AssetInfo) => void;
-  /** Offer SODA (solver-routed) — only where SODAX swaps can execute. */
+  /** Offer the SODAX-routed assets — only where SODAX swaps can execute. */
   includeSodaxTokens?: boolean;
 }) => {
   const [searchValue, setSearchValue] = useState<string>("");
   const { tokensList } = useTokensList();
   const userTokenList = useUserAssetList();
-  const { isSodaxEnabled } = useSodaxAvailability();
+  const { availableAssets } = useSodaxAvailability();
   const { address } = useUserContext();
-  const {
-    getAvailableAmount,
-    isLoading: isBalanceLoading,
-  } = useUserBalances(address);
+  const { getAvailableAmount, isLoading: isBalanceLoading } =
+    useUserBalances(address);
   const [isSearchingAsset, setIsSearchingAsset] = useState<boolean>(false);
   const [userCustomAsset, setUserCustomAsset] = useState<AssetInfo | null>(
     null,
@@ -46,7 +44,8 @@ export const TokenSelectorModal = ({
     const query = value.trim();
     if (!query) return;
     // Only attempt lookup when it's a 56-char address/contract ID or a code:issuer pair
-    if (query.length !== 56 && !query.includes(":") && !query.includes("-")) return;
+    if (query.length !== 56 && !query.includes(":") && !query.includes("-"))
+      return;
 
     setIsSearchingAsset(true);
     try {
@@ -70,19 +69,20 @@ export const TokenSelectorModal = ({
   }, [isOpen]);
 
   // Memoize combined token list to prevent dependency array changes.
-  // SODA is appended when the SODAX solver is available (swaps to/from it
-  // route through SODAX instead of the AMM), unless a list already has it.
+  // Every live SODAX registry asset is appended, in registry order (swaps
+  // to/from them route through SODAX instead of the AMM), unless a list
+  // already has it.
   const allTokens = useMemo(() => {
     const tokens = [...tokensList, ...userTokenList];
-    if (
-      includeSodaxTokens &&
-      isSodaxEnabled &&
-      !tokens.some((token) => token.contract === SODA_ASSET_INFO.contract)
-    ) {
-      tokens.push(SODA_ASSET_INFO);
+    if (includeSodaxTokens) {
+      for (const asset of availableAssets) {
+        if (!tokens.some((token) => token.contract === asset.contract)) {
+          tokens.push(toSodaxAssetInfo(asset));
+        }
+      }
     }
     return tokens;
-  }, [tokensList, userTokenList, isSodaxEnabled, includeSodaxTokens]);
+  }, [tokensList, userTokenList, availableAssets, includeSodaxTokens]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -250,7 +250,9 @@ export const TokenSelectorModal = ({
                     size={28}
                   />
                   <div className="flex flex-col gap-1 text-left font-medium">
-                    <p className="text-primary text-sm font-bold">{token.code}</p>
+                    <p className="text-primary text-sm font-bold">
+                      {token.code}
+                    </p>
                     <p className="text-secondary text-xs">{token.domain}</p>
                   </div>
                 </div>
