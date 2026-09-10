@@ -57,8 +57,8 @@ export const SodaTrustlineSection = ({
             One-time setup to receive {asset.code}
           </p>
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            Your Stellar account needs a {asset.code} trustline before the
-            swap can deliver it.
+            Your Stellar account needs a {asset.code} trustline before the swap
+            can deliver it.
           </p>
         </div>
       </div>
@@ -74,7 +74,9 @@ export const SodaTrustlineSection = ({
       </TheButton>
 
       {createTrustlineError ? (
-        <p className="text-accent-warning text-sm">{createTrustlineError}</p>
+        <p role="alert" className="text-accent-warning text-sm">
+          {createTrustlineError}
+        </p>
       ) : null}
     </section>
   );
