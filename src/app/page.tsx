@@ -7,7 +7,11 @@ import {
   SodaxSwapModal,
   SodaxSwapStep,
 } from "@/features/sodax";
-import { SwapPanel, SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
+import {
+  SwapPanel,
+  SwapQuoteDetails,
+  SwapSettingsModal,
+} from "@/features/swap";
 import { SwapError, SwapResult, SwapStep } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
 import {
@@ -20,7 +24,14 @@ import { useUserBalances } from "@/shared/hooks";
 import { cn } from "@/shared/lib/utils/cn";
 import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import dynamic from "next/dynamic";
-import { MouseEvent, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const SwapModal = dynamic(() =>
   import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
@@ -97,12 +108,21 @@ export default function SwapPage() {
     },
   });
 
+  // useUserBalances returns a fresh `revalidate` closure on every render, so
+  // keep the latest one in a ref and key the effect on the step transition
+  // only — otherwise the refresh would re-run on every render while the
+  // step stays SUCCESS.
+  const revalidateBalancesRef = useRef(revalidateBalances);
+  useEffect(() => {
+    revalidateBalancesRef.current = revalidateBalances;
+  }, [revalidateBalances]);
+
   // Refresh balances when a SODAX swap completes.
   useEffect(() => {
     if (sodax.sodaxStep === SodaxSwapStep.SUCCESS) {
-      revalidateBalances();
+      revalidateBalancesRef.current();
     }
-  }, [sodax.sodaxStep, revalidateBalances]);
+  }, [sodax.sodaxStep]);
 
   // Get sell token balance
   const sellTokenBalance = useMemo(() => {
