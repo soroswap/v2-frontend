@@ -135,10 +135,13 @@ export function useSwapController({
   });
 
   // SODAX only quotes exact input: if a SODAX pair is selected while the Buy
-  // field is driving, hand control back to the Sell field.
+  // field is driving, hand control back to the Sell field. Carry the typed
+  // number over rather than clearing it — e.g. rotating USDC -> NVDA (which
+  // moves the typed amount to Buy, per SWITCH_TOKENS) should not silently
+  // wipe what the user typed just because the pair is SODAX-routed.
   useEffect(() => {
     if (sodax.isSodaxActive && independentField === "buy") {
-      dispatchSwap({ type: "TYPE_INPUT", field: "sell", typedValue: "" });
+      dispatchSwap({ type: "TYPE_INPUT", field: "sell", typedValue });
     }
   }, [sodax.isSodaxActive, independentField]);
 
