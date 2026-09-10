@@ -1,18 +1,18 @@
 "use client";
 
 import {
-  SODA_STELLAR,
   StellarClassicAsset,
   USDC_STELLAR,
   XLM_STELLAR_CONTRACT,
+  getSodaxAsset,
 } from "@/features/sodax/constants/sodax";
-import { useSodaTrustline } from "@/features/sodax/hooks/useSodaTrustline";
 import { useSodaxAvailability } from "@/features/sodax/hooks/useSodaxAvailability";
 import { useSodaxQuote } from "@/features/sodax/hooks/useSodaxQuote";
 import {
   SodaxSwapResult,
   useSodaxSwap,
 } from "@/features/sodax/hooks/useSodaxSwap";
+import { useSodaxTrustline } from "@/features/sodax/hooks/useSodaxTrustline";
 import { applySlippageToQuote, isSodaxPair } from "@/features/sodax/lib/pair";
 import { SodaxApiError } from "@/features/sodax/types/sodax";
 import { formatUnits, parseUnits } from "@/shared/lib/utils/parseUnits";
@@ -42,13 +42,15 @@ function toBaseUnits(value: string, decimals: number): string | null {
 
 /**
  * Which classic asset the destination side needs a trustline for.
- * XLM is native — no trustline. Anything else on our pairs is SODA or USDC.
+ * XLM is native — no trustline. Anything else on our pairs is a SODAX
+ * registry asset or USDC.
  */
 function destinationTrustlineAsset(
   buyContract: string | undefined,
 ): StellarClassicAsset | null {
   if (!buyContract || buyContract === XLM_STELLAR_CONTRACT) return null;
-  if (buyContract === SODA_STELLAR.contract) return SODA_STELLAR;
+  const registryAsset = getSodaxAsset(buyContract);
+  if (registryAsset) return registryAsset;
   if (buyContract === USDC_STELLAR.contract) return USDC_STELLAR;
   return null;
 }
@@ -140,7 +142,8 @@ export function useSodaxSwapIntegration({
   }, [quoteError]);
 
   // Destination trustline gate: the solver cannot deliver a classic asset
-  // (SODA or USDC) without a trustline. Selling implies the source one exists.
+  // (a SODAX asset or USDC) without a trustline. Selling implies the source
+  // one exists.
   const trustlineAsset = useMemo(
     () =>
       isSodaxActive && userAddress
@@ -148,13 +151,13 @@ export function useSodaxSwapIntegration({
         : null,
     [isSodaxActive, userAddress, buyToken?.contract],
   );
-  const trustline = useSodaTrustline(trustlineAsset);
-  const needsSodaTrustline =
+  const trustline = useSodaxTrustline(trustlineAsset);
+  const needsTrustline =
     !!trustlineAsset &&
     trustline.hasCheckedOnce &&
     !trustline.trustlineStatus.exists;
   // A destination trustline check is required but has not resolved yet —
-  // needsSodaTrustline stays false during that window (hasCheckedOnce is
+  // needsTrustline stays false during that window (hasCheckedOnce is
   // false), so it alone cannot gate the swap; block separately.
   const isTrustlineCheckPending = !!trustlineAsset && !trustline.hasCheckedOnce;
 
@@ -167,7 +170,7 @@ export function useSodaxSwapIntegration({
       !sellToken?.contract ||
       !buyToken?.contract ||
       !userAddress ||
-      needsSodaTrustline ||
+      needsTrustline ||
       isTrustlineCheckPending
     ) {
       return;
@@ -197,7 +200,7 @@ export function useSodaxSwapIntegration({
     sellToken,
     buyToken,
     userAddress,
-    needsSodaTrustline,
+    needsTrustline,
     isTrustlineCheckPending,
     swap,
     mutate,
@@ -218,7 +221,7 @@ export function useSodaxSwapIntegration({
     // trustline
     trustline,
     trustlineAsset,
-    needsSodaTrustline,
+    needsTrustline,
     isTrustlineCheckPending,
     // execution
     handleSodaxSwap,

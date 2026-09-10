@@ -11,7 +11,7 @@ import {
 } from "@stellar/stellar-sdk";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export interface SodaTrustlineStatus {
+export interface SodaxTrustlineStatus {
   exists: boolean;
   balance: string;
   checking: boolean;
@@ -23,8 +23,8 @@ export interface SodaTrustlineStatus {
  */
 export const MIN_XLM_FOR_TRUSTLINE = 1.5;
 
-export interface UseSodaTrustlineReturn {
-  trustlineStatus: SodaTrustlineStatus;
+export interface UseSodaxTrustlineReturn {
+  trustlineStatus: SodaxTrustlineStatus;
   /** Native XLM balance of the account, "0" while unknown. */
   xlmBalance: string;
   /** True when the account lacks the XLM reserve to add a trustline. */
@@ -37,18 +37,19 @@ export interface UseSodaTrustlineReturn {
 }
 
 /**
- * Trustline management for a destination classic asset (SODA or USDC),
- * following the bridge's USDC trustline pattern. A trustline is required
- * before the SODAX solver can deliver the asset, so the check gates swap
- * execution. Pass `null` to disable entirely — no Horizon traffic happens
- * until a SODA pair with a trustline-requiring destination is selected.
+ * Trustline management for a destination classic asset (a SODAX asset or
+ * USDC), following the bridge's USDC trustline pattern. A trustline is
+ * required before the SODAX solver can deliver the asset, so the check gates
+ * swap execution. Pass `null` to disable entirely — no Horizon traffic
+ * happens until a SODAX pair with a trustline-requiring destination is
+ * selected.
  */
-export function useSodaTrustline(
+export function useSodaxTrustline(
   asset: StellarClassicAsset | null,
-): UseSodaTrustlineReturn {
+): UseSodaxTrustlineReturn {
   const { address, kit, signTransaction } = useUserContext();
 
-  const [trustlineStatus, setTrustlineStatus] = useState<SodaTrustlineStatus>({
+  const [trustlineStatus, setTrustlineStatus] = useState<SodaxTrustlineStatus>({
     exists: false,
     balance: "0",
     checking: false,

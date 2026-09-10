@@ -2,10 +2,10 @@
 
 import { useUserContext } from "@/contexts";
 import {
-  SodaTrustlineSection,
   SodaxQuoteDetails,
   SodaxSwapModal,
   SodaxSwapStep,
+  SodaxTrustlineSection,
 } from "@/features/sodax";
 import {
   SwapPanel,
@@ -237,8 +237,8 @@ export default function SwapPage() {
               buyToken={buyToken}
             />
           )}
-          {sodax.needsSodaTrustline && sodax.trustlineAsset && (
-            <SodaTrustlineSection
+          {sodax.needsTrustline && sodax.trustlineAsset && (
+            <SodaxTrustlineSection
               trustline={sodax.trustline}
               asset={sodax.trustlineAsset}
             />
@@ -258,7 +258,7 @@ export default function SwapPage() {
                     ? !sodax.sodaxQuote ||
                       !!sodax.sodaxQuoteError ||
                       sodax.isDebouncing ||
-                      sodax.needsSodaTrustline ||
+                      sodax.needsTrustline ||
                       sodax.isTrustlineCheckPending ||
                       sodax.isSodaxSwapLoading
                     : (!quote && quoteError) ||
@@ -274,8 +274,8 @@ export default function SwapPage() {
                     : hasInsufficientBalance
                       ? `Insufficient ${sellToken.code} balance`
                       : sodax.isSodaxActive
-                        ? sodax.needsSodaTrustline
-                          ? "Add SODA trustline to continue"
+                        ? sodax.needsTrustline && sodax.trustlineAsset
+                          ? `Add ${sodax.trustlineAsset.code} trustline to continue`
                           : sodax.isSodaxSwapLoading
                             ? "Processing..."
                             : sodax.sodaxQuoteErrorMessage

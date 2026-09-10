@@ -3,14 +3,14 @@
 import { StellarClassicAsset } from "@/features/sodax/constants/sodax";
 import {
   MIN_XLM_FOR_TRUSTLINE,
-  UseSodaTrustlineReturn,
-} from "@/features/sodax/hooks/useSodaTrustline";
+  UseSodaxTrustlineReturn,
+} from "@/features/sodax/hooks/useSodaxTrustline";
 import { TheButton } from "@/shared/components/buttons";
 import { AlertTriangle, Info } from "lucide-react";
 
-interface SodaTrustlineSectionProps {
-  trustline: UseSodaTrustlineReturn;
-  /** The destination asset that needs the trustline (SODA or USDC). */
+interface SodaxTrustlineSectionProps {
+  trustline: UseSodaxTrustlineReturn;
+  /** The destination asset that needs the trustline (a SODAX asset or USDC). */
   asset: StellarClassicAsset;
 }
 
@@ -19,10 +19,10 @@ interface SodaTrustlineSectionProps {
  * trustline the user doesn't have. Follows the bridge's trustline-section
  * pattern, including its insufficient-XLM-reserve warning state.
  */
-export const SodaTrustlineSection = ({
+export const SodaxTrustlineSection = ({
   trustline,
   asset,
-}: SodaTrustlineSectionProps) => {
+}: SodaxTrustlineSectionProps) => {
   const {
     createTrustline,
     isCreating,
