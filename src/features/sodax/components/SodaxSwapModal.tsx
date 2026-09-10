@@ -5,6 +5,7 @@ import { CopyAndPasteButton } from "@/shared/components/buttons/CopyAndPasteButt
 import { network } from "@/shared/lib/environmentVars";
 import { AssetInfo } from "@soroswap/sdk";
 import { CheckIcon, XIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import {
   SodaxSwapError,
   SodaxSwapResult,
@@ -105,7 +106,30 @@ export const SodaxSwapModal = ({
   buyAmount,
   onClose,
 }: SodaxSwapModalProps) => {
-  if (step === SodaxSwapStep.IDLE) return null;
+  // The only SODAX integration never calls reset() while this modal is
+  // open, so long-running steps (wallet signing, solver polling) would
+  // otherwise trap the user with no way out. Dismissing just hides the
+  // modal locally — it cannot cancel a swap once signed — and un-hides
+  // itself once the swap reaches a terminal step (so the outcome is never
+  // missed) or once a new run starts.
+  const [dismissed, setDismissed] = useState(false);
+  const previousStepRef = useRef(step);
+
+  useEffect(() => {
+    const previousStep = previousStepRef.current;
+    previousStepRef.current = step;
+
+    if (step === SodaxSwapStep.SUCCESS || step === SodaxSwapStep.ERROR) {
+      setDismissed(false);
+      return;
+    }
+
+    if (previousStep === SodaxSwapStep.IDLE && step !== SodaxSwapStep.IDLE) {
+      setDismissed(false);
+    }
+  }, [step]);
+
+  if (step === SodaxSwapStep.IDLE || dismissed) return null;
 
   const isLoading = ![SodaxSwapStep.SUCCESS, SodaxSwapStep.ERROR].includes(
     step,
@@ -224,6 +248,22 @@ export const SodaxSwapModal = ({
             >
               {step === SodaxSwapStep.SUCCESS ? "Close" : "Try Again"}
             </button>
+          )}
+
+          {isLoading && (
+            <div className="flex w-full flex-col items-center gap-2">
+              <p className="text-secondary text-xs">
+                Dismissing does not cancel the swap — it keeps running in the
+                background.
+              </p>
+              <button
+                type="button"
+                onClick={() => setDismissed(true)}
+                className="text-secondary hover:text-primary cursor-pointer text-sm underline-offset-2 transition-colors hover:underline"
+              >
+                Dismiss
+              </button>
+            </div>
           )}
         </div>
       </div>
