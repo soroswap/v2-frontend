@@ -2,7 +2,9 @@ import { NextRequest } from "next/server";
 import {
   SODAX_ASSETS_BY_CONTRACT,
   SODAX_STELLAR_CHAIN_KEY,
+  SODAX_STELLAR_DECIMALS,
   USDC_STELLAR,
+  XLM_STELLAR_CONTRACT,
 } from "@/features/sodax/constants/sodax";
 import {
   getSodaxClient,
@@ -37,9 +39,22 @@ const priceCache = new Map<
   { data: { contract: string; usdPrice: number | null }; expiresAt: number }
 >();
 
+/**
+ * Contracts this route will price: every registry asset plus the two
+ * counterpart tokens, so the client can value the sell side of any SODAX
+ * pair from one consistent source. USDC is 1 by definition and never quoted.
+ */
+function priceableDecimals(contract: string): number | undefined {
+  if (contract === XLM_STELLAR_CONTRACT || contract === USDC_STELLAR.contract) {
+    return SODAX_STELLAR_DECIMALS;
+  }
+  return SODAX_ASSETS_BY_CONTRACT.get(contract)?.decimals;
+}
+
 /*
  * GET /api/sodax/price?contract=<C...> — USD price for a SODAX registry
- * asset, derived from the solver by quoting 100 USDC -> asset on Stellar.
+ * asset (or XLM/USDC), derived from the solver by quoting 100 USDC -> asset
+ * on Stellar.
  * `usdPrice` is null when the solver has no route for the probe (a 422 "No
  * path" or a zero-amount quote); that answer is cached like a price, so the
  * assets most likely to fail do not turn into a live quote per visitor.
@@ -50,16 +65,20 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const contract = searchParams.get("contract");
-  const asset = contract ? SODAX_ASSETS_BY_CONTRACT.get(contract) : undefined;
+  const decimals = contract ? priceableDecimals(contract) : undefined;
 
-  if (!contract || !asset) {
+  if (!contract || decimals === undefined) {
     return sodaxJson(
       {
         code: "SODAX_ERROR_PARAM",
-        message: '"contract" must be a SODAX registry asset',
+        message: '"contract" must be a SODAX registry asset, XLM or USDC',
       },
       { status: 400 },
     );
+  }
+
+  if (contract === USDC_STELLAR.contract) {
+    return sodaxJson({ contract, usdPrice: 1 });
   }
 
   const cached = priceCache.get(contract);
@@ -84,7 +103,7 @@ export async function GET(request: NextRequest) {
           Number(
             formatUnits({
               value: quote.quotedAmount,
-              decimals: asset.decimals,
+              decimals,
             }),
           );
 

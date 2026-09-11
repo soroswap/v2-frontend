@@ -1,12 +1,15 @@
 "use client";
 
 import {
+  SODAX_MIN_RWA_SWAP_USD,
   StellarClassicAsset,
   USDC_STELLAR,
   XLM_STELLAR_CONTRACT,
   getSodaxAsset,
+  isRwaAsset,
 } from "@/features/sodax/constants/sodax";
 import { useSodaxAvailability } from "@/features/sodax/hooks/useSodaxAvailability";
+import { useSodaxUsdPrice } from "@/features/sodax/hooks/useSodaxUsdPrice";
 import { useSodaxQuote } from "@/features/sodax/hooks/useSodaxQuote";
 import {
   SodaxSwapResult,
@@ -103,9 +106,33 @@ export function useSodaxSwapIntegration({
 
   const swap = useSodaxSwap({ onSuccess });
 
-  // SODAX only supports exact_input, so only the Sell side can drive.
+  // Minimum size for tokenized stocks/ETFs. The solver rejects anything
+  // below about $2 with the same 422 "No path" it uses for a missing route,
+  // so value the sell side up front (from the SODAX price route, the same
+  // source as the buy side — never from the AMM price feed) and stop before
+  // quoting. Unknown price => no gate; the 422 copy below still says why.
+  const involvesRwa =
+    isRwaAsset(getSodaxAsset(sellToken?.contract)) ||
+    isRwaAsset(getSodaxAsset(buyToken?.contract));
+  const { price: sellUsdPrice } = useSodaxUsdPrice(
+    sellToken?.contract ?? null,
+    { includeCounterparts: true, enabled: isSodaxActive && involvesRwa },
+  );
+  const sellNotionalUsd = useMemo(() => {
+    if (!involvesRwa || sellUsdPrice === null) return null;
+    const amount = Number(debouncedValue);
+    return Number.isFinite(amount) && amount > 0 ? amount * sellUsdPrice : null;
+  }, [involvesRwa, sellUsdPrice, debouncedValue]);
+  const isBelowMinimum =
+    isSodaxActive &&
+    sellNotionalUsd !== null &&
+    sellNotionalUsd < SODAX_MIN_RWA_SWAP_USD;
+
+  // SODAX only supports exact_input, so only the Sell side can drive. Also
+  // null while the amount is under the minimum, which both skips the quote
+  // and blocks execution.
   const inputAmount =
-    isSodaxActive && independentField === "sell"
+    isSodaxActive && independentField === "sell" && !isBelowMinimum
       ? toBaseUnits(debouncedValue, sellDecimals)
       : null;
 
@@ -140,15 +167,20 @@ export function useSodaxSwapIntegration({
     return !!sellAsset && sellAsset.code !== "SODA";
   }, [sellToken?.contract]);
 
-  // Button-ready copy for a failed quote. The solver returns 422 "No path
-  // was found" both for dust-sized amounts and for the sell-direction gap
-  // above (see sodaxQuoteErrorHint below for the explanatory hint).
+  // Button-ready status copy: the minimum gate first (no quote is issued),
+  // then a failed quote. The solver returns 422 "No path was found" both for
+  // amounts under the minimum and for the sell-direction gap above (see
+  // sodaxQuoteErrorHint below for the explanatory hint).
   const quoteErrorMessage = useMemo(() => {
+    if (isBelowMinimum) {
+      return `Minimum for stock swaps is about $${SODAX_MIN_RWA_SWAP_USD}`;
+    }
     if (!quoteError) return null;
     if (quoteError instanceof SodaxApiError) {
       if (quoteError.status === 422) {
-        return isNonSodaSellGap
-          ? "No route for this direction yet"
+        if (isNonSodaSellGap) return "No route for this direction yet";
+        return involvesRwa
+          ? `No route found — stock swaps need about $${SODAX_MIN_RWA_SWAP_USD} or more`
           : "No route found — try a larger amount";
       }
       if (
@@ -159,18 +191,22 @@ export function useSodaxSwapIntegration({
       }
     }
     return "Quote unavailable right now";
-  }, [quoteError, isNonSodaSellGap]);
+  }, [isBelowMinimum, quoteError, isNonSodaSellGap, involvesRwa]);
 
-  // Extra context for the 422 case above when it's specifically the known
+  // Explanatory line under the panels: the minimum (shown even before a
+  // wallet is connected, unlike the button copy), or the known
   // sell-direction gap, which a bare "no route" message doesn't explain.
   const sodaxQuoteErrorHint = useMemo(() => {
+    if (isBelowMinimum) {
+      return `Swaps into or out of tokenized stocks and ETFs need about $${SODAX_MIN_RWA_SWAP_USD} or more.`;
+    }
     if (!(quoteError instanceof SodaxApiError) || quoteError.status !== 422) {
       return null;
     }
     if (!isNonSodaSellGap) return null;
     const sellAsset = getSodaxAsset(sellToken?.contract);
     return `The SODAX solver couldn't find a route to sell ${sellAsset?.code} right now — this direction may not be available yet.`;
-  }, [quoteError, isNonSodaSellGap, sellToken?.contract]);
+  }, [isBelowMinimum, quoteError, isNonSodaSellGap, sellToken?.contract]);
 
   // Destination trustline gate: the solver cannot deliver a classic asset
   // (a SODAX asset or USDC) without a trustline. Selling implies the source
@@ -270,6 +306,9 @@ export function useSodaxSwapIntegration({
     sodaxQuoteError: quoteError,
     sodaxQuoteErrorMessage: quoteErrorMessage,
     sodaxQuoteErrorHint,
+    // minimum size (tokenized stocks/ETFs only)
+    isBelowMinimum,
+    sellNotionalUsd,
     isSodaxQuoteLoading: isLoading,
     derivedBuyAmount,
     minOutputAmount,

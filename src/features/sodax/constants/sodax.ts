@@ -1,6 +1,7 @@
 import { AssetInfo } from "@soroswap/sdk";
 import {
   SODAX_STELLAR_ASSETS,
+  SODAX_STELLAR_DECIMALS,
   SODAX_STELLAR_ISSUER,
 } from "@/features/sodax/constants/assets";
 import type {
@@ -13,7 +14,7 @@ import type {
 // SODAX-routed asset on Stellar. Re-export its types and the table itself so
 // the rest of this feature only ever imports from "constants/sodax".
 export type { SodaxAssetCategory, SodaxStellarAsset, StellarClassicAsset };
-export { SODAX_STELLAR_ASSETS, SODAX_STELLAR_ISSUER };
+export { SODAX_STELLAR_ASSETS, SODAX_STELLAR_DECIMALS, SODAX_STELLAR_ISSUER };
 
 /** SODAX SpokeChainKey for Stellar. */
 export const SODAX_STELLAR_CHAIN_KEY = "stellar";
@@ -90,6 +91,22 @@ export function getSodaxAsset(
 export function isSodaxAsset(contract: string | null | undefined): boolean {
   return !!getSodaxAsset(contract);
 }
+
+/** Tokenized stocks and ETFs (real-world assets) get a minimum swap size. */
+export function isRwaAsset(asset: SodaxStellarAsset | undefined): boolean {
+  return asset?.category === "stock" || asset?.category === "etf";
+}
+
+/**
+ * Smallest swap the solver routes when either leg is a tokenized stock or
+ * ETF, as the USD value of the sell side. Probed against production on
+ * 2026-09-11: USDC -> AAPL routes from $1.50, USDC -> NVDA/SPY from $1.75,
+ * XLM/SODA -> NVDA from $2, while BTC and SODA legs route from $1. SODAX
+ * confirmed "about $2" for these assets. Below this the solver answers 422
+ * "No path was found", which reads like a routing failure, so the UI gates
+ * the amount first and says why.
+ */
+export const SODAX_MIN_RWA_SWAP_USD = 2;
 
 /**
  * A registry asset as a Soroswap token-list entry, for injecting into the

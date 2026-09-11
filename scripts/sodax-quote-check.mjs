@@ -92,6 +92,17 @@ const CASES = [
     dstDecimals: 7,
   },
   {
+    // The solver's minimum for tokenized stocks/ETFs (~$2, see
+    // SODAX_MIN_RWA_SWAP_USD). Fails loudly here if it ever rises.
+    label: "2 USDC (stellar) -> AAPL (stellar) — stock minimum",
+    tokenSrc: STELLAR.USDC,
+    tokenSrcChainKey: "stellar",
+    tokenDst: "CAZSFDNSSR2RKJ2LIIB2Y4G4WOSYYKC4646EUJ63PQLDDHOVQYZ4HDTK",
+    tokenDstChainKey: "stellar",
+    amount: toBaseUnits(2, 7),
+    dstDecimals: 7,
+  },
+  {
     label: "700 USDC (stellar) -> SPY (stellar)",
     tokenSrc: STELLAR.USDC,
     tokenSrcChainKey: "stellar",
