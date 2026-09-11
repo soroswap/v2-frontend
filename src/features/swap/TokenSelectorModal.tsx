@@ -1,3 +1,4 @@
+import { toSodaxAssetInfo, useSodaxAvailability } from "@/features/sodax";
 import { useTokensList } from "@/shared/hooks/useTokensList";
 import { useUserAssetList } from "@/shared/hooks/useUserAssetList";
 import { useUserBalances } from "@/shared/hooks/useUserBalances";
@@ -16,6 +17,7 @@ export const TokenSelectorModal = ({
   oppositeToken,
   onSelect,
   onOpenCustomAssetModal,
+  includeSodaxTokens = false,
 }: {
   isOpen: boolean;
   onClose: () => void;
@@ -23,15 +25,20 @@ export const TokenSelectorModal = ({
   oppositeToken: AssetInfo | null;
   onSelect?: (token: AssetInfo | null) => void;
   onOpenCustomAssetModal?: (asset: AssetInfo) => void;
+  /** Offer the SODAX-routed assets — only where SODAX swaps can execute. */
+  includeSodaxTokens?: boolean;
 }) => {
   const [searchValue, setSearchValue] = useState<string>("");
   const { tokensList } = useTokensList();
   const userTokenList = useUserAssetList();
+  // Never fetch /api/sodax/tokens from a picker that won't offer SODAX
+  // assets anyway (e.g. pools add-liquidity, which never sets this).
+  const { availableAssets } = useSodaxAvailability({
+    enabled: includeSodaxTokens,
+  });
   const { address } = useUserContext();
-  const {
-    getAvailableAmount,
-    isLoading: isBalanceLoading,
-  } = useUserBalances(address);
+  const { getAvailableAmount, isLoading: isBalanceLoading } =
+    useUserBalances(address);
   const [isSearchingAsset, setIsSearchingAsset] = useState<boolean>(false);
   const [userCustomAsset, setUserCustomAsset] = useState<AssetInfo | null>(
     null,
@@ -41,7 +48,8 @@ export const TokenSelectorModal = ({
     const query = value.trim();
     if (!query) return;
     // Only attempt lookup when it's a 56-char address/contract ID or a code:issuer pair
-    if (query.length !== 56 && !query.includes(":") && !query.includes("-")) return;
+    if (query.length !== 56 && !query.includes(":") && !query.includes("-"))
+      return;
 
     setIsSearchingAsset(true);
     try {
@@ -64,13 +72,28 @@ export const TokenSelectorModal = ({
     }
   }, [isOpen]);
 
+  // Memoize combined token list to prevent dependency array changes.
+  // Every live SODAX registry asset is appended, in registry order (swaps
+  // to/from them route through SODAX instead of the AMM), unless a list
+  // already has it.
+  const allTokens = useMemo(() => {
+    const tokens = [...tokensList, ...userTokenList];
+    if (includeSodaxTokens) {
+      for (const asset of availableAssets) {
+        if (!tokens.some((token) => token.contract === asset.contract)) {
+          tokens.push(toSodaxAssetInfo(asset));
+        }
+      }
+    }
+    return tokens;
+  }, [tokensList, userTokenList, availableAssets, includeSodaxTokens]);
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (
         searchValue &&
         isOpen &&
-        !tokensList.some((token) => token.contract === searchValue) &&
-        !userTokenList.some((token) => token.contract === searchValue)
+        !allTokens.some((token) => token.contract === searchValue)
       ) {
         findSearchedAsset(searchValue);
       } else {
@@ -79,7 +102,7 @@ export const TokenSelectorModal = ({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchValue, isOpen, tokensList, userTokenList, findSearchedAsset]);
+  }, [searchValue, isOpen, allTokens, findSearchedAsset]);
 
   const current = currentToken;
   const opposite = oppositeToken;
@@ -87,12 +110,6 @@ export const TokenSelectorModal = ({
   const handleSearch = (value: string) => {
     setSearchValue(value);
   };
-
-  // Memoize combined token list to prevent dependency array changes
-  const allTokens = useMemo(
-    () => [...tokensList, ...userTokenList],
-    [tokensList, userTokenList],
-  );
 
   // Filter and sort tokens - tokens with balances first, then by balance amount
   const filteredAndSortedTokens = useMemo(() => {
@@ -237,7 +254,9 @@ export const TokenSelectorModal = ({
                     size={28}
                   />
                   <div className="flex flex-col gap-1 text-left font-medium">
-                    <p className="text-primary text-sm font-bold">{token.code}</p>
+                    <p className="text-primary text-sm font-bold">
+                      {token.code}
+                    </p>
                     <p className="text-secondary text-xs">{token.domain}</p>
                   </div>
                 </div>

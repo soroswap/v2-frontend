@@ -24,6 +24,10 @@ interface SwapPanelProps {
   showPercentageButtons?: boolean;
   /** Callback when percentage button is clicked */
   onPercentageClick?: (percentage: number) => void;
+  /** Disable typing in this panel (e.g. exact-input-only quotes) */
+  inputDisabled?: boolean;
+  /** Offer the SODAX-routed assets in the token selector — swap page only */
+  includeSodaxTokens?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -43,6 +47,8 @@ export const SwapPanel = ({
   isBalanceLoading,
   showPercentageButtons = false,
   onPercentageClick,
+  inputDisabled = false,
+  includeSodaxTokens = false,
 }: SwapPanelProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [animationState, setAnimationState] = useState<
@@ -134,6 +140,7 @@ export const SwapPanel = ({
           setAmount={setAmount}
           isLoading={isLoading}
           token={token}
+          disabled={inputDisabled}
         />
 
         <TokenSelector
@@ -141,6 +148,7 @@ export const SwapPanel = ({
           oppositeToken={oppositeToken}
           onSelect={onSelectToken}
           onModalOpen={() => setIsHovered(false)}
+          includeSodaxTokens={includeSodaxTokens}
         />
       </div>
 

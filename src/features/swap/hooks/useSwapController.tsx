@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
+import { useSodaxSwapIntegration } from "@/features/sodax";
 import { useQuote } from "@/features/swap/hooks/useQuote";
 import {
   SwapError,
@@ -121,6 +122,30 @@ export function useSwapController({
   const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ---------------------------------------------------------------------------
+  // SODAX solver integration — SODAX pairs quote and execute through SODAX
+  // instead of the AMM. Inert (isSodaxActive=false) for every other pair.
+  // ---------------------------------------------------------------------------
+  const sodax = useSodaxSwapIntegration({
+    sellToken,
+    buyToken,
+    typedValue,
+    independentField,
+    userAddress,
+    slippagePercent: swapSettings.customSlippage,
+  });
+
+  // SODAX only quotes exact input: if a SODAX pair is selected while the Buy
+  // field is driving, hand control back to the Sell field. Carry the typed
+  // number over rather than clearing it — e.g. rotating USDC -> NVDA (which
+  // moves the typed amount to Buy, per SWITCH_TOKENS) should not silently
+  // wipe what the user typed just because the pair is SODAX-routed.
+  useEffect(() => {
+    if (sodax.isSodaxActive && independentField === "buy") {
+      dispatchSwap({ type: "TYPE_INPUT", field: "sell", typedValue });
+    }
+  }, [sodax.isSodaxActive, independentField]);
+
+  // ---------------------------------------------------------------------------
   // Quote logic
   // ---------------------------------------------------------------------------
   const [quoteRequest, setQuoteRequest] = useState<QuoteRequest | null>(null);
@@ -132,6 +157,12 @@ export function useSwapController({
 
   // Build the quote request payload every time the user changes relevant data.
   useEffect(() => {
+    if (sodax.isSodaxActive) {
+      // SODAX pairs are quoted by the SODAX integration, not the AMM.
+      setQuoteRequest(null);
+      return;
+    }
+
     if (
       !typedValue ||
       !sellToken ||
@@ -164,7 +195,14 @@ export function useSwapController({
       const t = debounceTimeoutRef.current;
       if (t) clearTimeout(t);
     };
-  }, [typedValue, sellToken, buyToken, independentField, swapSettings]);
+  }, [
+    typedValue,
+    sellToken,
+    buyToken,
+    independentField,
+    swapSettings,
+    sodax.isSodaxActive,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Derived amounts (sell / buy) depending on quote direction.
@@ -180,6 +218,8 @@ export function useSwapController({
   }, [quote, independentField]);
 
   const derivedBuyAmount = useMemo(() => {
+    if (sodax.isSodaxActive) return sodax.derivedBuyAmount;
+
     if (!quote || independentField === "buy") return undefined;
 
     if (quote.tradeType === TradeType.EXACT_IN) {
@@ -187,7 +227,7 @@ export function useSwapController({
       return formatUnits({ value: quote.amountOut?.toString() ?? "0" });
     }
     return undefined;
-  }, [quote, independentField]);
+  }, [quote, independentField, sodax.isSodaxActive, sodax.derivedBuyAmount]);
 
   // ---------------------------------------------------------------------------
   // Swap (transaction) logic – delegated to the existing `useSwap` hook.
@@ -225,7 +265,7 @@ export function useSwapController({
   const handleTokenSelect = useCallback(
     (field: IndependentField) => (token: AssetInfo | null) => {
       const oppositeToken = field === "sell" ? buyToken : sellToken;
-      
+
       // If selecting a token that's already on the opposite side, switch them
       if (token && oppositeToken && token.contract === oppositeToken.contract) {
         dispatchSwap({ type: "SWITCH_TOKENS" });
@@ -246,16 +286,28 @@ export function useSwapController({
   }, []);
 
   /**
-   * Executes the swap transaction via the Soroswap SDK API.
+   * Executes the swap transaction via the Soroswap SDK API, or through the
+   * SODAX solver when a SODAX pair is selected.
    */
   const handleSwap = useCallback(async () => {
+    if (sodax.isSodaxActive) {
+      await sodax.handleSodaxSwap();
+      return;
+    }
+
     if (!quote || !userAddress) return;
     try {
       await executeSwap(quote, userAddress);
     } catch (err) {
       console.error(err);
     }
-  }, [executeSwap, quote, userAddress]);
+  }, [
+    executeSwap,
+    quote,
+    userAddress,
+    sodax.isSodaxActive,
+    sodax.handleSodaxSwap,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Effects: initialise default values once token list is fetched.
@@ -280,10 +332,15 @@ export function useSwapController({
 
     // quote info
     quote,
-    isQuoteLoading,
+    isQuoteLoading: sodax.isSodaxActive
+      ? sodax.isSodaxQuoteLoading
+      : isQuoteLoading,
     quoteError,
     derivedSellAmount,
     derivedBuyAmount,
+
+    // SODAX solver integration (SODAX pairs)
+    sodax,
 
     // swap info
     currentStep,

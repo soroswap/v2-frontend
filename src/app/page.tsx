@@ -1,7 +1,17 @@
 "use client";
 
 import { useUserContext } from "@/contexts";
-import { SwapPanel, SwapQuoteDetails, SwapSettingsModal } from "@/features/swap";
+import {
+  SodaxQuoteDetails,
+  SodaxSwapModal,
+  SodaxSwapStep,
+  SodaxTrustlineSection,
+} from "@/features/sodax";
+import {
+  SwapPanel,
+  SwapQuoteDetails,
+  SwapSettingsModal,
+} from "@/features/swap";
 import { SwapError, SwapResult, SwapStep } from "@/features/swap/hooks/useSwap";
 import { useSwapController } from "@/features/swap/hooks/useSwapController";
 import {
@@ -12,8 +22,16 @@ import {
 } from "@/shared/components/buttons";
 import { useUserBalances } from "@/shared/hooks";
 import { cn } from "@/shared/lib/utils/cn";
+import { formatUnits } from "@/shared/lib/utils/parseUnits";
 import dynamic from "next/dynamic";
-import { MouseEvent, useCallback, useMemo, useState } from "react";
+import {
+  MouseEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 const SwapModal = dynamic(() =>
   import("../features/swap/SwapModal").then((mod) => mod.SwapModal),
@@ -65,6 +83,7 @@ export default function SwapPage() {
     resetSwap,
     quote,
     quoteError,
+    sodax,
   } = useSwapController({
     userAddress: userAddress || undefined,
     onSuccess: (result: SwapResult) => {
@@ -88,6 +107,22 @@ export default function SwapPage() {
       }
     },
   });
+
+  // useUserBalances returns a fresh `revalidate` closure on every render, so
+  // keep the latest one in a ref and key the effect on the step transition
+  // only — otherwise the refresh would re-run on every render while the
+  // step stays SUCCESS.
+  const revalidateBalancesRef = useRef(revalidateBalances);
+  useEffect(() => {
+    revalidateBalancesRef.current = revalidateBalances;
+  }, [revalidateBalances]);
+
+  // Refresh balances when a SODAX swap completes.
+  useEffect(() => {
+    if (sodax.sodaxStep === SodaxSwapStep.SUCCESS) {
+      revalidateBalancesRef.current();
+    }
+  }, [sodax.sodaxStep]);
 
   // Get sell token balance
   const sellTokenBalance = useMemo(() => {
@@ -158,6 +193,7 @@ export default function SwapPage() {
               isBalanceLoading={isBalanceLoading}
               showPercentageButtons={true}
               onPercentageClick={handlePercentageClick}
+              includeSodaxTokens={true}
             />
 
             <RotateArrowButton
@@ -183,12 +219,36 @@ export default function SwapPage() {
             variant="outline"
             balance={buyTokenBalance}
             isBalanceLoading={isBalanceLoading}
+            inputDisabled={sodax.isSodaxActive}
+            includeSodaxTokens={true}
           />
-          <SwapQuoteDetails
-            quote={quote}
-            sellToken={sellToken}
-            buyToken={buyToken}
-          />
+          {sodax.isSodaxActive ? (
+            <SodaxQuoteDetails
+              quote={sodax.sodaxQuote}
+              inputAmount={sodax.inputAmount}
+              minOutputAmount={sodax.minOutputAmount}
+              sellToken={sellToken}
+              buyToken={buyToken}
+            />
+          ) : (
+            <SwapQuoteDetails
+              quote={quote}
+              sellToken={sellToken}
+              buyToken={buyToken}
+            />
+          )}
+          {sodax.isSodaxActive && sodax.sodaxQuoteErrorHint && (
+            <p role="status" className="text-secondary text-xs">
+              {sodax.sodaxQuoteErrorHint}
+            </p>
+          )}
+          {sodax.trustlineAsset &&
+            (sodax.needsTrustline || sodax.trustline.checkError) && (
+              <SodaxTrustlineSection
+                trustline={sodax.trustline}
+                asset={sodax.trustlineAsset}
+              />
+            )}
           <div className="flex flex-col gap-2">
             {!userAddress ? (
               <ConnectWallet className="flex w-full justify-center" />
@@ -198,10 +258,17 @@ export default function SwapPage() {
                   !sellToken ||
                   !buyToken ||
                   sellToken.contract === buyToken.contract ||
-                  (!quote && quoteError) ||
-                  quoteError?.message === "No path found" ||
                   !typedValue ||
-                  hasInsufficientBalance
+                  hasInsufficientBalance ||
+                  (sodax.isSodaxActive
+                    ? !sodax.sodaxQuote ||
+                      !!sodax.sodaxQuoteError ||
+                      sodax.isDebouncing ||
+                      sodax.needsTrustline ||
+                      sodax.isTrustlineCheckPending ||
+                      sodax.isSodaxSwapLoading
+                    : (!quote && quoteError) ||
+                      quoteError?.message === "No path found")
                 }
                 onClick={onSwapClick}
                 className="text-[#ededed]"
@@ -212,11 +279,21 @@ export default function SwapPage() {
                     ? "Enter an amount"
                     : hasInsufficientBalance
                       ? `Insufficient ${sellToken.code} balance`
-                      : isSwapLoading
-                        ? getSwapButtonText(currentStep)
-                        : !quote && quoteError?.message === "No path found"
-                          ? "Not enough liquidity"
-                          : "Swap"}
+                      : sodax.isSodaxActive
+                        ? sodax.needsTrustline && sodax.trustlineAsset
+                          ? `Add ${sodax.trustlineAsset.code} trustline to continue`
+                          : sodax.isTrustlineCheckPending
+                            ? "Checking trustline..."
+                            : sodax.isSodaxSwapLoading
+                              ? "Processing..."
+                              : sodax.sodaxQuoteErrorMessage
+                                ? sodax.sodaxQuoteErrorMessage
+                                : "Swap"
+                        : isSwapLoading
+                          ? getSwapButtonText(currentStep)
+                          : !quote && quoteError?.message === "No path found"
+                            ? "Not enough liquidity"
+                            : "Swap"}
               </TheButton>
             )}
           </div>
@@ -234,6 +311,29 @@ export default function SwapPage() {
             transactionHash={swapResult?.txHash}
           />
         )}
+        <SodaxSwapModal
+          step={sodax.sodaxStep}
+          fillStatus={sodax.sodaxFillStatus}
+          error={sodax.sodaxError}
+          result={sodax.sodaxResult}
+          // Once a run has started, its snapshot is authoritative — the form
+          // behind the modal may have moved on (new tokens/amount) while the
+          // swap was still WAITING_FOR_FILL. Only fall back to live values
+          // before any run has been submitted.
+          sellToken={sodax.sodaxRunSummary?.sellToken ?? sellToken}
+          buyToken={sodax.sodaxRunSummary?.buyToken ?? buyToken}
+          sellAmount={
+            sodax.sodaxRunSummary?.sellAmount ??
+            (sodax.inputAmount
+              ? formatUnits({
+                  value: sodax.inputAmount,
+                  decimals: sellToken?.decimals ?? 7,
+                })
+              : typedValue)
+          }
+          buyAmount={sodax.sodaxRunSummary?.buyAmount ?? derivedBuyAmount}
+          onClose={sodax.resetSodaxSwap}
+        />
         {isSettingsModalOpen && (
           <SwapSettingsModal
             isOpen={isSettingsModalOpen}
