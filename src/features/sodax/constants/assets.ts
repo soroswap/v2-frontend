@@ -29,7 +29,12 @@ export interface SodaxStellarAsset extends StellarClassicAsset {
   /** Display name from the SODAX token list. */
   name: string;
   category: SodaxAssetCategory;
-  /** Bundled icon under /public, so it never depends on an external host. */
+  /**
+   * Bundled icon under /public, so it never depends on an external host.
+   * Tokenized stocks and ETFs deliberately share Robinhood's token mark
+   * (SODAX assets repo, icon-project/sodax-sdks#438) rather than company
+   * logos; the ticker code is what tells them apart in the selector.
+   */
   icon: string;
 }
 
@@ -55,91 +60,91 @@ const SEEDS: readonly SodaxStellarAssetSeed[] = [
     name: "SpaceX Class A",
     contract: "CAI4HHAYO57QICZOZ4JF7R66RLGJRD7BGTX7H6MILCITVEYYEFRYFISK",
     category: "stock",
-    icon: "/tokens/sodax/spcx.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "NVDA",
     name: "NVIDIA",
     contract: "CCQFCT4FHJURUQ4RQA4NHYW5GQRHCBDXF33ADXZRTDTDVGKOJO3ZPEMY",
     category: "stock",
-    icon: "/tokens/sodax/nvda.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "GME",
     name: "GameStop",
     contract: "CAPSLSLCTFOZM22SUIPQENMM54T24GTDRHZ5STYAO6EYMK5GGGYVKWBX",
     category: "stock",
-    icon: "/tokens/sodax/gme.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "MSTR",
     name: "Strategy",
     contract: "CAFQQXZSECLJNU76OS2OKLJQJBQHYJCVAYZJ4KGEN7VHXH5BTGNLVQND",
     category: "stock",
-    icon: "/tokens/sodax/mstr.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "AAPL",
     name: "Apple",
     contract: "CAZSFDNSSR2RKJ2LIIB2Y4G4WOSYYKC4646EUJ63PQLDDHOVQYZ4HDTK",
     category: "stock",
-    icon: "/tokens/sodax/aapl.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "TSLA",
     name: "Tesla",
     contract: "CARLFQDI2S2FSYFB47AZLKGUFZVGBEUVNW77SCJHHHGL2KPGT3TN5PAB",
     category: "stock",
-    icon: "/tokens/sodax/tsla.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "MU",
     name: "Micron",
     contract: "CBPTKA32BTUEX4VFAER6AUFWQZCWJKQAMLV2PMFFN7EHLGLJN4JWIZ3F",
     category: "stock",
-    icon: "/tokens/sodax/mu.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "SNDK",
     name: "SanDisk",
     contract: "CDXNTHFMGQM33UGQBSLZI3BV5UWW62QGZLCEKOXJKMFN2W3KQZKE3LTQ",
     category: "stock",
-    icon: "/tokens/sodax/sndk.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "SPY",
     name: "SPDR S&P 500 ETF Trust",
     contract: "CD3ZMWOS4PZS2RQITEHBOTS27DTDP4QKOK7IEO5IB64GQKHRJYTVL3SW",
     category: "etf",
-    icon: "/tokens/sodax/spy.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "QQQ",
     name: "Invesco QQQ Trust",
     contract: "CC7DQX43J2KBK5MJACQWTNHENIYB5GUVCFXGDKQWDLUWA4VKLOOU5PWB",
     category: "etf",
-    icon: "/tokens/sodax/qqq.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "SGOV",
     name: "iShares 0-3 Month Treasury Bond ETF",
     contract: "CBQMRO2JTUJ6NXVBQ3XGJV34PDTXR34DD74TLLRCW5SV2CV2NN2VDMLH",
     category: "etf",
-    icon: "/tokens/sodax/sgov.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "USO",
     name: "United States Oil Fund LP",
     contract: "CCFRCTIW5EK2OK626V6C4YRTJCKACIRDI2GHOKWM57ZXACK2ZTWWWLC7",
     category: "etf",
-    icon: "/tokens/sodax/uso.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "SLV",
     name: "iShares Silver Trust",
     contract: "CBY3U32O5T2B555HNJLX6C6HW3O2FLRSJGH472UOOHT6H6ZMGMSSZTLW",
     category: "etf",
-    icon: "/tokens/sodax/slv.png",
+    icon: "/tokens/sodax/robinhood.png",
   },
   {
     code: "BTC",
