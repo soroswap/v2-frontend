@@ -218,7 +218,7 @@ const SUBMIT_RETRY_BASE_MS = 1_000;
 const BROADCAST_STATE_UNKNOWN_MESSAGE =
   "Your swap transaction may already have reached the Stellar network. Check your balance and the transaction below before doing anything else — signing again would create a second swap.";
 const HANDOFF_FAILED_MESSAGE =
-  "Your swap transaction is on the Stellar network, but it could not be handed to the SODAX solver. Do not retry yet — check the transaction below, and if the funds left your account contact support with its hash.";
+  "Your swap transaction is on the Stellar network, but it could not be handed to SODAX. Do not retry yet — check the transaction below, and if the funds left your account contact support with its hash.";
 
 /**
  * Executes a SODAX swap (any registry pair) through the SODAX solver:
@@ -368,7 +368,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
             throw new Error(
               data.userMessage ||
                 data.failureReason ||
-                "The solver could not complete this swap",
+                "SODAX could not complete this swap",
             );
           }
 
@@ -393,7 +393,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
       // on-chain" — the second will not complete on its own.
       throw new Error(
         broadcastConfirmed
-          ? "Timed out waiting for the solver. The swap may still complete — check your balances before retrying."
+          ? "Timed out waiting for SODAX. The swap may still complete — check your balances before retrying."
           : "Your transaction was not confirmed on the Stellar network. Check your balance before retrying.",
       );
     },
@@ -554,7 +554,7 @@ export function useSodaxSwap(options?: UseSodaxSwapOptions) {
           return failWith(
             SodaxSwapStep.SUBMITTING_TO_SOLVER,
             cause,
-            "Failed to hand the swap to the solver",
+            "Failed to hand the swap to SODAX",
             { message: HANDOFF_FAILED_MESSAGE, retryable: false, srcTxHash },
           );
         }

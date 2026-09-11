@@ -128,7 +128,7 @@ export const SodaxQuoteDetails = ({
           {/* Platform */}
           <div className="flex items-center justify-between">
             <dt className="text-secondary text-sm">Platform</dt>
-            <dd className="text-primary text-sm">SODAX Solver</dd>
+            <dd className="text-primary text-sm">SODAX</dd>
           </div>
         </dl>
       </div>

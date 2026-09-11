@@ -44,11 +44,11 @@ const STEP_TITLES: Record<
 const FILL_STATUS_MESSAGES: Record<SodaxSubmitStatus, string> = {
   pending: "Waiting for the relay to pick up your order...",
   relaying: "Relaying your order...",
-  relayed: "Order relayed — a solver is picking it up...",
-  posting_execution: "Solver is executing your swap...",
-  posted_execution: "Solver is executing your swap...",
+  relayed: "Order relayed — SODAX is picking it up...",
+  posting_execution: "SODAX is executing your swap...",
+  posted_execution: "SODAX is executing your swap...",
   solved: "Swap filled!",
-  failed: "The solver could not fill this swap.",
+  failed: "SODAX could not fill this swap.",
 };
 
 /** Sell → Buy summary block, mirroring SwapModal's token rows. */
@@ -180,13 +180,13 @@ export const SodaxSwapModal = ({
       case SodaxSwapStep.SENDING_TRANSACTION:
         return <p>Submitting transaction to the network...</p>;
       case SodaxSwapStep.SUBMITTING_TO_SOLVER:
-        return <p>Handing your order to the SODAX solver network...</p>;
+        return <p>Handing your order to SODAX...</p>;
       case SodaxSwapStep.WAITING_FOR_FILL:
         return (
           <p>
             {fillStatus
               ? FILL_STATUS_MESSAGES[fillStatus]
-              : "Waiting for a solver to fill your swap..."}
+              : "Waiting for SODAX to fill your swap..."}
           </p>
         );
       case SodaxSwapStep.SUCCESS:

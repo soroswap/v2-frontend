@@ -152,12 +152,6 @@ export const SwapPanel = ({
         />
       </div>
 
-      {inputDisabled && (
-        <p className="text-secondary text-xs">
-          Amount is set by the Sell side for SODAX swaps
-        </p>
-      )}
-
       {/* Bottom row: USD price + Balance */}
       <div className="flex items-end justify-between">
         <PricePanel isLoading={isLoading} token={token} amount={amount} />

@@ -205,7 +205,7 @@ export function useSodaxSwapIntegration({
     }
     if (!isNonSodaSellGap) return null;
     const sellAsset = getSodaxAsset(sellToken?.contract);
-    return `The SODAX solver couldn't find a route to sell ${sellAsset?.code} right now — this direction may not be available yet.`;
+    return `SODAX couldn't find a route to sell ${sellAsset?.code} right now — this direction may not be available yet.`;
   }, [isBelowMinimum, quoteError, isNonSodaSellGap, sellToken?.contract]);
 
   // Destination trustline gate: the solver cannot deliver a classic asset
