@@ -48,3 +48,11 @@ export const xlmTokenList = [
     ],
   },
 ];
+
+/**
+ * Codes pinned as quick-pick chips at the top of the token selector, in display order.
+ * Resolved at render time through `useTokensList().tokenCodeMap`, so a code that the
+ * current network's list does not carry (USDT0 and PYUSD on testnet) is skipped rather
+ * than hardcoded per network.
+ */
+export const FEATURED_TOKEN_CODES = ["XLM", "USDC", "USDT0", "PYUSD"] as const;
