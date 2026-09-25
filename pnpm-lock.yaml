@@ -21,8 +21,8 @@ importers:
         specifier: 0.1.39
         version: 0.1.39(d990a992352e99d7b2389237b3e34b2b)
       '@soroswap/sdk':
-        specifier: 0.4.0
-        version: 0.4.0
+        specifier: 0.5.0
+        version: 0.5.0
       '@stellar/stellar-sdk':
         specifier: 14.1.1
         version: 14.1.1
@@ -1881,8 +1881,8 @@ packages:
   '@solana/web3.js@1.98.4':
     resolution: {integrity: sha512-vv9lfnvjUsRiq//+j5pBdXig0IQdtzA0BRZ3bXEP4KaIyF1CcaydWqgyzQgfZMNIsWNWmG+AUHwPy4AHOD6gpw==}
 
-  '@soroswap/sdk@0.4.0':
-    resolution: {integrity: sha512-iiDb0FI1r1lc/gHRTD/GFOxpsc3LdW/PzBGJmjc3OpHyi7rNeSWRLrRJUkFD6Vt0cMGeXPDtUwyaqAUT4QgPBA==}
+  '@soroswap/sdk@0.5.0':
+    resolution: {integrity: sha512-BgWqs3TgVFq/25Go533A2IUR7g5NnWPHHJUM8f/iT1j0d0VwA464wH9JReUGxXNZmsAOP4Zggdeof2AUOHsuOw==}
     engines: {node: '>=22.0.0'}
 
   '@stablelib/aead@1.0.1':
@@ -1947,6 +1947,7 @@ packages:
   '@stellar/stellar-base@14.0.4':
     resolution: {integrity: sha512-UbNW6zbdOBXJwLAV2mMak0bIC9nw3IZVlQXkv2w2dk1jgCbJjy3oRVC943zeGE5JAm0Z9PHxrIjmkpGhayY7kw==}
     engines: {node: '>=20.0.0'}
+    deprecated: This package is now rolled into @stellar/stellar-sdk. Please use @stellar/stellar-sdk to continue receiving updates and support.
 
   '@stellar/stellar-base@14.1.0':
     resolution: {integrity: sha512-A8kFli6QGy22SRF45IjgPAJfUNGjnI+R7g4DF5NZYVsD1kGf7B4ITyc4OPclLV9tqNI4/lXxafGEw0JEUbHixw==}
@@ -3567,6 +3568,7 @@ packages:
   eslint@9.39.2:
     resolution: {integrity: sha512-LEyamqS7W5HB3ujJyvi0HQK/dtVINZvd5mAAp9eT5S/ujByGjiZLCzPcHVzuXbpJDJF/cxwHlfceVUDZ2lnSTw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -9421,11 +9423,12 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@soroswap/sdk@0.4.0':
+  '@soroswap/sdk@0.5.0':
     dependencies:
-      axios: 1.13.2
+      axios: 1.18.1
     transitivePeerDependencies:
       - debug
+      - supports-color
 
   '@stablelib/aead@1.0.1': {}
 

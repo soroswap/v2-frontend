@@ -6,7 +6,7 @@ Guidance for Claude Code (claude.ai/code) when working in this repository.
 
 - **What:** `soroswap-frontend`, a Next.js 16 App Router frontend for the Soroswap DEX on Stellar. Four features: swap, pools, earn (DeFindex vaults), bridge (`package.json:2,26`; `src/app/`).
 - **Deploys to:** Vercel. Production origins are `app.soroswap.finance` and `v2.soroswap.finance` (`src/shared/lib/server/constants.ts:1-9`; `README.md:248-256`). Geoblocking relies on Vercel's `x-vercel-ip-country` header (`src/proxy.ts:20`).
-- **Consumes the Soroswap API** through `@soroswap/sdk` **0.4.0** (`package.json:19`), server-side only, base URL `SOROSWAP_API_URL` (`src/shared/lib/server/soroswapClient.ts:4-8`; `.env.example:4`).
+- **Consumes the Soroswap API** through `@soroswap/sdk` **0.5.0** (`package.json:19`), server-side only, base URL `SOROSWAP_API_URL` (`src/shared/lib/server/soroswapClient.ts:4-8`; `.env.example:4`).
 - **Consumes the DeFindex API** through `@defindex/sdk` **0.3.0-alpha.1** (`package.json:16`), base URL `DEFINDEX_API_URL` (`src/shared/lib/server/defindexClient.ts:4-7`; `.env.example:7`).
 - **Bridges via Rozo**: `@rozoai/intent-pay` 0.1.39 and `@rozoai/intent-common` 0.1.26, called from the browser (`package.json:17-18`; `src/features/bridge/providers/RozoProvider.tsx`).
 - **Wallets** via `@creit.tech/stellar-wallets-kit` ^1.9.5, chain access via `@stellar/stellar-sdk` 14.1.1 (`package.json:15,20`; `src/contexts/UserContext.tsx`).
@@ -47,7 +47,7 @@ Versions are from `package.json`; keep them in sync when you upgrade.
 - **Tailwind CSS 4**, configured via `@theme` in `src/app/globals.css`, no `tailwind.config.ts`
 - **SWR** for data fetching everywhere except the bridge, which uses **@tanstack/react-query** ^5.90.12
 - **Zustand** ^5.0.9 (with `persist`) for settings state
-- **@soroswap/sdk** 0.4.0, **@defindex/sdk** 0.3.0-alpha.1, **@stellar/stellar-sdk** 14.1.1
+- **@soroswap/sdk** 0.5.0, **@defindex/sdk** 0.3.0-alpha.1, **@stellar/stellar-sdk** 14.1.1
 - **@rozoai/intent-common** 0.1.26 and **@rozoai/intent-pay** 0.1.39
 - **@creit.tech/stellar-wallets-kit** ^1.9.5, **next-themes** ^0.4.6, **posthog-js** ^1.318.2
 - **Zod** ^3.25.76, **@tanstack/react-table** ^8.21.3, **class-variance-authority**, **tailwind-merge**, **lucide-react**, **react-tooltip**
@@ -73,7 +73,7 @@ See `.env.example`. Read in `src/shared/lib/environmentVars.ts` and `src/shared/
 | This repo calls | What | Evidence |
 |---|---|---|
 | **Soroswap API** (`api.soroswap.finance`) | Quotes, XDR build, transaction send, pools, prices, balances, asset lists | `src/shared/lib/server/soroswapClient.ts:4-8`; `.env.example:4`; handlers in `src/app/api/{quote,send,pools,price,balance,tokens}/` |
-| **`@soroswap/sdk`** 0.4.0 (npm) | The client for all of the above | `package.json:19` |
+| **`@soroswap/sdk`** 0.5.0 (npm) | The client for all of the above | `package.json:19` |
 | Soroswap public token endpoint | Unauthenticated testnet asset list, bypasses the SDK | `src/app/api/tokens/route.ts:36-44` |
 | **DeFindex API** (`api.defindex.io`) | Vault info, vault balance, deposit, withdraw, withdraw shares, send | `src/shared/lib/server/defindexClient.ts:4-7`; `.env.example:7`; handlers in `src/app/api/earn/` |
 | **`@defindex/sdk`** 0.3.0-alpha.1 (npm) | The client for all of the above | `package.json:16` |

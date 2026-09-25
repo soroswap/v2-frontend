@@ -61,7 +61,7 @@ All paths are same-origin. Unless noted, inputs arrive as **HTTP headers**, not 
 
 ## Dependencies
 
-- **Soroswap API** through `@soroswap/sdk` (pinned `0.4.0` in `package.json:19`). Base URL and key from `SOROSWAP_API_URL` / `SOROSWAP_API_KEY` (`src/shared/lib/environmentVars.ts:76-77`).
+- **Soroswap API** through `@soroswap/sdk` (pinned `0.5.0` in `package.json:19`). Base URL and key from `SOROSWAP_API_URL` / `SOROSWAP_API_KEY` (`src/shared/lib/environmentVars.ts:76-77`).
 - **DeFindex API** through `@defindex/sdk` (pinned `0.3.0-alpha.1` in `package.json:16`). Base URL and key from `DEFINDEX_API_URL` / `DEFINDEX_API_KEY` (`src/shared/lib/environmentVars.ts:85-86`).
 - Consumed by every feature module: swap (`useQuote`, `useSwap`), pools (`usePools`, `usePool`, `useGetPoolByTokens`, `useUserPoolPositions`), earn (`useVaultInfo`, `useVaultBalance`, `useEarnVault`), bridge (`useUSDCTrustline` posts to `/api/send`), and shared (`useTokensList`, `useUserBalances`).
 
