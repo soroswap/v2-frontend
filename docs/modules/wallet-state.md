@@ -2,7 +2,7 @@
 
 > **Living document.** Read this before modifying the module. Update it in the same change whenever the module's behavior, endpoints, files, or dependencies change.
 
-**Source:** `src/contexts/` · **Last verified:** 2026-09-04
+**Source:** `src/contexts/` · **Last verified:** 2026-09-25
 
 ## Purpose
 
@@ -35,14 +35,15 @@ Two responsibilities: the wallet connection (address, kit instance, transaction 
 - `@creit.tech/stellar-wallets-kit` (`package.json:15`), including the `ledger.module` and `walletconnect.module` subpath entry points.
 - `STELLAR.WALLET_NETWORK` from `src/shared/lib/environmentVars.ts:47-50`, which is `WalletNetwork.TESTNET` or `WalletNetwork.PUBLIC` depending on `NEXT_PUBLIC_ENV`.
 - `zustand` with the `persist` middleware.
-- `DEFAULT_SWAP_SETTINGS` (`src/shared/lib/constants/swap.ts:4`) and `DEFAULT_POOLS_SETTINGS` (`src/shared/lib/constants/pools.ts:4`).
+- `DEFAULT_SWAP_SETTINGS` (`src/shared/lib/constants/swap.ts:19`) and `DEFAULT_POOLS_SETTINGS` (`src/shared/lib/constants/pools.ts:8`), plus `migrateSettings` (`src/shared/lib/utils/migrateSettings.ts:14`) for persisted stores written by older builds.
 - `UserProvider` is mounted in the root layout (`src/app/layout.tsx:52`). Consumed by swap, pools, earn, and bridge.
 
 ## Gotchas & invariants
 
 - **`signTransaction` passes `networkPassphrase: STELLAR.WALLET_NETWORK`** (`UserContext.tsx:105`), which is a `WalletNetwork` enum value, not the `STELLAR.NETWORK_PASSPHRASE` string defined right next to it in `src/shared/lib/environmentVars.ts:59-62`. The same substitution appears in the bridge trustline builder. Verify against the wallets-kit API before changing either, and change both together if you change one.
 - **The connected address is not persisted.** It lives in React state only (`UserContext.tsx:39`), so a page reload disconnects the user even though the wallet extension is still authorized.
-- Both settings stores are typed as `SwapSettings` (`store/pools-settings.tsx:7`). Pools reuses the swap shape rather than having its own type, so a field added for swap silently appears in pools settings too. The two defaults differ: pools omits `SDEX` from `protocols` (`src/shared/lib/constants/pools.ts:8-12` vs `src/shared/lib/constants/swap.ts:8-13`).
+- Both settings stores are typed as `SwapSettings` (`store/pools-settings.tsx:7`). Pools reuses the swap shape rather than having its own type, so a field added for swap silently appears in pools settings too. The two defaults differ: pools omits `SDEX` from `protocols` (`src/shared/lib/constants/pools.ts:11-15` vs `src/shared/lib/constants/swap.ts:10-15,22`).
+- **Persisted settings are versioned.** Both stores persist with `version: 1` and `partialize` to their settings slice (`store/swap-settings.tsx:26-27`, `store/pools-settings.tsx:26-27`). A store written by an older build goes through `migrateSettings` (`src/shared/lib/utils/migrateSettings.ts:14-29`), which keeps the slippage choice, resets `protocols` to the defaults and drops fields the shape no longer has (`maxHops`, removed in v1). Bump the version constant (`store/swap-settings.tsx:13`, `store/pools-settings.tsx:13`) whenever `SwapSettings` changes shape: without a bump, zustand merges the stale persisted object over the new default and it wins forever.
 - `customSlippage` is a string, and `slippageBps` multiplies it by 100 (`src/shared/lib/utils/slippageBps.ts:2`). A TODO at `src/shared/lib/constants/swap.ts:6` flags that the default `"1"` may not mean what the UI implies.
 - The WalletConnect `projectId` is a public client identifier, not a secret, but it is hardcoded rather than configured by env.
 

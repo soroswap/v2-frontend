@@ -1,13 +1,16 @@
 import { SwapSettings } from "@/features/swap/types";
 import { SupportedProtocols } from "@soroswap/sdk";
 
+/**
+ * Pools only read `customSlippage` from these settings today; `protocols` is kept for the shared
+ * `SwapSettings` shape and lists the AMM venues (no SDEX, no Comet, Phoenix no longer routed).
+ */
 export const DEFAULT_POOLS_SETTINGS: SwapSettings = {
   slippageMode: "auto",
   customSlippage: "1",
-  maxHops: 2, // Removed from the UI pools-settings for now.
   protocols: [
-    SupportedProtocols.AQUA,
     SupportedProtocols.SOROSWAP,
-    SupportedProtocols.PHOENIX,
+    SupportedProtocols.AQUA,
+    SupportedProtocols.SUSHI,
   ],
 };

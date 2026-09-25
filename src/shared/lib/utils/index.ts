@@ -6,6 +6,7 @@ export * from "./formatAddress";
 export * from "./formatCurrency";
 export * from "./formatNumber";
 export * from "./isStellarAddress";
+export * from "./migrateSettings";
 export * from "./parseUnits";
 export * from "./slippageBps";
 export * from "./validators";
