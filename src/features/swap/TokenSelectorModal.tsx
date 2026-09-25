@@ -8,6 +8,7 @@ import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { TokenIcon } from "@/shared/components";
 import { findAsset } from "../pools/utils/findAsset";
+import { FEATURED_TOKEN_CODES } from "@/shared/lib/constants/tokenList";
 
 export const TokenSelectorModal = ({
   isOpen,
@@ -25,7 +26,7 @@ export const TokenSelectorModal = ({
   onOpenCustomAssetModal?: (asset: AssetInfo) => void;
 }) => {
   const [searchValue, setSearchValue] = useState<string>("");
-  const { tokensList } = useTokensList();
+  const { tokensList, tokenCodeMap } = useTokensList();
   const userTokenList = useUserAssetList();
   const { address } = useUserContext();
   const {
@@ -92,6 +93,15 @@ export const TokenSelectorModal = ({
   const allTokens = useMemo(
     () => [...tokensList, ...userTokenList],
     [tokensList, userTokenList],
+  );
+
+  // Quick-pick chips. A code the current network's list lacks resolves to undefined and is dropped.
+  const featuredTokens = useMemo(
+    () =>
+      FEATURED_TOKEN_CODES.map((code) => tokenCodeMap[code]).filter(
+        (token): token is AssetInfo => token !== undefined,
+      ),
+    [tokenCodeMap],
   );
 
   // Filter and sort tokens - tokens with balances first, then by balance amount
@@ -206,6 +216,42 @@ export const TokenSelectorModal = ({
             }}
           />
         </div>
+
+        {featuredTokens.length > 0 && (
+          <ul className="flex flex-wrap gap-1.5" aria-label="Featured tokens">
+            {featuredTokens.map((token) => {
+              const isDisabled = token.contract === current?.contract;
+              const isOtherSelected = token.contract === opposite?.contract;
+
+              return (
+                <li key={token.contract}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectToken(token)}
+                    disabled={isDisabled}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-full border py-1 pr-2.5 pl-1 text-xs font-bold transition",
+                      isDisabled
+                        ? "border-surface-alt bg-surface-alt/80 text-secondary cursor-not-allowed"
+                        : isOtherSelected
+                          ? "border-brand/20 bg-surface-alt text-primary hover:bg-surface-hover cursor-pointer"
+                          : "border-surface-alt bg-surface-alt text-primary hover:bg-surface-hover cursor-pointer",
+                    )}
+                  >
+                    <TokenIcon
+                      src={token.icon}
+                      alt={token.name ?? ""}
+                      name={token.name}
+                      code={token.code}
+                      size={20}
+                    />
+                    {token.code}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
 
         <div className="space-y-2 overflow-y-auto overscroll-contain pr-1">
           {filteredAndSortedTokens.map((token: AssetInfo) => {

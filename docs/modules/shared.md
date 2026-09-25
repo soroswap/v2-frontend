@@ -2,7 +2,7 @@
 
 > **Living document.** Read this before modifying the module. Update it in the same change whenever the module's behavior, endpoints, files, or dependencies change.
 
-**Source:** `src/shared/` · **Last verified:** 2026-09-04
+**Source:** `src/shared/` · **Last verified:** 2026-09-25
 
 ## Purpose
 
@@ -20,7 +20,7 @@ Note: `src/shared/lib/server/` and `src/shared/lib/environmentVars.ts` are docum
 | `hooks/useAllTokensList.ts` | Curated list plus user-added tokens, merged. |
 | `components/` | `TokenIcon`, `TheTable`, `Modal`, `AnnouncementDialog`, `Footer`, and `buttons/`. |
 | `lib/utils/` | `parseUnits`/`formatUnits`, `calculateTvl`, `slippageBps`, `formatNumber`, `formatCurrency`, `formatAddress`, `cn`, `bigIntReplacer`, `isStellarAddress`, `validators`, `addUserToken`. |
-| `lib/constants/` | `tokenList` (XLM fallback), `swap`, `pools`, `ipfsGateways`, `announcements`. |
+| `lib/constants/` | `tokenList` (XLM fallback and `FEATURED_TOKEN_CODES`), `swap`, `pools`, `ipfsGateways`, `announcements`. |
 | `lib/geo/blocked-countries.ts` | `BLOCKED_COUNTRIES` and `GEOBLOCKED_ERROR`, consumed by `src/proxy.ts`. |
 | `providers/PostHogProvider.tsx` | PostHog init. Documented in [app-shell.md](app-shell.md). |
 
@@ -48,6 +48,7 @@ Note: `src/shared/lib/server/` and `src/shared/lib/environmentVars.ts` are docum
 ## Gotchas & invariants
 
 - **`xlmTokenList` is only XLM.** It holds one asset per network for `mainnet`, `testnet`, `standalone`, and `futurenet` (`lib/constants/tokenList.ts`), not a large curated fallback. If `/api/tokens` fails, the app shows XLM alone.
+- `FEATURED_TOKEN_CODES` (`lib/constants/tokenList.ts:58`) is the list of codes the token picker pins as quick-pick chips. It holds codes, not contracts, and the picker resolves them through `tokenCodeMap`, so a code missing from a network's list is skipped. Behavior is documented in [swap.md](swap.md).
 - `useAllTokensList` recomputes `allTokens` on every render and then memoizes `tokenMapAllTokens` against that new array (`hooks/useAllTokensList.ts:12-23`), so the memo never hits. It is also absent from the hooks barrel.
 - `useUserAssetList` reads `localStorage` inside an effect, so the first render is always an empty array. Do not use it for SSR-visible content.
 - `calculateTvl` returns **cents** as a `bigint`. See [pools.md](pools.md).
