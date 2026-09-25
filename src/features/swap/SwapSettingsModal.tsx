@@ -6,6 +6,7 @@ import { Modal } from "@/shared/components/Modal";
 import { cn } from "@/shared/lib/utils/cn";
 import { ToggleButton } from "@/shared/components/buttons";
 import { SupportedProtocols } from "@soroswap/sdk";
+import { SWAP_PROTOCOLS, SwapProtocol } from "@/shared/lib/constants/swap";
 import { isDecimalInRange } from "@/shared/lib/utils/validators";
 import { useSwapSettingsStore } from "@/contexts/store/swap-settings";
 import { Tooltip } from "react-tooltip";
@@ -22,20 +23,17 @@ export const SwapSettingsModal = ({
   const [isProtocolExpanded, setIsProtocolExpanded] = useState<boolean>(true);
   const { swapSettings: settings, setSwapSettings } = useSwapSettingsStore();
 
-  const protocolInfo: Record<
-    SupportedProtocols,
-    { name: string; url: string }
-  > = {
+  const protocolInfo: Record<SwapProtocol, { name: string; url: string }> = {
     [SupportedProtocols.SOROSWAP]: {
       name: "Soroswap",
       url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
     },
-    [SupportedProtocols.PHOENIX]: {
-      name: "Phoenix",
-      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
-    },
     [SupportedProtocols.AQUA]: {
       name: "Aqua",
+      url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
+    },
+    [SupportedProtocols.SUSHI]: {
+      name: "Sushi",
       url: "https://docs.soroswap.finance/soroswap-aggregator/supported-amms",
     },
     [SupportedProtocols.SDEX]: {
@@ -192,48 +190,6 @@ export const SwapSettingsModal = ({
           </div>
         </div>
 
-        <div className="flex h-full flex-row justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <p className="text-secondary text-lg font-medium">Max Hops</p>
-            <Info
-              size={14}
-              className="text-secondary"
-              data-tooltip-id="max-hops-tooltip"
-            />
-            <Tooltip id="max-hops-tooltip">
-              <div className="flex max-w-[350px] flex-col gap-2 text-sm text-white">
-                <p>
-                  The maximum number of hops the router will make to find the
-                  best route.
-                </p>
-              </div>
-            </Tooltip>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={settings.maxHops}
-              onChange={(e) => {
-                const raw = Number(e.target.value);
-                const safe = Number.isFinite(raw)
-                  ? Math.min(10, Math.max(1, raw))
-                  : 1;
-                setSwapSettings({
-                  ...settings,
-                  maxHops: safe,
-                });
-              }}
-              className={cn(
-                "bg-surface text-primary w-[70px] rounded-lg border border-transparent p-2 text-center text-sm outline-none",
-              )}
-              placeholder="1"
-              min={1}
-              max={10}
-              step={1}
-            />
-          </div>
-        </div>
-
         {/* Protocols */}
         <div className="flex h-full flex-col gap-2">
           <button
@@ -269,7 +225,7 @@ export const SwapSettingsModal = ({
 
           {isProtocolExpanded && (
             <div className="flex h-full flex-col gap-2">
-              {Object.values(SupportedProtocols).map((protocol) => (
+              {SWAP_PROTOCOLS.map((protocol) => (
                 <div
                   key={protocol}
                   className="flex items-center justify-between"
